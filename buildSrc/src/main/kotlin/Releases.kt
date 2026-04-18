@@ -34,34 +34,16 @@ interface LibraryArtifact {
 }
 
 object Releases {
-  const val groupId = "com.google.android.fhir"
+  const val groupId = "dev.ohs.fhir"
 
   // Libraries
   // After releasing a new version of a library, you will need to bump up the library version
   // in Dependencies.kt (in a separate PR)
 
-  object Common : LibraryArtifact {
-    override val artifactId = "common"
-    override val version = "0.1.0-alpha05"
-    override val name = "Android FHIR Common Library"
-  }
-
-  object Engine : LibraryArtifact {
-    override val artifactId = "engine"
-    override val version = "1.2.0"
-    override val name = "Android FHIR Engine Library"
-  }
-
   object DataCapture : LibraryArtifact {
     override val artifactId = "data-capture"
     override val version = "1.3.1"
     override val name = "Android FHIR Structured Data Capture Library"
-  }
-
-  object Workflow : LibraryArtifact {
-    override val artifactId = "workflow"
-    override val version = "0.1.0-beta01"
-    override val name = "Android FHIR Workflow Library"
   }
 
   object Contrib {
@@ -79,28 +61,9 @@ object Releases {
     }
   }
 
-  object Knowledge : LibraryArtifact {
-    override val artifactId = "knowledge"
-    override val version = "0.1.0-beta01"
-    override val name = "Android FHIR Knowledge Manager Library"
-  }
-
   // Demo apps
-
-  object Demo {
-    const val applicationId = "com.google.android.fhir.demo"
-    const val versionCode = 1
-    const val versionName = "1.0"
-  }
-
   object Catalog {
-    const val applicationId = "com.google.android.fhir.catalog"
-    const val versionCode = 1
-    const val versionName = "1.0"
-  }
-
-  object WorkflowDemo {
-    const val applicationId = "com.google.android.fhir.workflow.demo"
+    const val applicationId = "dev.ohs.fhir.catalog"
     const val versionCode = 1
     const val versionName = "1.0"
   }

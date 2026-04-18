@@ -86,7 +86,7 @@ jobs:
         run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY_URL: 'https://maven.pkg.github.com/google/android-fhir'
+          REPOSITORY_URL: 'https://maven.pkg.github.com/ohs-foundation/kotlin-fhir-data-capture'
           # Use SNAPSHOT Prefix to follow Maven convention
           ARTIFACT_VERSION_SUFFIX: SNAPSHOT
 
