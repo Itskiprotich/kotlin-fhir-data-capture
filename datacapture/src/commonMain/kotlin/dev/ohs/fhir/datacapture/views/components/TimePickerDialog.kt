@@ -16,14 +16,14 @@
 
 package dev.ohs.fhir.datacapture.views.components
 
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.cancel
-import kotlin_fhir_data_capture.datacapture.generated.resources.ic_access_time
-import kotlin_fhir_data_capture.datacapture.generated.resources.ic_keyboard
-import kotlin_fhir_data_capture.datacapture.generated.resources.ok
-import kotlin_fhir_data_capture.datacapture.generated.resources.select_time
-import kotlin_fhir_data_capture.datacapture.generated.resources.switch_to_clock_input
-import kotlin_fhir_data_capture.datacapture.generated.resources.switch_to_text_input
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.cancel
+import dev.ohs.fhir.datacapture.generated.resources.ic_access_time
+import dev.ohs.fhir.datacapture.generated.resources.ic_keyboard
+import dev.ohs.fhir.datacapture.generated.resources.ok
+import dev.ohs.fhir.datacapture.generated.resources.select_time
+import dev.ohs.fhir.datacapture.generated.resources.switch_to_clock_input
+import dev.ohs.fhir.datacapture.generated.resources.switch_to_text_input
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

@@ -16,9 +16,9 @@
 
 package dev.ohs.fhir.datacapture
 
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.edit_button_text
-import kotlin_fhir_data_capture.datacapture.generated.resources.questionnaire_review_mode_title
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.edit_button_text
+import dev.ohs.fhir.datacapture.generated.resources.questionnaire_review_mode_title
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row

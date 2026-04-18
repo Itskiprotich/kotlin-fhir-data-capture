@@ -16,10 +16,10 @@
 
 package dev.ohs.fhir.datacapture.views.components
 
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.gm_schedule_24
-import kotlin_fhir_data_capture.datacapture.generated.resources.select_time
-import kotlin_fhir_data_capture.datacapture.generated.resources.time
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.gm_schedule_24
+import dev.ohs.fhir.datacapture.generated.resources.select_time
+import dev.ohs.fhir.datacapture.generated.resources.time
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions

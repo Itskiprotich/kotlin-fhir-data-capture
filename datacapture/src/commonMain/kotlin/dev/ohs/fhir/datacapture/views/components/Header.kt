@@ -16,9 +16,9 @@
 
 package dev.ohs.fhir.datacapture.views.components
 
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.help
-import kotlin_fhir_data_capture.datacapture.generated.resources.space_asterisk
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.help
+import dev.ohs.fhir.datacapture.generated.resources.space_asterisk
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer

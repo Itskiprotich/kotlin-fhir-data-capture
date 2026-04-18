@@ -16,10 +16,10 @@
 
 package dev.ohs.fhir.datacapture.views.components
 
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.delete
-import kotlin_fhir_data_capture.datacapture.generated.resources.delete_24px
-import kotlin_fhir_data_capture.datacapture.generated.resources.repeated_group_title
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.delete
+import dev.ohs.fhir.datacapture.generated.resources.delete_24px
+import dev.ohs.fhir.datacapture.generated.resources.repeated_group_title
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth

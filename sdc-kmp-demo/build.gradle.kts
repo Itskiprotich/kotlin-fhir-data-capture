@@ -13,6 +13,8 @@ plugins {
   alias(libs.plugins.ksp)
 }
 
+group = "com.example"
+
 android {
   namespace = "com.example.sdckmpdemo"
   compileSdk = Sdk.COMPILE_SDK

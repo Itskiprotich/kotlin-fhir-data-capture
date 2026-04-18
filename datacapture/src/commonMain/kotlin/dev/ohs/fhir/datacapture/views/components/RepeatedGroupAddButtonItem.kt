@@ -16,9 +16,9 @@
 
 package dev.ohs.fhir.datacapture.views.components
 
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.add_24px
-import kotlin_fhir_data_capture.datacapture.generated.resources.add_repeated_group_item
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.add_24px
+import dev.ohs.fhir.datacapture.generated.resources.add_repeated_group_item
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

@@ -16,8 +16,8 @@
 
 package dev.ohs.fhir.datacapture.validation
 
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.max_value_validation_error_msg
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.max_value_validation_error_msg
 import dev.ohs.fhir.datacapture.enablement.compareFhirValue
 import com.google.fhir.model.r4.Extension
 import com.google.fhir.model.r4.Integer

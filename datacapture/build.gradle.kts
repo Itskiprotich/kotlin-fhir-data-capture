@@ -12,6 +12,8 @@ plugins {
   alias(libs.plugins.ksp)
 }
 
+group = "dev.ohs.fhir"
+
 kotlin {
   jvmToolchain(21)
 

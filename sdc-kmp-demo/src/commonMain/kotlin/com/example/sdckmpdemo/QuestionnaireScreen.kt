@@ -16,7 +16,7 @@
 
 package com.example.sdckmpdemo
 
-import kotlin_fhir_data_capture.sdc_kmp_demo.generated.resources.Res
+import com.example.sdc_kmp_demo.generated.resources.Res
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding

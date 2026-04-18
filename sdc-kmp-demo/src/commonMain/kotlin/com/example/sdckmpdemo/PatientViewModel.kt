@@ -16,7 +16,7 @@
 
 package com.example.sdckmpdemo
 
-import kotlin_fhir_data_capture.sdc_kmp_demo.generated.resources.Res
+import com.example.sdc_kmp_demo.generated.resources.Res
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.fhir.model.r4.FhirR4Json
