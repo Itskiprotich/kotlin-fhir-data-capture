@@ -29,5 +29,3 @@ if (kokoroRun == true) {
 }
 
 include(":datacapture")
-
-include(":sdc-kmp-demo")
