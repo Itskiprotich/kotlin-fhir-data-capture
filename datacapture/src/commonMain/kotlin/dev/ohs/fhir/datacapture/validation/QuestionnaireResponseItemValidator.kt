@@ -16,10 +16,10 @@
 
 package dev.ohs.fhir.datacapture.validation
 
-import com.google.fhir.model.r4.Questionnaire
-import com.google.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.isHidden
 import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
+import com.google.fhir.model.r4.Questionnaire
+import com.google.fhir.model.r4.QuestionnaireResponse
 
 internal class QuestionnaireResponseItemValidator(
   val expressionEvaluator: ExpressionEvaluator,
@@ -58,8 +58,16 @@ internal class QuestionnaireResponseItemValidator(
       answerConstraintValidators.flatMap { validator ->
         questionnaireResponseItem.answer.map { answer ->
           validator.validate(questionnaireItem, answer) {
-            expressionEvaluator.evaluateExpressionValue(it)
-              ?: expressionEvaluator.evaluateExpression(it)
+            expressionEvaluator.evaluateExpressionValue(
+              questionnaireItem,
+              questionnaireResponseItem,
+              it,
+            )
+              ?: expressionEvaluator.evaluateExpression(
+                questionnaireItem,
+                questionnaireResponseItem,
+                it,
+              )
           }
         }
       }

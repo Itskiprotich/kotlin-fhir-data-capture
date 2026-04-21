@@ -16,11 +16,6 @@
 
 package dev.ohs.fhir.datacapture.expressions
 
-import com.google.fhir.model.r4.Coding
-import com.google.fhir.model.r4.Questionnaire
-import com.google.fhir.model.r4.QuestionnaireResponse
-import com.google.fhir.model.r4.Resource
-import com.google.fhir.model.r4.ValueSet
 import dev.ohs.fhir.datacapture.ExternalAnswerValueSetResolver
 import dev.ohs.fhir.datacapture.XFhirQueryResolver
 import dev.ohs.fhir.datacapture.extensions.answerExpression
@@ -29,7 +24,12 @@ import dev.ohs.fhir.datacapture.extensions.extractAnswerOptions
 import dev.ohs.fhir.datacapture.extensions.isFhirPath
 import dev.ohs.fhir.datacapture.extensions.isXFhirQuery
 import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
-import dev.ohs.fhir.datacapture.fhirpath.convertToBoolean
+import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
+import com.google.fhir.model.r4.Coding
+import com.google.fhir.model.r4.Questionnaire
+import com.google.fhir.model.r4.QuestionnaireResponse
+import com.google.fhir.model.r4.Resource
+import com.google.fhir.model.r4.ValueSet
 
 /**
  * Evaluates and manages answer options within a [Questionnaire] and its corresponding
@@ -79,7 +79,7 @@ internal class EnabledAnswerOptionsEvaluator(
   /**
    * Returns a [Pair] of the enabled/allowed [Questionnaire.Item.AnswerOption] options and the
    * disabled/disallowed [QuestionnaireResponse.Item.Answer] answers, based on the evaluation of
-   * [answerOptionsToggleExpressions] expressions
+   * [Questionnaire.Item.answerOptionsToggleExpressions] expressions
    */
   internal suspend fun evaluate(
     questionnaireItem: Questionnaire.Item,
@@ -200,7 +200,12 @@ internal class EnabledAnswerOptionsEvaluator(
         checkNotNull(xFhirQueryResolver) {
           "XFhirQueryResolver cannot be null. Please provide the XFhirQueryResolver via DataCaptureConfig."
         }
-        val variablesMap = expressionEvaluator.extractItemDependentVariables(answerExpression, item)
+        val variablesMap =
+          expressionEvaluator.extractItemDependentVariables(
+            answerExpression,
+            item,
+            null,
+          )
         val xFhirExpressionString =
           expressionEvaluator.createXFhirQueryFromExpression(answerExpression, variablesMap)
         if (answerExpressionMap.containsKey(xFhirExpressionString)) {
@@ -214,7 +219,7 @@ internal class EnabledAnswerOptionsEvaluator(
         options
       }
       answerExpression.isFhirPath -> {
-        val data = expressionEvaluator.evaluateExpression(answerExpression)
+        val data = expressionEvaluator.evaluateExpression(item, null, answerExpression)
         item.extractAnswerOptions(data)
       }
       else ->
@@ -224,7 +229,7 @@ internal class EnabledAnswerOptionsEvaluator(
     }
   }
 
-  private fun evaluateAnswerOptionsToggleExpressions(
+  private suspend fun evaluateAnswerOptionsToggleExpressions(
     item: Questionnaire.Item,
     answerOptions: List<Questionnaire.Item.AnswerOption>,
   ): List<Questionnaire.Item.AnswerOption> {
@@ -234,8 +239,8 @@ internal class EnabledAnswerOptionsEvaluator(
           val (expression, toggleOptions) = it
           val evaluationResult =
             if (expression?.value?.isFhirPath == true) {
-              convertToBoolean(
-                expressionEvaluator.evaluateExpression(expression.value),
+              FhirPathService.convertToBoolean(
+                expressionEvaluator.evaluateExpression(item, null, expression.value),
               )
             } else {
               throw UnsupportedOperationException(

@@ -16,10 +16,10 @@
 
 package dev.ohs.fhir.datacapture.validation
 
-import com.google.fhir.model.r4.Questionnaire
-import com.google.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.required_constraint_validation_error_msg
+import com.google.fhir.model.r4.Questionnaire
+import com.google.fhir.model.r4.QuestionnaireResponse
 import org.jetbrains.compose.resources.getString
 
 internal object RequiredValidator : QuestionnaireResponseItemConstraintValidator {
@@ -28,7 +28,7 @@ internal object RequiredValidator : QuestionnaireResponseItemConstraintValidator
     questionnaireResponseItem: QuestionnaireResponse.Item,
   ): List<ConstraintValidator.Result> {
     if (
-      questionnaireItem.required?.value == false ||
+      questionnaireItem.required?.value != true ||
         questionnaireResponseItem.answer.any { it.value != null }
     ) {
       return listOf(ConstraintValidator.Result(true, null))

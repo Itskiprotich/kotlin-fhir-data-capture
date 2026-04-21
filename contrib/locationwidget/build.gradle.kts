@@ -1,0 +1,133 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
+plugins {
+  id("org.jetbrains.kotlin.multiplatform")
+  id("com.android.kotlin.multiplatform.library")
+  id("org.jetbrains.kotlin.plugin.compose")
+  id("org.jetbrains.compose.hot-reload")
+  id("org.jetbrains.compose")
+  alias(libs.plugins.ksp)
+}
+
+group = "dev.ohs.fhir.datacapture.contrib"
+
+kotlin {
+  jvmToolchain(21)
+
+  androidLibrary {
+    namespace = "dev.ohs.fhir.datacapture.contrib.views.locationwidget"
+    compileSdk = Sdk.COMPILE_SDK
+    minSdk = Sdk.MIN_SDK
+    withJava()
+    withHostTestBuilder {}
+    withDeviceTestBuilder { sourceSetTreeName = "test" }
+      .configure { instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }
+
+    experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
+
+    compilations.configureEach {
+      compilerOptions.configure {
+        jvmTarget.set(
+          org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11,
+        )
+      }
+    }
+
+    packaging {
+      resources.excludes.addAll(
+        listOf("META-INF/ASL2.0", "META-INF/ASL-2.0.txt", "META-INF/LGPL-3.0.txt"),
+      )
+    }
+  }
+
+  val xcfName = "sharedLocationWidget"
+
+  iosX64 { binaries.framework { baseName = xcfName } }
+  iosArm64 { binaries.framework { baseName = xcfName } }
+  iosSimulatorArm64 { binaries.framework { baseName = xcfName } }
+
+  wasmJs {
+    browser()
+    binaries.library()
+  }
+
+  jvm("desktop")
+
+  sourceSets {
+    all {
+      languageSettings {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions { freeCompilerArgs.add("-Xexpect-actual-classes") }
+      }
+    }
+
+    commonMain {
+      dependencies {
+        implementation(compose.components.resources)
+        implementation(compose.components.uiToolingPreview)
+        implementation(compose.foundation)
+        implementation(compose.material3)
+        implementation(compose.runtime)
+        implementation(compose.ui)
+        implementation(project(":datacapture"))
+        implementation(libs.kotlinx.coroutines.core)
+        implementation(libs.kotlin.fhir)
+        implementation(libs.compass.geolocation)
+      }
+    }
+
+    commonTest {
+      dependencies {
+        implementation(libs.kotlin.test)
+        @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+        implementation(compose.uiTest)
+      }
+    }
+
+    androidMain {
+      resources.srcDir("res")
+      dependencies {
+        implementation(libs.compass.geolocation.mobile)
+        implementation(libs.compass.permissions.mobile)
+      }
+    }
+
+    iosMain {
+      dependencies {
+        implementation(libs.compass.geolocation.mobile)
+        implementation(libs.compass.permissions.mobile)
+      }
+    }
+
+    getByName("androidDeviceTest") {
+      dependencies {
+        implementation(libs.androidx.compose.ui.test.junit4)
+        implementation(libs.androidx.compose.ui.test.manifest)
+        implementation(libs.androidx.test.core)
+        implementation(libs.androidx.test.ext.junit)
+        implementation(libs.androidx.test.runner)
+        implementation(libs.androidx.test.rules)
+        implementation(libs.kotlinx.coroutines.test)
+        implementation(libs.truth)
+      }
+    }
+
+    getByName("androidHostTest") {
+      dependencies {
+        implementation(libs.androidx.test.core)
+        implementation(libs.junit)
+        implementation(libs.kotlin.test.junit)
+        implementation(libs.kotlinx.coroutines.test)
+        implementation(libs.truth)
+      }
+    }
+
+    @Suppress("unused")
+    val desktopMain by getting { dependencies { implementation(compose.desktop.currentOs) } }
+
+    wasmJsMain { dependencies { implementation(libs.compass.geolocation.browser) } }
+  }
+}

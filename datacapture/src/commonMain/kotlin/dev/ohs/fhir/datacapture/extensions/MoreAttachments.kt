@@ -16,15 +16,15 @@
 
 package dev.ohs.fhir.datacapture.extensions
 
+import dev.ohs.fhir.datacapture.DataCapture
 import com.google.fhir.model.r4.Attachment
 import com.google.fhir.model.r4.Base64Binary
-import dev.ohs.fhir.datacapture.DataCapture
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 internal suspend fun Attachment.imageData(): ByteArray? {
   check(mimeType == MimeType.IMAGE.value) {
-    "${mimeType?.capitalize()} attachment is not supported in Item Media extension yet"
+    "${mimeType?.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }} attachment is not supported in Item Media extension yet"
   }
 
   return data?.data

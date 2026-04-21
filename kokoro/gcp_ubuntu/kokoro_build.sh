@@ -96,8 +96,8 @@ function setup() {
 # Checks if code conforms to style guide, builds the code, then runs unit tests.
 function build_only() {
   ./gradlew spotlessCheck --scan --stacktrace
-  ./gradlew build -x :datacapture:build --scan --stacktrace
-  ./gradlew check -x :datacapture:check --scan --stacktrace
+  ./gradlew build -Pcatalog.wasm.enabled=false -x :datacapture:build --scan --stacktrace
+  ./gradlew check -Pcatalog.wasm.enabled=false -x :datacapture:check --scan --stacktrace
 }
 
 # Runs instrumentation tests using Firebase Test Lab, and retrieves the code

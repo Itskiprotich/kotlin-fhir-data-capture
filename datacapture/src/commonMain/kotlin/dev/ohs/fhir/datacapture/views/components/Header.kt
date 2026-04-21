@@ -16,15 +16,18 @@
 
 package dev.ohs.fhir.datacapture.views.components
 
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.help
+import dev.ohs.fhir.datacapture.generated.resources.ic_help
+import dev.ohs.fhir.datacapture.generated.resources.space_asterisk
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -48,13 +51,11 @@ import dev.ohs.fhir.datacapture.extensions.hasHelpButton
 import dev.ohs.fhir.datacapture.extensions.localizedHelpAnnotatedString
 import dev.ohs.fhir.datacapture.extensions.localizedPrefixAnnotatedString
 import dev.ohs.fhir.datacapture.extensions.readCustomStyleExtension
-import dev.ohs.fhir.datacapture.generated.resources.Res
-import dev.ohs.fhir.datacapture.generated.resources.help
-import dev.ohs.fhir.datacapture.generated.resources.space_asterisk
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import dev.ohs.fhir.datacapture.validation.Invalid
 import dev.ohs.fhir.datacapture.validation.ValidationResult
 import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 internal const val ERROR_TEXT_AT_HEADER_TEST_TAG = "error-text-at-header"
@@ -191,25 +192,6 @@ internal fun PrefixQuestionTitle(
         style = QuestionnaireTheme.textStyles.questionText,
         modifier = Modifier.testTag(PREFIX_HEADER_TAG),
       )
-
-      //      AndroidView(
-      //        factory = {
-      //          TextView(it).apply {
-      //            id = R.id.prefix
-      //            applyCustomOrDefaultStyle(
-      //              context = it,
-      //              view = this,
-      //              customStyleName =
-      //                readCustomStyleName(
-      //                  StyleUrl.PREFIX_TEXT_VIEW,
-      //                ),
-      //              defaultStyleResId =
-      //                getStyleResIdFromAttribute(it, R.attr.questionnaireQuestionTextStyle),
-      //            )
-      //          }
-      //        },
-      //        update = { it.text = prefixLocalizedText },
-      //      )
       Spacer(modifier = Modifier.width(5.dp))
     }
 
@@ -218,26 +200,6 @@ internal fun PrefixQuestionTitle(
       style = QuestionnaireTheme.textStyles.questionText,
       modifier = Modifier.testTag(QUESTION_HEADER_TAG),
     )
-    //    AndroidView(
-    //      factory = {
-    //        TextView(it).apply {
-    //          id = R.id.question
-    //          movementMethod = LinkMovementMethod.getInstance()
-    //          applyCustomOrDefaultStyle(
-    //            context = it,
-    //            view = this,
-    //            customStyleName =
-    //              readCustomStyleName(
-    //                StyleUrl.QUESTION_TEXT_VIEW,
-    //              ),
-    //            defaultStyleResId =
-    //              getStyleResIdFromAttribute(it, R.attr.questionnaireQuestionTextStyle),
-    //          )
-    //        }
-    //      },
-    //      modifier = Modifier.weight(1f),
-    //      update = { it.text = questionLocalizedText },
-    //    )
   }
 }
 
@@ -252,9 +214,9 @@ internal fun Help(
 ) {
   var isCardOpen by remember { mutableStateOf(isHelpCardInitiallyOpen) }
 
-  Row(
+  FlowRow(
     modifier = Modifier.padding(top = 4.dp),
-    verticalAlignment = Alignment.CenterVertically,
+    itemVerticalAlignment = Alignment.CenterVertically,
   ) {
     hintLocalizedText?.let {
       Text(
@@ -262,26 +224,6 @@ internal fun Help(
         style = QuestionnaireTheme.textStyles.subtitleText,
         modifier = Modifier.testTag(HINT_HEADER_TAG),
       )
-      //      AndroidView(
-      //        modifier = Modifier.weight(0.7f),
-      //        factory = {
-      //          TextView(it).apply {
-      //            id = R.id.hint
-      //            movementMethod = LinkMovementMethod.getInstance()
-      //            applyCustomOrDefaultStyle(
-      //              context = it,
-      //              view = this,
-      //              customStyleName =
-      //                readCustomStyleName(
-      //                  StyleUrl.SUBTITLE_TEXT_VIEW,
-      //                ),
-      //              defaultStyleResId =
-      //                getStyleResIdFromAttribute(it, R.attr.questionnaireSubtitleTextStyle),
-      //            )
-      //          }
-      //        },
-      //        update = { it.text = hintLocalizedText },
-      //      )
     }
 
     if (isHelpButtonVisible) {
@@ -290,18 +232,10 @@ internal fun Help(
           isCardOpen = !isCardOpen
           helpButtonOnClick(isCardOpen)
         },
-        modifier =
-          Modifier.padding(2.dp)
-            .padding(start = 4.dp)
-            .testTag(HELP_BUTTON_TAG)
-            .weight(0.3f)
-            .size(
-              width = 24.dp,
-              height = 24.dp,
-            ),
+        modifier = Modifier.padding(2.dp).padding(start = 4.dp).testTag(HELP_BUTTON_TAG),
       ) {
         Icon(
-          imageVector = Icons.AutoMirrored.Filled.Help,
+          painterResource(Res.drawable.ic_help),
           contentDescription = stringResource(Res.string.help),
           modifier = Modifier.size(48.dp),
         )
@@ -338,26 +272,6 @@ internal fun Help(
             style = QuestionnaireTheme.textStyles.helpText,
           )
         }
-        //        AndroidView(
-        //          factory = {
-        //            TextView(it).apply {
-        //              id = R.id.helpText
-        //              movementMethod = LinkMovementMethod.getInstance()
-        //
-        //              QuestionItemDefaultStyle()
-        //                .applyStyle(
-        //                  context,
-        //                  this,
-        //                  getStyleResIdFromAttribute(it, R.attr.questionnaireHelpTextStyle),
-        //                )
-        //            }
-        //          },
-        //          modifier =
-        //            Modifier.padding(horizontal =
-        // dimensionResource(R.dimen.help_text_margin_horizontal))
-        //              .padding(bottom = dimensionResource(R.dimen.help_text_margin_bottom)),
-        //          update = { it.text = helpCardLocalizedText },
-        //        )
       }
     }
   }

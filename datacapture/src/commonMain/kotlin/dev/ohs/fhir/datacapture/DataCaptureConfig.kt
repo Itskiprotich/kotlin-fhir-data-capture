@@ -45,12 +45,10 @@ data class DataCaptureConfig(
 
   /**
    * A [QuestionnaireItemViewHolderFactoryMatchersProviderFactory] may be set by the client to
-   * provide [QuestionnaireItemViewHolderFactoryMatcher]s to add custom questionnaire components or
+   * provide [QuestionnaireItemViewFactoryMatcher]s to add custom questionnaire components or
    * override the behaviour of existing components in the sdc.
    */
-  var questionnaireItemViewHolderFactoryMatchersProviderFactory:
-    QuestionnaireItemViewHolderFactoryMatchersProviderFactory? =
-    null,
+  var questionnaireItemView: QuestionnaireItemViewHolderFactoryMatchersProviderFactory? = null,
 ) {
 
   /**
@@ -97,15 +95,15 @@ interface UrlResolver {
 }
 
 /**
- * Factory to create [QuestionnaireItemViewHolderFactoryMatchersProvider]to provide [List] of
- * [QuestionnaireItemViewHolderFactoryMatcher]. The developers may provide the factory to the
- * library via [DataCaptureConfig] to add custom questionnaire components or override the behaviour
- * of existing components in the sdc.
+ * Factory to create [QuestionnaireItemViewFactoryMatchersProvider]to provide [List] of
+ * [QuestionnaireItemViewFactoryMatcher]. The developers may provide the factory to the library via
+ * [DataCaptureConfig] to add custom questionnaire components or override the behaviour of existing
+ * components in the sdc.
  *
  * See the
  * [developer guide](https://github.com/google/android-fhir/wiki/SDCL:-Customize-how-a-Questionnaire-is-displayed#custom-questionnaire-components)
  * for more information.
  */
 fun interface QuestionnaireItemViewHolderFactoryMatchersProviderFactory {
-  fun get(provider: String): QuestionnaireItemViewHolderFactoryMatchersProvider
+  fun get(provider: String): QuestionnaireItemViewFactoryMatchersProvider
 }

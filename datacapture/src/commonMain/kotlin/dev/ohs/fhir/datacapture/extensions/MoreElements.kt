@@ -16,8 +16,12 @@
 
 package dev.ohs.fhir.datacapture.extensions
 
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.no
+import dev.ohs.fhir.datacapture.generated.resources.yes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import dev.ohs.fhir.datacapture.getLocalDateTimeFormatter
 import com.google.fhir.model.r4.Attachment
 import com.google.fhir.model.r4.Coding
 import com.google.fhir.model.r4.Date
@@ -30,10 +34,6 @@ import com.google.fhir.model.r4.FhirDateTime
 import com.google.fhir.model.r4.Quantity
 import com.google.fhir.model.r4.Reference
 import com.google.fhir.model.r4.Time
-import dev.ohs.fhir.datacapture.generated.resources.Res
-import dev.ohs.fhir.datacapture.generated.resources.no
-import dev.ohs.fhir.datacapture.generated.resources.yes
-import dev.ohs.fhir.datacapture.getLocalDateTimeFormatter
 import org.jetbrains.compose.resources.stringResource
 
 internal const val EXTENSION_CQF_EXPRESSION_URL: String =
@@ -87,3 +87,44 @@ internal val Element.displayString: String?
 internal val Element.cqfExpression: Expression?
   get() =
     this.extension.find { it.url == EXTENSION_CQF_EXPRESSION_URL }?.value?.asExpression()?.value
+
+internal operator fun Element.compareTo(other: Element): Int {
+  if (this::class != other::class) {
+    throw IllegalArgumentException(
+      "Cannot compare different data types: ${this::class} and ${other::class}",
+    )
+  }
+
+  return when (this) {
+    is FhirR4Integer -> {
+      other as FhirR4Integer
+      this.value!!.compareTo(other.value!!)
+    }
+    is FhirR4Decimal -> {
+      other as FhirR4Decimal
+      this.value!!.compareTo(other.value!!)
+    }
+    is FhirR4DateType -> {
+      other as FhirR4DateType
+      this.value.toString().compareTo(other.value.toString())
+    }
+    is DateTime -> {
+      other as DateTime
+      this.value.toString().compareTo(other.value.toString())
+    }
+    is Time -> {
+      other as Time
+      this.value!!.compareTo(other.value!!)
+    }
+    is Quantity -> {
+      other as Quantity
+      if (this.code != other.code) {
+        throw IllegalArgumentException(
+          "Cannot compare different quantity codes: ${this.code} and ${other.code}",
+        )
+      }
+      this.value!!.value!!.compareTo(other.value!!.value!!)
+    }
+    else -> throw IllegalArgumentException("Comparison not supported for type :$this")
+  }
+}

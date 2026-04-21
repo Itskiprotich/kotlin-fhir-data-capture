@@ -16,6 +16,8 @@
 
 package dev.ohs.fhir.datacapture.views.factories
 
+import dev.ohs.fhir.datacapture.generated.resources.Res
+import dev.ohs.fhir.datacapture.generated.resources.required_text_and_new_line
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,8 +32,6 @@ import androidx.compose.ui.unit.dp
 import dev.ohs.fhir.datacapture.extensions.itemMedia
 import dev.ohs.fhir.datacapture.extensions.localizedFlyoverAnnotatedString
 import dev.ohs.fhir.datacapture.extensions.unit
-import dev.ohs.fhir.datacapture.generated.resources.Res
-import dev.ohs.fhir.datacapture.generated.resources.required_text_and_new_line
 import dev.ohs.fhir.datacapture.validation.Invalid
 import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.EditTextFieldItem
@@ -80,8 +80,9 @@ class EditTextViewFactoryDelegate(
     Column(
       modifier =
         Modifier.padding(
-          horizontal = 16.dp,
-          vertical = 16.dp,
+          start = 16.dp,
+          end = 16.dp,
+          bottom = 8.dp,
         ),
     ) {
       Header(questionnaireViewItem)

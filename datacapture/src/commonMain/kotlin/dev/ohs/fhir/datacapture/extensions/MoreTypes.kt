@@ -17,11 +17,7 @@
 package dev.ohs.fhir.datacapture.extensions
 
 import androidx.compose.ui.text.intl.Locale
-import com.google.fhir.model.r4.Boolean
 import com.google.fhir.model.r4.Coding
-import com.google.fhir.model.r4.Date
-import com.google.fhir.model.r4.Decimal
-import com.google.fhir.model.r4.Integer
 import com.google.fhir.model.r4.Quantity
 
 internal const val EXT_TRANSLATION = "http://hl7.org/fhir/StructureDefinition/translation"
@@ -57,12 +53,12 @@ internal fun Coding.hasSystem() = !this.system?.value.isNullOrBlank()
 
 internal fun Coding.hasVersion() = !this.version?.value.isNullOrBlank()
 
-typealias FhirR4Boolean = Boolean
+typealias FhirR4Boolean = com.google.fhir.model.r4.Boolean
 
-typealias FhirR4DateType = Date
+typealias FhirR4DateType = com.google.fhir.model.r4.Date
 
-typealias FhirR4Decimal = Decimal
+typealias FhirR4Decimal = com.google.fhir.model.r4.Decimal
 
-typealias FhirR4Integer = Integer
+typealias FhirR4Integer = com.google.fhir.model.r4.Integer
 
 typealias FhirR4String = com.google.fhir.model.r4.String

@@ -16,14 +16,13 @@
 
 package dev.ohs.fhir.datacapture.validation
 
-import com.google.fhir.model.r4.Questionnaire
-import com.google.fhir.model.r4.QuestionnaireResponse
-import com.google.fhir.model.r4.Resource
 import dev.ohs.fhir.datacapture.XFhirQueryResolver
 import dev.ohs.fhir.datacapture.enablement.EnablementEvaluator
 import dev.ohs.fhir.datacapture.extensions.packRepeatedGroups
 import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
-import kotlin.collections.get
+import com.google.fhir.model.r4.Questionnaire
+import com.google.fhir.model.r4.QuestionnaireResponse
+import com.google.fhir.model.r4.Resource
 
 object QuestionnaireResponseValidator {
 
@@ -61,10 +60,10 @@ object QuestionnaireResponseValidator {
     xFhirQueryResolver: XFhirQueryResolver? = null,
   ): Map<String, List<ValidationResult>> {
     require(
-      questionnaireResponse.questionnaire == null ||
-        questionnaire.url == questionnaireResponse.questionnaire,
+      questionnaireResponse.questionnaire?.value == null ||
+        questionnaire.url?.value == questionnaireResponse.questionnaire?.value,
     ) {
-      "Mismatching Questionnaire ${questionnaire.url} and QuestionnaireResponse (for Questionnaire ${questionnaireResponse.questionnaire})"
+      "Mismatching Questionnaire ${questionnaire.url?.value} and QuestionnaireResponse (for Questionnaire ${questionnaireResponse.questionnaire?.value})"
     }
 
     val enablementEvaluator =
@@ -147,7 +146,7 @@ object QuestionnaireResponseValidator {
     when {
       questionnaireItem.type.value == Questionnaire.QuestionnaireItemType.Display -> Unit
       (questionnaireItem.type.value == Questionnaire.QuestionnaireItemType.Group &&
-        questionnaireItem.repeats?.value == false) ->
+        questionnaireItem.repeats?.value != true) ->
         // Nested items under group
         // http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.item
         validateQuestionnaireResponseItems(
@@ -220,10 +219,10 @@ object QuestionnaireResponseValidator {
     questionnaireResponse: QuestionnaireResponse,
   ) {
     require(
-      questionnaireResponse.questionnaire == null ||
-        questionnaire.url == questionnaireResponse.questionnaire,
+      questionnaireResponse.questionnaire?.value == null ||
+        questionnaire.url?.value == questionnaireResponse.questionnaire?.value,
     ) {
-      "Mismatching Questionnaire ${questionnaire.url} and QuestionnaireResponse (for Questionnaire ${questionnaireResponse.questionnaire})"
+      "Mismatching Questionnaire ${questionnaire.url?.value} and QuestionnaireResponse (for Questionnaire ${questionnaireResponse.questionnaire?.value})"
     }
     checkQuestionnaireResponseItems(
       questionnaire.item,

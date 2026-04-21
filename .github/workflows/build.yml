@@ -71,10 +71,10 @@ jobs:
         run: ./gradlew spotlessCheck --scan --full-stacktrace
 
       - name: Build (full) with Gradle
-        run: ./gradlew build -x :datacapture:build --scan --full-stacktrace
+        run: ./gradlew build -Pcatalog.wasm.enabled=false -x :datacapture:build --scan --full-stacktrace
 
       - name: Check with Gradle
-        run: ./gradlew check -x :datacapture:check --scan --full-stacktrace
+        run: ./gradlew check -Pcatalog.wasm.enabled=false -x :datacapture:check --scan --full-stacktrace
 
       - name: Run tests for datacapture Kotlin Multiplatform desktop environment with X Virtual Framebuffer
         run: |

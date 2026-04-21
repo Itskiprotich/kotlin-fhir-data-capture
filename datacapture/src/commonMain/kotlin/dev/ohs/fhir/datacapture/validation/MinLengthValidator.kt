@@ -16,10 +16,9 @@
 
 package dev.ohs.fhir.datacapture.validation
 
-import com.google.fhir.model.r4.Extension
-import com.google.fhir.model.r4.Integer
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.min_length_validation_error_msg
+import com.google.fhir.model.r4.Extension
 import org.jetbrains.compose.resources.getString
 
 internal const val MIN_LENGTH_EXTENSION_URL = "http://hl7.org/fhir/StructureDefinition/minLength"
@@ -40,22 +39,15 @@ internal object MinLengthValidator :
   AnswerExtensionConstraintValidator(
     url = MIN_LENGTH_EXTENSION_URL,
     predicate = { constraintValue, answer ->
-      val minLengthValue = getMinLengthValue(constraintValue)
+      val minLengthValue = constraintValue.asInteger()?.value?.value
       answer.value != null &&
         minLengthValue != null &&
         (answer.value!!.asString()?.value?.value ?: "").length < minLengthValue
     },
-    messageGenerator = { constraintValue: Any ->
+    messageGenerator = { constraintValue: Extension.Value ->
       getString(
         Res.string.min_length_validation_error_msg,
-        getMinLengthValue(constraintValue).toString(),
+        constraintValue.asInteger()?.value?.value.toString(),
       )
     },
   )
-
-private fun getMinLengthValue(constraintValue: Any): Int? =
-  when (constraintValue) {
-    is Integer -> constraintValue.value
-    is Extension.Value.Integer -> constraintValue.asInteger()?.value?.value
-    else -> null
-  }

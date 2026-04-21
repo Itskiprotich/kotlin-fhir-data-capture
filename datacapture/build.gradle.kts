@@ -128,9 +128,6 @@ kotlin {
         implementation(libs.kotlin.test.junit)
         implementation(libs.kotlinx.coroutines.test)
         implementation(libs.truth)
-        /* implementation(project(":knowledge")) {
-          exclude(group = "com.google.android.fhir", module = "engine")
-        }*/
       }
     }
 

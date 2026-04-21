@@ -29,3 +29,5 @@ if (kokoroRun == true) {
 }
 
 include(":datacapture")
+
+include(":contrib:barcode", ":contrib:locationwidget", ":catalog")

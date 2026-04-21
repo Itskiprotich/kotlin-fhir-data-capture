@@ -16,6 +16,7 @@
 
 package dev.ohs.fhir.datacapture.validation
 
+import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
 import com.google.fhir.model.r4.Code
 import com.google.fhir.model.r4.Enumeration
 import com.google.fhir.model.r4.Extension
@@ -23,7 +24,6 @@ import com.google.fhir.model.r4.Questionnaire
 import com.google.fhir.model.r4.QuestionnaireResponse
 import com.google.fhir.model.r4.String as FhirString
 import com.google.fhir.model.r4.terminologies.PublicationStatus
-import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -59,7 +59,10 @@ class ConstraintItemExtensionValidatorTest {
         .build()
 
     val expressionEvaluator = ExpressionEvaluator(questionnaire, questionnaireResponse)
-    val validator = ConstraintItemExtensionValidator(expressionEvaluator)
+    val validator =
+      ConstraintItemExtensionValidator(
+        expressionEvaluator
+      )
 
     val results = validator.validate(questionnaireItem, questionnaireResponseItem)
 
@@ -115,7 +118,10 @@ class ConstraintItemExtensionValidatorTest {
         .build()
 
     val expressionEvaluator = ExpressionEvaluator(questionnaire, questionnaireResponse)
-    val validator = ConstraintItemExtensionValidator(expressionEvaluator)
+    val validator =
+      ConstraintItemExtensionValidator(
+        expressionEvaluator
+      )
 
     val results = validator.validate(questionnaireItem, questionnaireResponseItem)
 
@@ -172,7 +178,10 @@ class ConstraintItemExtensionValidatorTest {
         .build()
 
     val expressionEvaluator = ExpressionEvaluator(questionnaire, questionnaireResponse)
-    val validator = ConstraintItemExtensionValidator(expressionEvaluator)
+    val validator =
+      ConstraintItemExtensionValidator(
+        expressionEvaluator
+      )
 
     val results = validator.validate(questionnaireItem, questionnaireResponseItem)
 
