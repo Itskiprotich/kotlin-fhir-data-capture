@@ -51,7 +51,7 @@ kotlin {
   jvm("desktop")
 
   val isWasmEnabled = project.findProperty("catalog.wasm.enabled") == "true"
-  if (isWasmEnabled) {
+//  if (isWasmEnabled) {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
       browser {
@@ -65,7 +65,7 @@ kotlin {
       }
       binaries.executable()
     }
-  }
+//  }
 
   listOf(
       iosX64(),
@@ -80,12 +80,18 @@ kotlin {
     }
 
   sourceSets {
-    androidMain.dependencies {
-      implementation(libs.androidx.appcompat)
-      implementation(libs.androidx.core)
-      implementation(libs.material)
-      // TODO restore after these libraries are migrated to Kotlin Multiplatform
-      //      implementation(project(":engine"))
+    androidMain {
+      dependencies {
+        implementation(libs.androidx.appcompat)
+        implementation(libs.androidx.core)
+        implementation(libs.compass.geolocation.mobile)
+        implementation(libs.compass.permissions.mobile)
+        implementation(libs.material)
+        implementation(libs.moko.permissions.camera)
+        implementation(libs.moko.permissions.compose)
+        // TODO restore after these libraries are migrated to Kotlin Multiplatform
+        //      implementation(project(":engine"))
+      }
     }
     commonMain.dependencies {
       implementation(compose.runtime)
@@ -96,16 +102,27 @@ kotlin {
       implementation(compose.components.uiToolingPreview)
       implementation(libs.androidx.lifecycle.viewmodel.compose)
       implementation(libs.androidx.lifecycle.runtime.compose)
+      implementation(libs.compass.geolocation)
       implementation(libs.kermit)
-      implementation(libs.ohs.fhir.model)
       implementation(libs.kotlinx.serialization.json)
       implementation(libs.kotlinx.coroutines.core)
+      implementation(libs.kscan)
       implementation(libs.navigation.compose)
-      implementation(project(":contrib:barcode"))
-      implementation(project(":contrib:locationwidget"))
+      implementation(libs.ohs.fhir.model)
       implementation(project(":datacapture"))
     }
 
-    val desktopMain by getting { dependencies { implementation(compose.desktop.currentOs) } }
+    @Suppress("unused") val desktopMain by getting { dependencies { implementation(compose.desktop.currentOs) } }
+
+    iosMain {
+      dependencies {
+        implementation(libs.compass.geolocation.mobile)
+        implementation(libs.compass.permissions.mobile)
+        implementation(libs.moko.permissions.camera)
+        implementation(libs.moko.permissions.compose)
+      }
+    }
+
+    wasmJsMain { dependencies { implementation(libs.compass.geolocation.browser) } }
   }
 }

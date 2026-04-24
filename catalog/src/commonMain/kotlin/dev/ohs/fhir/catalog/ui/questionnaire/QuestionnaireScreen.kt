@@ -56,12 +56,12 @@ import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_skip_l
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_info_24
 import kotlin_fhir_data_capture.catalog.generated.resources.loading
 import dev.ohs.fhir.catalog.ui.questionnaire.components.ErrorStateToggleAction
+import dev.ohs.fhir.catalog.views.barcode.BarcodeItemViewFactoryMatcher
+import dev.ohs.fhir.catalog.views.locationwidget.LocationDataItemViewFactoryMatcher
+import dev.ohs.fhir.catalog.views.locationwidget.LocationItemViewFactoryMatcher
 import dev.ohs.fhir.datacapture.Questionnaire
 import dev.ohs.fhir.datacapture.QuestionnaireItemViewFactoryMatcher
 import dev.ohs.fhir.datacapture.QuestionnaireItemViewFactoryMatchersProvider
-import dev.ohs.fhir.datacapture.contrib.views.barcode.BarcodeItemViewFactoryMatcher
-import dev.ohs.fhir.datacapture.contrib.views.locationwidget.LocationDataItemViewFactoryMatcher
-import dev.ohs.fhir.datacapture.contrib.views.locationwidget.LocationItemViewFactoryMatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource

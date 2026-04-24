@@ -92,4 +92,8 @@
     <string name="validation_fix_questions">Fix questions</string>
     <string name="validation_submit_anyway">Submit anyway</string>
     <string name="loading">Loading...</string>
+    <string name="scan_barcode">SCAN BARCODE</string>
+    <string name="rescan">RE-SCAN</string>
+    <string name="record_gps_location">Record GPS Location</string>
+    <string name="required_text_and_new_line">Required\n</string>
 </resources>

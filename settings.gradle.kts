@@ -20,6 +20,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "kotlin-fhir-data-capture"
 
-include(":datacapture")
-
-include(":contrib:barcode", ":contrib:locationwidget", ":catalog")
+include(":datacapture", ":catalog")
