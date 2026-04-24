@@ -16,12 +16,12 @@
 
 package dev.ohs.fhir.datacapture.validation
 
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import dev.ohs.fhir.model.r4.Decimal
 import dev.ohs.fhir.model.r4.Extension
 import dev.ohs.fhir.model.r4.Integer
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -35,9 +35,7 @@ class MaxDecimalPlacesValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Decimal,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.Decimal),
         )
         .build()
     val answer =
@@ -45,7 +43,7 @@ class MaxDecimalPlacesValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.Decimal(
-              value = Decimal(value = "1.2345".toBigDecimal()),
+              value = Decimal(value = "1.2345".toBigDecimal())
             )
         }
         .build()
@@ -61,9 +59,7 @@ class MaxDecimalPlacesValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Decimal,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.Decimal),
         )
         .apply {
           extension =
@@ -72,7 +68,7 @@ class MaxDecimalPlacesValidatorTest {
                 .apply {
                   value =
                     Extension.Value.Integer(value = Integer.Builder().apply { value = 3 }.build())
-                },
+                }
             )
         }
         .build()
@@ -81,7 +77,7 @@ class MaxDecimalPlacesValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.Decimal(
-              value = Decimal(value = "1.23".toBigDecimal()),
+              value = Decimal(value = "1.23".toBigDecimal())
             )
         }
         .build()
@@ -97,9 +93,7 @@ class MaxDecimalPlacesValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Decimal,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.Decimal),
         )
         .apply {
           extension =
@@ -108,7 +102,7 @@ class MaxDecimalPlacesValidatorTest {
                 .apply {
                   value =
                     Extension.Value.Integer(value = Integer.Builder().apply { value = 3 }.build())
-                },
+                }
             )
         }
         .build()
@@ -117,7 +111,7 @@ class MaxDecimalPlacesValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.Decimal(
-              value = Decimal(value = "1.234".toBigDecimal()),
+              value = Decimal(value = "1.234".toBigDecimal())
             )
         }
         .build()
@@ -133,9 +127,7 @@ class MaxDecimalPlacesValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Decimal,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.Decimal),
         )
         .apply {
           extension =
@@ -144,7 +136,7 @@ class MaxDecimalPlacesValidatorTest {
                 .apply {
                   value =
                     Extension.Value.Integer(value = Integer.Builder().apply { value = 3 }.build())
-                },
+                }
             )
         }
         .build()
@@ -153,7 +145,7 @@ class MaxDecimalPlacesValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.Decimal(
-              value = Decimal(value = "1.2345".toBigDecimal()),
+              value = Decimal(value = "1.2345".toBigDecimal())
             )
         }
         .build()

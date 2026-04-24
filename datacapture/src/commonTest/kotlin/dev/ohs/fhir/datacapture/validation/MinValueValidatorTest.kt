@@ -33,18 +33,13 @@ class MinValueValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .build()
     val answer =
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
-          value =
-            QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = Integer(value = 10),
-            )
+          value = QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 10))
         }
         .build()
 
@@ -59,9 +54,7 @@ class MinValueValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .apply {
           extension =
@@ -69,17 +62,14 @@ class MinValueValidatorTest {
               Extension.Builder(url = MIN_VALUE_EXTENSION_URL).apply {
                 value =
                   Extension.Value.Integer(value = Integer.Builder().apply { value = 5 }.build())
-              },
+              }
             )
         }
         .build()
     val answer =
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
-          value =
-            QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = Integer(value = 10),
-            )
+          value = QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 10))
         }
         .build()
 
@@ -94,9 +84,7 @@ class MinValueValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .apply {
           extension =
@@ -104,17 +92,14 @@ class MinValueValidatorTest {
               Extension.Builder(url = MIN_VALUE_EXTENSION_URL).apply {
                 value =
                   Extension.Value.Integer(value = Integer.Builder().apply { value = 5 }.build())
-              },
+              }
             )
         }
         .build()
     val answer =
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
-          value =
-            QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = Integer(value = 5),
-            )
+          value = QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 5))
         }
         .build()
 
@@ -129,9 +114,7 @@ class MinValueValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .apply {
           extension =
@@ -139,17 +122,14 @@ class MinValueValidatorTest {
               Extension.Builder(url = MIN_VALUE_EXTENSION_URL).apply {
                 value =
                   Extension.Value.Integer(value = Integer.Builder().apply { value = 5 }.build())
-              },
+              }
             )
         }
         .build()
     val answer =
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
-          value =
-            QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = Integer(value = 3),
-            )
+          value = QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 3))
         }
         .build()
 

@@ -37,10 +37,7 @@ import platform.Foundation.NSDateFormatterShortStyle
 @OptIn(ExperimentalTime::class)
 object IosLocalDateTimeFormatter : LocalDateTimeFormatter {
 
-  override fun parseStringToLocalDate(
-    str: String,
-    pattern: String,
-  ): LocalDate {
+  override fun parseStringToLocalDate(str: String, pattern: String): LocalDate {
     val nsDateFormatter = NSDateFormatter()
     nsDateFormatter.dateFormat = pattern
     val localDate =
@@ -56,7 +53,7 @@ object IosLocalDateTimeFormatter : LocalDateTimeFormatter {
       nsDateFormatter.dateStyle = NSDateFormatterShortStyle
     }
     return nsDateFormatter.stringFromDate(
-      localDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toNSDate(),
+      localDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toNSDate()
     )
   }
 
@@ -90,6 +87,6 @@ object IosLocalDateTimeFormatter : LocalDateTimeFormatter {
 }
 
 @Composable
-actual fun getLocalDateTimeFormatter(): LocalDateTimeFormatter {
-  return remember { IosLocalDateTimeFormatter }
+actual fun getLocalDateTimeFormatter(): LocalDateTimeFormatter = remember {
+  IosLocalDateTimeFormatter
 }

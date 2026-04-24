@@ -23,10 +23,8 @@ import dev.ohs.fhir.model.r4.Quantity
 internal const val EXT_TRANSLATION = "http://hl7.org/fhir/StructureDefinition/translation"
 
 internal fun dev.ohs.fhir.model.r4.String.getLocalizedText(
-  lang: String = Locale.current.toLanguageTag(),
-): String? {
-  return getTranslation(lang) ?: getTranslation(lang.split("-").firstOrNull()) ?: value
-}
+  lang: String = Locale.current.toLanguageTag()
+): String? = getTranslation(lang) ?: getTranslation(lang.split("-").firstOrNull()) ?: value
 
 internal fun dev.ohs.fhir.model.r4.String.getTranslation(l: String?): String? {
   for (e in extension) {

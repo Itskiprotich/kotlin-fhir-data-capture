@@ -48,8 +48,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import dev.ohs.fhir.model.r4.Attachment
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.MediaCaptureResult
 import dev.ohs.fhir.datacapture.MediaHandler
 import dev.ohs.fhir.datacapture.extensions.MimeType
@@ -85,6 +83,8 @@ import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.ErrorText
 import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.components.MediaItem
+import dev.ohs.fhir.model.r4.Attachment
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
@@ -138,10 +138,14 @@ internal object AttachmentViewFactory : QuestionnaireItemViewFactory {
       remember(questionnaireItem) {
         when {
           questionnaireItem.hasMimeTypeOnly(MimeType.AUDIO.value) -> Res.drawable.ic_audio_file
+
           questionnaireItem.hasMimeTypeOnly(MimeType.DOCUMENT.value) ->
             Res.drawable.ic_document_file
+
           questionnaireItem.hasMimeTypeOnly(MimeType.IMAGE.value) -> Res.drawable.ic_image_file
+
           questionnaireItem.hasMimeTypeOnly(MimeType.VIDEO.value) -> Res.drawable.ic_video_file
+
           else -> Res.drawable.ic_file
         }
       }
@@ -154,7 +158,7 @@ internal object AttachmentViewFactory : QuestionnaireItemViewFactory {
         Modifier.padding(
           horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
           vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-        ),
+        )
     ) {
       Header(questionnaireViewItem, showRequiredOrOptionalText = true)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }
@@ -178,7 +182,7 @@ internal object AttachmentViewFactory : QuestionnaireItemViewFactory {
 
               val answer =
                 QuestionnaireResponse.Item.Answer(
-                  value = QuestionnaireResponse.Item.Answer.Value.Attachment(value = attachment),
+                  value = QuestionnaireResponse.Item.Answer.Value.Attachment(value = attachment)
                 )
               questionnaireViewItem.setAnswer(answer)
 
@@ -201,7 +205,7 @@ internal object AttachmentViewFactory : QuestionnaireItemViewFactory {
 
             val answer =
               QuestionnaireResponse.Item.Answer(
-                value = QuestionnaireResponse.Item.Answer.Value.Attachment(value = it),
+                value = QuestionnaireResponse.Item.Answer.Value.Attachment(value = it)
               )
             questionnaireViewItem.setAnswer(answer)
 
@@ -211,23 +215,17 @@ internal object AttachmentViewFactory : QuestionnaireItemViewFactory {
       }
 
       if (displayUploadedText) {
-        Spacer(
-          modifier = Modifier.height(QuestionnaireTheme.dimensions.attachmentDividerMarginTop),
-        )
+        Spacer(modifier = Modifier.height(QuestionnaireTheme.dimensions.attachmentDividerMarginTop))
         HorizontalDivider()
         Spacer(
-          modifier =
-            Modifier.height(QuestionnaireTheme.dimensions.attachmentUploadedLabelMarginTop),
+          modifier = Modifier.height(QuestionnaireTheme.dimensions.attachmentUploadedLabelMarginTop)
         )
         Text(stringResource(Res.string.uploaded), style = QuestionnaireTheme.typography.titleSmall)
       }
 
       currentAttachment?.let {
         Spacer(modifier = Modifier.height(8.dp))
-        AttachmentPreview(
-          it,
-          deleteEnabled = !readOnly,
-        ) {
+        AttachmentPreview(it, deleteEnabled = !readOnly) {
           currentAttachment = null
           displayUploadedText = false
           coroutineScope.launch { questionnaireViewItem.clearAnswer() }
@@ -235,7 +233,7 @@ internal object AttachmentViewFactory : QuestionnaireItemViewFactory {
 
         Spacer(
           modifier =
-            Modifier.height(QuestionnaireTheme.dimensions.attachmentPreviewDividerMarginTop),
+            Modifier.height(QuestionnaireTheme.dimensions.attachmentPreviewDividerMarginTop)
         )
         HorizontalDivider()
       }
@@ -326,7 +324,7 @@ private fun UploadFileButton(
     )
     Spacer(modifier = Modifier.width(BUTTON_ICON_SPACING.dp))
     Text(
-      if (isLoading) stringResource(Res.string.loading) else stringResource(uploadButtonTextResId),
+      if (isLoading) stringResource(Res.string.loading) else stringResource(uploadButtonTextResId)
     )
   }
 }
@@ -361,16 +359,13 @@ private fun AttachmentPreview(
               bitmap = it,
               contentDescription = stringResource(Res.string.cd_photo_preview),
               modifier =
-                Modifier.size(
-                    QuestionnaireTheme.dimensions.attachmentPreviewPhotoWidth,
-                  )
-                  .clip(
-                    RoundedCornerShape(8.dp),
-                  ),
+                Modifier.size(QuestionnaireTheme.dimensions.attachmentPreviewPhotoWidth)
+                  .clip(RoundedCornerShape(8.dp)),
               contentScale = ContentScale.Crop,
             )
           }
         }
+
         else -> {
           val iconRes =
             remember(mimeType) {
@@ -409,10 +404,7 @@ private fun AttachmentPreview(
       )
     }
 
-    OutlinedButton(
-      onClick = { onDeleteClick.invoke() },
-      enabled = deleteEnabled,
-    ) {
+    OutlinedButton(onClick = { onDeleteClick.invoke() }, enabled = deleteEnabled) {
       Icon(
         painter = painterResource(Res.drawable.ic_delete),
         tint = QuestionnaireTheme.colorScheme.error,

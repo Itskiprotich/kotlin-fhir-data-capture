@@ -36,8 +36,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.error as SemanticsError
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.datacapture.extensions.ItemControlTypes
 import dev.ohs.fhir.datacapture.extensions.itemControl
@@ -58,6 +56,8 @@ import dev.ohs.fhir.datacapture.views.components.OptionSelectOption
 import dev.ohs.fhir.datacapture.views.components.SelectedOptions
 import dev.ohs.fhir.datacapture.views.components.getRequiredOrOptionalText
 import dev.ohs.fhir.datacapture.views.isAnswerOptionSelected
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -83,7 +83,8 @@ internal object DialogSelectViewFactory : QuestionnaireItemViewFactory {
       remember(questionnaireViewItem.validationResult) {
         when (val validationResult = questionnaireViewItem.validationResult) {
           is NotValidated,
-          Valid, -> null
+          Valid -> null
+
           is Invalid -> {
             if (
               questionnaireViewItem.questionnaireItem.required?.value == true &&
@@ -131,11 +132,9 @@ internal object DialogSelectViewFactory : QuestionnaireItemViewFactory {
           .padding(
             horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
             vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-          ),
+          )
     ) {
-      Header(
-        questionnaireViewItem,
-      )
+      Header(questionnaireViewItem)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }
 
       var expanded by remember { mutableStateOf(false) }
@@ -179,8 +178,8 @@ internal object DialogSelectViewFactory : QuestionnaireItemViewFactory {
                     QuestionnaireResponse.Item.Answer(
                       value =
                         QuestionnaireResponse.Item.Answer.Value.String(
-                          value = FhirR4String(value = it),
-                        ),
+                          value = FhirR4String(value = it)
+                        )
                     )
                   }
 
@@ -199,10 +198,7 @@ internal object DialogSelectViewFactory : QuestionnaireItemViewFactory {
 private fun QuestionnaireViewItem.extractInitialOptions(): SelectedOptions {
   val options =
     enabledAnswerOptions.map { answerOption ->
-      OptionSelectOption(
-        item = answerOption,
-        selected = isAnswerOptionSelected(answerOption),
-      )
+      OptionSelectOption(item = answerOption, selected = isAnswerOptionSelected(answerOption))
     }
 
   val optionsStringValues =
@@ -216,8 +212,5 @@ private fun QuestionnaireViewItem.extractInitialOptions(): SelectedOptions {
       // We should also make sure that these values aren't present in the predefined options
       .filter { value -> value !in optionsStringValues }
 
-  return SelectedOptions(
-    options = options,
-    otherOptions = otherOptions,
-  )
+  return SelectedOptions(options = options, otherOptions = otherOptions)
 }

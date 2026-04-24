@@ -16,6 +16,9 @@
 
 package dev.ohs.fhir.datacapture.enablement
 
+import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
+import dev.ohs.fhir.datacapture.extensions.FhirR4Decimal
+import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.model.r4.Attachment
 import dev.ohs.fhir.model.r4.Coding
 import dev.ohs.fhir.model.r4.Date
@@ -28,17 +31,12 @@ import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.Reference
 import dev.ohs.fhir.model.r4.Time
 import dev.ohs.fhir.model.r4.Uri
-import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
-import dev.ohs.fhir.datacapture.extensions.FhirR4Decimal
-import dev.ohs.fhir.datacapture.extensions.FhirR4String
 
 /**
  * Compares a [QuestionnaireResponse.Item.Answer.Value] with [Any] value for equality check. Returns
  * false if both values are null.
  */
-infix fun QuestionnaireResponse.Item.Answer.Value?.equalsFhirValue(
-  other: Any?,
-): Boolean {
+infix fun QuestionnaireResponse.Item.Answer.Value?.equalsFhirValue(other: Any?): Boolean {
   if (this == other) return true
   if (this == null || other == null) return false
 
@@ -67,28 +65,39 @@ infix fun QuestionnaireResponse.Item.Answer.Value?.equalsFhirValue(
   return when (this) {
     is QuestionnaireResponse.Item.Answer.Value.Boolean ->
       otherValue is FhirR4Boolean && this.value.value == otherValue.value
+
     is QuestionnaireResponse.Item.Answer.Value.Decimal ->
       otherValue is FhirR4Decimal && this.value.value == otherValue.value
+
     is QuestionnaireResponse.Item.Answer.Value.Integer ->
       otherValue is Integer && this.value.value == otherValue.value
+
     is QuestionnaireResponse.Item.Answer.Value.Date ->
       otherValue is Date && this.value.value == otherValue.value
+
     is QuestionnaireResponse.Item.Answer.Value.DateTime ->
       otherValue is DateTime && this.value.value == otherValue.value
+
     is QuestionnaireResponse.Item.Answer.Value.Time ->
       otherValue is Time && this.value.value == otherValue.value
+
     is QuestionnaireResponse.Item.Answer.Value.String ->
       otherValue is FhirR4String && this.value.value == otherValue.value
+
     is QuestionnaireResponse.Item.Answer.Value.Coding ->
       otherValue is Coding &&
         this.value.system?.value == otherValue.system?.value &&
         this.value.code?.value == otherValue.code?.value
+
     is QuestionnaireResponse.Item.Answer.Value.Quantity ->
       otherValue is Quantity && this.value.value?.value == otherValue.value?.value
+
     is QuestionnaireResponse.Item.Answer.Value.Uri ->
       otherValue is Uri && this.value.value == otherValue.value
+
     is QuestionnaireResponse.Item.Answer.Value.Attachment ->
       otherValue is Attachment && this.value == otherValue
+
     is QuestionnaireResponse.Item.Answer.Value.Reference ->
       otherValue is Reference && this.value.reference?.value == otherValue.reference?.value
   }
@@ -98,9 +107,7 @@ infix fun QuestionnaireResponse.Item.Answer.Value?.equalsFhirValue(
  * Compares a [QuestionnaireResponse.Item.Answer.Value] with [Any] value for ordering. Returns
  * negative if this < other, 0 if equal, positive if this > other.
  */
-infix fun QuestionnaireResponse.Item.Answer.Value?.compareFhirValue(
-  other: Any?,
-): Int {
+infix fun QuestionnaireResponse.Item.Answer.Value?.compareFhirValue(other: Any?): Int {
   if (this == other) return 0
 
   val otherValue =
@@ -130,16 +137,18 @@ infix fun QuestionnaireResponse.Item.Answer.Value?.compareFhirValue(
       val otherVal = otherValue.value!!
       thisVal.compareTo(otherVal)
     }
+
     is QuestionnaireResponse.Item.Answer.Value.Integer -> {
       if (otherValue !is Integer) {
         throw IllegalStateException(
-          "The other value is not of type integer. Actual type: ${otherValue::class}",
+          "The other value is not of type integer. Actual type: ${otherValue::class}"
         )
       }
       val thisVal = this.value.value!!
       val otherVal = otherValue.value!!
       thisVal.compareTo(otherVal)
     }
+
     is QuestionnaireResponse.Item.Answer.Value.Date -> {
       if (otherValue !is Date) {
         throw IllegalStateException("The other value is not of type date")
@@ -148,6 +157,7 @@ infix fun QuestionnaireResponse.Item.Answer.Value?.compareFhirValue(
       val otherVal = otherValue.value!!.toString()
       thisVal.compareTo(otherVal)
     }
+
     is QuestionnaireResponse.Item.Answer.Value.DateTime -> {
       if (otherValue !is DateTime) {
         throw IllegalStateException("The other value is not of type datetime")
@@ -156,6 +166,7 @@ infix fun QuestionnaireResponse.Item.Answer.Value?.compareFhirValue(
       val otherVal = otherValue.value!!.toString()
       thisVal.compareTo(otherVal)
     }
+
     is QuestionnaireResponse.Item.Answer.Value.Time -> {
       if (otherValue !is Time) {
         throw IllegalStateException("The other value is not of type time")
@@ -164,6 +175,7 @@ infix fun QuestionnaireResponse.Item.Answer.Value?.compareFhirValue(
       val otherVal = otherValue.value!!
       thisVal.compareTo(otherVal)
     }
+
     is QuestionnaireResponse.Item.Answer.Value.String -> {
       if (otherValue !is FhirR4String) {
         throw IllegalStateException("The other value is not of type string")
@@ -172,6 +184,7 @@ infix fun QuestionnaireResponse.Item.Answer.Value?.compareFhirValue(
       val otherVal = otherValue.value!!
       thisVal.compareTo(otherVal)
     }
+
     is QuestionnaireResponse.Item.Answer.Value.Quantity -> {
       if (otherValue !is Quantity) {
         throw IllegalStateException("The other value is not of type quantity")
@@ -180,6 +193,7 @@ infix fun QuestionnaireResponse.Item.Answer.Value?.compareFhirValue(
       val otherVal = otherValue.value!!.value!!
       thisVal.compareTo(otherVal)
     }
+
     else -> throw IllegalStateException("Comparison not supported for type :$this")
   }
 }

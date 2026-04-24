@@ -123,10 +123,7 @@ internal fun TimeFieldItem(
           keyboardType = KeyboardType.Number,
           imeAction = ImeAction.Done,
         ),
-      keyboardActions =
-        KeyboardActions(
-          onNext = { focusManager.moveFocus(FocusDirection.Down) },
-        ),
+      keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
     )
 
     if (expanded) {
@@ -135,8 +132,7 @@ internal fun TimeFieldItem(
         initialSelectedHour = initialStartTime.hour,
         initialSelectedMinute = initialStartTime.minute,
         onDismiss = { expanded = false },
-      ) { hour, min,
-        ->
+      ) { hour, min ->
         val localTime = LocalTime(hour, min)
         selectedTimeTextDisplay = localDateTimeFormatter.localizedTimeString(localTime)
         onTimeChanged(localTime)

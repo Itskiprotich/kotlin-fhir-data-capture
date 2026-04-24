@@ -142,9 +142,7 @@ internal fun Header(
   showRequiredOrOptionalText: Boolean,
   requiredOptionalText: String?,
 ) {
-  Column(
-    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp).testTag(HEADER_TAG),
-  ) {
+  Column(modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp).testTag(HEADER_TAG)) {
     PrefixQuestionTitle(prefixLocalizedText, questionLocalizedText, readCustomStyleName)
 
     if (!hintLocalizedText.isNullOrBlank() || isHelpButtonVisible || isHelpCardOpen) {
@@ -253,12 +251,7 @@ internal fun Help(
       Column {
         Text(
           text = stringResource(Res.string.help),
-          modifier =
-            Modifier.padding(horizontal = 16.dp)
-              .padding(
-                top = 16.dp,
-                bottom = 4.dp,
-              ),
+          modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 4.dp),
           style = QuestionnaireTheme.typography.titleSmall,
         )
 

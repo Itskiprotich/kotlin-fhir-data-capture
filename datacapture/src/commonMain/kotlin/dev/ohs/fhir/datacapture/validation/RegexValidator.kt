@@ -17,10 +17,10 @@
 package dev.ohs.fhir.datacapture.validation
 
 import co.touchlab.kermit.Logger
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.regex_validation_error_msg
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import org.jetbrains.compose.resources.getString
 
 internal const val REGEX_EXTENSION_URL = "http://hl7.org/fhir/StructureDefinition/regex"

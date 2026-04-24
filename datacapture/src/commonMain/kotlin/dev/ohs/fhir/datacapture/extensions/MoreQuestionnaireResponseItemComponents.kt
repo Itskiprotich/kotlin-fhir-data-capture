@@ -26,7 +26,7 @@ val QuestionnaireResponse.Item.descendant: List<QuestionnaireResponse.Item>
   get() = mutableListOf<QuestionnaireResponse.Item>().also { appendDescendantTo(it) }
 
 private fun QuestionnaireResponse.Item.appendDescendantTo(
-  output: MutableList<QuestionnaireResponse.Item>,
+  output: MutableList<QuestionnaireResponse.Item>
 ) {
   output.add(this)
   item.forEach { it.appendDescendantTo(output) }
@@ -48,7 +48,7 @@ private fun QuestionnaireResponse.Item.appendDescendantTo(
  * See https://www.hl7.org/fhir/questionnaireresponse.html#notes for more details.
  */
 internal fun QuestionnaireResponse.Item.Builder.copyNestedItemsToChildlessAnswers(
-  questionnaireItem: Questionnaire.Item,
+  questionnaireItem: Questionnaire.Item
 ) {
   answer
     .filter { it.item.isEmpty() }

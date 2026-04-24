@@ -16,6 +16,7 @@
 
 package dev.ohs.fhir.datacapture.enablement
 
+import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import dev.ohs.fhir.model.r4.Attachment
 import dev.ohs.fhir.model.r4.Boolean
 import dev.ohs.fhir.model.r4.Code
@@ -34,7 +35,6 @@ import dev.ohs.fhir.model.r4.String
 import dev.ohs.fhir.model.r4.Time
 import dev.ohs.fhir.model.r4.Uri
 import dev.ohs.fhir.model.r4.terminologies.PublicationStatus
-import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -62,7 +62,7 @@ class EnablementEvaluatorTest {
                     Questionnaire.Item.EnableWhen.Answer.Boolean(value = Boolean(value = false)),
                   operator = Enumeration(value = Questionnaire.QuestionnaireItemOperator.Exists),
                 )
-                .apply {},
+                .apply {}
             )
         }
     val questionnaireBuilder =
@@ -73,15 +73,12 @@ class EnablementEvaluatorTest {
       QuestionnaireResponse.Item.Builder(linkId = String.Builder().apply { value = "q1" })
     val questionnaireResponseBuilder =
       QuestionnaireResponse.Builder(
-          status = Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.Completed),
+          status = Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.Completed)
         )
         .apply { item = mutableListOf(questionnaireResponseItemBuilder) }
 
     val result =
-      EnablementEvaluator(
-          questionnaireBuilder.build(),
-          questionnaireResponseBuilder.build(),
-        )
+      EnablementEvaluator(questionnaireBuilder.build(), questionnaireResponseBuilder.build())
         .evaluate(questionnaireItemBuilder.build(), questionnaireResponseItemBuilder.build())
     assertFalse(result)
   }
@@ -96,7 +93,7 @@ class EnablementEvaluatorTest {
           expected = Boolean.Builder().apply { value = true }.build(),
           actual = listOf(Integer.Builder().apply { value = 123 }.build()),
         ),
-      ),
+      )
     )
   }
 
@@ -110,7 +107,7 @@ class EnablementEvaluatorTest {
           expected = Boolean.Builder().apply { value = true }.build(),
           actual = listOf(),
         ),
-      ),
+      )
     )
   }
 
@@ -124,7 +121,7 @@ class EnablementEvaluatorTest {
           expected = Boolean.Builder().apply { value = false }.build(),
           actual = listOf(Integer.Builder().apply { value = 123 }.build()),
         ),
-      ),
+      )
     )
   }
 
@@ -132,35 +129,35 @@ class EnablementEvaluatorTest {
   fun evaluate_ShouldEvaluateEnableWhenExpression() = runTest {
     val questionnaireJson =
       """
-        {
-          "resourceType": "Questionnaire",
-          "status": "active",
-          "item": [
-            {
-              "linkId": "1",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
-              "type": "choice",
-              "text": "Gender"
-            },
-            {
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-                  "valueExpression": {
-                    "language": "text/fhirpath",
-                    "expression": "%resource.repeat(item).where(linkId='1').answer.value.code ='female'"
-                  }
+      {
+        "resourceType": "Questionnaire",
+        "status": "active",
+        "item": [
+          {
+            "linkId": "1",
+            "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+            "type": "choice",
+            "text": "Gender"
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "%resource.repeat(item).where(linkId='1').answer.value.code ='female'"
                 }
-              ],
-              "linkId" : "2",
-              "text": "Have you had mammogram before?(enableWhenExpression = only when gender is female)",
-              "type": "choice",
-              "answerValueSet": "http://hl7.org/fhir/ValueSet/yesnodontknow"
-            }
-          ]
-        }
+              }
+            ],
+            "linkId" : "2",
+            "text": "Have you had mammogram before?(enableWhenExpression = only when gender is female)",
+            "type": "choice",
+            "answerValueSet": "http://hl7.org/fhir/ValueSet/yesnodontknow"
+          }
+        ]
+      }
 
-            """
+      """
         .trimIndent()
 
     val questionnaireResponseJson =
@@ -186,7 +183,7 @@ class EnablementEvaluatorTest {
               }
           ]
       }
-            """
+      """
         .trimIndent()
 
     val questionnaire = json.decodeFromString(questionnaireJson) as Questionnaire
@@ -199,14 +196,8 @@ class EnablementEvaluatorTest {
 
     assertNotNull(questionnaireItem)
     assertTrue(
-      EnablementEvaluator(
-          questionnaire,
-          questionnaireResponse,
-        )
-        .evaluate(
-          questionnaireItem,
-          questionnaireResponse.item[1],
-        ),
+      EnablementEvaluator(questionnaire, questionnaireResponse)
+        .evaluate(questionnaireItem, questionnaireResponse.item[1])
     )
   }
 
@@ -214,35 +205,35 @@ class EnablementEvaluatorTest {
   fun evaluateShouldEvaluateFalseEnableWhenExpression() = runTest {
     val questionnaireJson =
       """
-        {
-          "resourceType": "Questionnaire",
-          "status": "active",
-          "item": [
-            {
-              "linkId": "1",
-              "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
-              "type": "choice",
-              "text": "Gender"
-            },
-            {
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-                  "valueExpression": {
-                    "language": "text/fhirpath",
-                    "expression": "%resource.repeat(item).where(linkId='1').answer.value.code ='female'"
-                  }
+      {
+        "resourceType": "Questionnaire",
+        "status": "active",
+        "item": [
+          {
+            "linkId": "1",
+            "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+            "type": "choice",
+            "text": "Gender"
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "%resource.repeat(item).where(linkId='1').answer.value.code ='female'"
                 }
-              ],
-              "linkId" : "2",
-              "text": "Have you had mammogram before?(enableWhenExpression = only when gender is female)",
-              "type": "choice",
-              "answerValueSet": "http://hl7.org/fhir/ValueSet/yesnodontknow"
-            }
-          ]
-        }
+              }
+            ],
+            "linkId" : "2",
+            "text": "Have you had mammogram before?(enableWhenExpression = only when gender is female)",
+            "type": "choice",
+            "answerValueSet": "http://hl7.org/fhir/ValueSet/yesnodontknow"
+          }
+        ]
+      }
 
-            """
+      """
         .trimIndent()
 
     val questionnaireResponseJson =
@@ -268,7 +259,7 @@ class EnablementEvaluatorTest {
               }
           ]
       }
-            """
+      """
         .trimIndent()
 
     val questionnaire = json.decodeFromString(questionnaireJson) as Questionnaire
@@ -278,14 +269,8 @@ class EnablementEvaluatorTest {
       json.decodeFromString(questionnaireResponseJson) as QuestionnaireResponse
     assertNotNull(questionnaireItemComponent)
     assertFalse(
-      EnablementEvaluator(
-          questionnaire,
-          questionnaireResponse,
-        )
-        .evaluate(
-          questionnaireItemComponent,
-          questionnaireResponse.item[1],
-        ),
+      EnablementEvaluator(questionnaire, questionnaireResponse)
+        .evaluate(questionnaireItemComponent, questionnaireResponse.item[1])
     )
   }
 
@@ -293,60 +278,60 @@ class EnablementEvaluatorTest {
   fun evaluate_ShouldEvaluateEnableWhenExpressionWithContextFhirpathSupplementLiteral() = runTest {
     val questionnaireJson =
       """
-    {
-      "resourceType": "Questionnaire",
-      "status": "active",
-      "item": [
-        {
-          "linkId": "1",
-          "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
-          "type": "choice",
-          "text": "Gender"
-        },
-        {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.repeat(item).where(linkId='1').answer.value.code = %context.linkId"
+      {
+        "resourceType": "Questionnaire",
+        "status": "active",
+        "item": [
+          {
+            "linkId": "1",
+            "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.gender",
+            "type": "choice",
+            "text": "Gender"
+          },
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "%resource.repeat(item).where(linkId='1').answer.value.code = %context.linkId"
+                }
               }
-            }
-          ],
-          "linkId" : "female",
-          "text": "Have you had mammogram before?(enableWhenExpression = only when gender is female)",
-          "type": "choice",
-          "answerValueSet": "http://hl7.org/fhir/ValueSet/yesnodontknow"
-        }
-      ]
-    }
-                """
+            ],
+            "linkId" : "female",
+            "text": "Have you had mammogram before?(enableWhenExpression = only when gender is female)",
+            "type": "choice",
+            "answerValueSet": "http://hl7.org/fhir/ValueSet/yesnodontknow"
+          }
+        ]
+      }
+      """
         .trimIndent()
 
     val questionnaireResponseJson =
       """
-    {
-      "resourceType": "QuestionnaireResponse",
-      "status": "completed",
-      "item": [
-        {
-          "linkId": "1",
-          "answer": [
-            {
-              "valueCoding": {
-                "system": "http://hl7.org/fhir/administrative-gender",
-                "code": "female",
-                "display": "Female"
+      {
+        "resourceType": "QuestionnaireResponse",
+        "status": "completed",
+        "item": [
+          {
+            "linkId": "1",
+            "answer": [
+              {
+                "valueCoding": {
+                  "system": "http://hl7.org/fhir/administrative-gender",
+                  "code": "female",
+                  "display": "Female"
+                }
               }
-            }
-          ]
-        },
-        {
-          "linkId": "female"
-        }
-      ]
-    }
-                """
+            ]
+          },
+          {
+            "linkId": "female"
+          }
+        ]
+      }
+      """
         .trimIndent()
 
     val questionnaire = json.decodeFromString(questionnaireJson) as Questionnaire
@@ -358,14 +343,8 @@ class EnablementEvaluatorTest {
       json.decodeFromString(questionnaireResponseJson) as QuestionnaireResponse
 
     assertTrue(
-      EnablementEvaluator(
-          questionnaire,
-          questionnaireResponse,
-        )
-        .evaluate(
-          questionnaireItem,
-          questionnaireResponse.item[1],
-        ),
+      EnablementEvaluator(questionnaire, questionnaireResponse)
+        .evaluate(questionnaireItem, questionnaireResponse.item[1])
     )
   }
 
@@ -373,75 +352,7 @@ class EnablementEvaluatorTest {
   fun evaluate_ShouldEvaluateEnableWhenExpressionWithQuestionnaireFhirpathSupplement() = runTest {
     val questionnaireJson =
       """
-    {
-      "resourceType": "Questionnaire",
-      "subjectType": [ "Practitioner" ],
-      "status": "active",
-      "item": [
-        {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%questionnaire.subjectType='Practitioner'"
-              }
-            }
-          ],
-          "linkId" : "contribution",
-          "text": "Contribution",
-          "type": "choice",
-          "answerValueSet": "http://hl7.org/fhir/ValueSet/yesnodontknow"
-        }
-      ]
-    }
-                """
-        .trimIndent()
-
-    val questionnaireResponseJson =
-      """
-    {
-      "resourceType": "QuestionnaireResponse",
-      "status": "completed",
-      "item": [
-        {
-          "linkId": "contribution",
-          "answer": [
-            {
-              "valueCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ]
-        }
-      ]
-    }
-                """
-        .trimIndent()
-
-    val questionnaire = json.decodeFromString(questionnaireJson) as Questionnaire
-
-    val questionnaireResponse =
-      json.decodeFromString(questionnaireResponseJson) as QuestionnaireResponse
-
-    assertTrue(
-      EnablementEvaluator(
-          questionnaire,
-          questionnaireResponse,
-        )
-        .evaluate(
-          questionnaire.item[0],
-          questionnaireResponse.item[0],
-        ),
-    )
-  }
-
-  @Test
-  fun evaluate_shouldEvaluateEnableWhenExpressionWithQItemFhirpathSupplement() = runTest {
-    val questionnaireJson =
-      """
-    {
+      {
         "resourceType": "Questionnaire",
         "subjectType": [ "Practitioner" ],
         "status": "active",
@@ -452,7 +363,7 @@ class EnablementEvaluatorTest {
                 "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
                 "valueExpression": {
                   "language": "text/fhirpath",
-                  "expression": "%qItem.text = 'Contribution'"
+                  "expression": "%questionnaire.subjectType='Practitioner'"
                 }
               }
             ],
@@ -462,30 +373,30 @@ class EnablementEvaluatorTest {
             "answerValueSet": "http://hl7.org/fhir/ValueSet/yesnodontknow"
           }
         ]
-    }
-                """
+      }
+      """
         .trimIndent()
 
     val questionnaireResponseJson =
       """
-    {
-      "resourceType": "QuestionnaireResponse",
-      "status": "completed",
-      "item": [
-        {
-          "linkId": "contribution",
-          "answer": [
-            {
-              "valueCoding": {
-                "code": "yes",
-                "display": "Yes"
+      {
+        "resourceType": "QuestionnaireResponse",
+        "status": "completed",
+        "item": [
+          {
+            "linkId": "contribution",
+            "answer": [
+              {
+                "valueCoding": {
+                  "code": "yes",
+                  "display": "Yes"
+                }
               }
-            }
-          ]
-        }
-      ]
-    }
-                """
+            ]
+          }
+        ]
+      }
+      """
         .trimIndent()
 
     val questionnaire = json.decodeFromString(questionnaireJson) as Questionnaire
@@ -494,14 +405,70 @@ class EnablementEvaluatorTest {
       json.decodeFromString(questionnaireResponseJson) as QuestionnaireResponse
 
     assertTrue(
-      EnablementEvaluator(
-          questionnaire,
-          questionnaireResponse,
-        )
-        .evaluate(
-          questionnaire.item[0],
-          questionnaireResponse.item[0],
-        ),
+      EnablementEvaluator(questionnaire, questionnaireResponse)
+        .evaluate(questionnaire.item[0], questionnaireResponse.item[0])
+    )
+  }
+
+  @Test
+  fun evaluate_shouldEvaluateEnableWhenExpressionWithQItemFhirpathSupplement() = runTest {
+    val questionnaireJson =
+      """
+      {
+          "resourceType": "Questionnaire",
+          "subjectType": [ "Practitioner" ],
+          "status": "active",
+          "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+                  "valueExpression": {
+                    "language": "text/fhirpath",
+                    "expression": "%qItem.text = 'Contribution'"
+                  }
+                }
+              ],
+              "linkId" : "contribution",
+              "text": "Contribution",
+              "type": "choice",
+              "answerValueSet": "http://hl7.org/fhir/ValueSet/yesnodontknow"
+            }
+          ]
+      }
+      """
+        .trimIndent()
+
+    val questionnaireResponseJson =
+      """
+      {
+        "resourceType": "QuestionnaireResponse",
+        "status": "completed",
+        "item": [
+          {
+            "linkId": "contribution",
+            "answer": [
+              {
+                "valueCoding": {
+                  "code": "yes",
+                  "display": "Yes"
+                }
+              }
+            ]
+          }
+        ]
+      }
+      """
+        .trimIndent()
+
+    val questionnaire = json.decodeFromString(questionnaireJson) as Questionnaire
+
+    val questionnaireResponse =
+      json.decodeFromString(questionnaireResponseJson) as QuestionnaireResponse
+
+    assertTrue(
+      EnablementEvaluator(questionnaire, questionnaireResponse)
+        .evaluate(questionnaire.item[0], questionnaireResponse.item[0])
     )
   }
 
@@ -515,7 +482,7 @@ class EnablementEvaluatorTest {
           expected = Boolean(value = false),
           actual = listOf(),
         ),
-      ),
+      )
     )
   }
 
@@ -529,7 +496,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(),
         ),
-      ),
+      )
     )
   }
 
@@ -543,7 +510,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(Integer(value = 123), Integer(value = 456)),
         ),
-      ),
+      )
     )
   }
 
@@ -557,7 +524,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(Integer(value = 456), Integer(value = 789)),
         ),
-      ),
+      )
     )
   }
 
@@ -571,7 +538,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(),
         ),
-      ),
+      )
     )
   }
 
@@ -585,7 +552,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(Integer(value = 123), Integer(value = 456)),
         ),
-      ),
+      )
     )
   }
 
@@ -599,7 +566,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(Integer(value = 123), Integer(value = 123)),
         ),
-      ),
+      )
     )
   }
 
@@ -614,7 +581,7 @@ class EnablementEvaluatorTest {
             expected = Integer(value = 10),
             actual = listOf(Integer(value = 20)),
           ),
-        ),
+        )
       )
     }
 
@@ -628,7 +595,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 10),
           actual = listOf(Integer(value = 5)),
         ),
-      ),
+      )
     )
   }
 
@@ -643,7 +610,7 @@ class EnablementEvaluatorTest {
             expected = Integer(value = 10),
             actual = listOf(Integer(value = 10)),
           ),
-        ),
+        )
       )
     }
 
@@ -658,7 +625,7 @@ class EnablementEvaluatorTest {
             expected = Integer(value = 10),
             actual = listOf(Integer(value = 5)),
           ),
-        ),
+        )
       )
     }
 
@@ -672,7 +639,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 10),
           actual = listOf(Integer(value = 5)),
         ),
-      ),
+      )
     )
   }
 
@@ -686,7 +653,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 10),
           actual = listOf(Integer(value = 20)),
         ),
-      ),
+      )
     )
   }
 
@@ -701,7 +668,7 @@ class EnablementEvaluatorTest {
             expected = Integer(value = 10),
             actual = listOf(Integer(value = 10)),
           ),
-        ),
+        )
       )
     }
 
@@ -716,7 +683,7 @@ class EnablementEvaluatorTest {
             expected = Integer(value = 10),
             actual = listOf(Integer(value = 20)),
           ),
-        ),
+        )
       )
     }
 
@@ -735,7 +702,7 @@ class EnablementEvaluatorTest {
           expected = Boolean(value = true),
           actual = listOf(),
         ),
-      ),
+      )
     )
   }
 
@@ -754,7 +721,7 @@ class EnablementEvaluatorTest {
           expected = Boolean(value = true),
           actual = listOf(),
         ),
-      ),
+      )
     )
   }
 
@@ -773,7 +740,7 @@ class EnablementEvaluatorTest {
           expected = Boolean(value = true),
           actual = listOf(),
         ),
-      ),
+      )
     )
   }
 
@@ -792,7 +759,7 @@ class EnablementEvaluatorTest {
           expected = FhirR4Boolean(value = false),
           actual = listOf(),
         ),
-      ),
+      )
     )
   }
 
@@ -806,7 +773,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(Integer(value = 123)),
         ),
-      ),
+      )
     )
   }
 
@@ -820,7 +787,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(Integer(value = 456)),
         ),
-      ),
+      )
     )
   }
 
@@ -834,7 +801,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(Integer(value = 456)),
         ),
-      ),
+      )
     )
   }
 
@@ -848,7 +815,7 @@ class EnablementEvaluatorTest {
           expected = Integer(value = 123),
           actual = listOf(Integer(value = 123)),
         ),
-      ),
+      )
     )
   }
 
@@ -871,10 +838,10 @@ class EnablementEvaluatorTest {
                 system = Uri(value = "otherSystem"),
                 code = Code(value = "code"),
                 display = String(value = "display"),
-              ),
+              )
             ),
         ),
-      ),
+      )
     )
   }
 
@@ -897,10 +864,10 @@ class EnablementEvaluatorTest {
                 system = Uri(value = "system"),
                 code = Code(value = "otherCode"),
                 display = String(value = "display"),
-              ),
+              )
             ),
         ),
-      ),
+      )
     )
   }
 
@@ -923,10 +890,10 @@ class EnablementEvaluatorTest {
                 system = Uri(value = "system"),
                 code = Code(value = "code"),
                 display = String(value = "otherDisplay"),
-              ),
+              )
             ),
         ),
-      ),
+      )
     )
   }
 
@@ -949,10 +916,10 @@ class EnablementEvaluatorTest {
                 system = Uri(value = "otherSystem"),
                 code = Code(value = "code"),
                 display = String(value = "display"),
-              ),
+              )
             ),
         ),
-      ),
+      )
     )
   }
 
@@ -975,10 +942,10 @@ class EnablementEvaluatorTest {
                 system = Uri(value = "system"),
                 code = Code(value = "otherCode"),
                 display = String(value = "display"),
-              ),
+              )
             ),
         ),
-      ),
+      )
     )
   }
 
@@ -1001,10 +968,10 @@ class EnablementEvaluatorTest {
                 system = Uri(value = "system"),
                 code = Code(value = "code"),
                 display = String(value = "otherDisplay"),
-              ),
+              )
             ),
         ),
-      ),
+      )
     )
   }
 
@@ -1028,24 +995,34 @@ class EnablementEvaluatorTest {
                   when (enableWhen.expected) {
                     is Boolean ->
                       Questionnaire.Item.EnableWhen.Answer.Boolean(value = enableWhen.expected)
+
                     is Decimal ->
                       Questionnaire.Item.EnableWhen.Answer.Decimal(value = enableWhen.expected)
+
                     is Integer ->
                       Questionnaire.Item.EnableWhen.Answer.Integer(value = enableWhen.expected)
+
                     is Date ->
                       Questionnaire.Item.EnableWhen.Answer.Date(value = enableWhen.expected)
+
                     is DateTime ->
                       Questionnaire.Item.EnableWhen.Answer.DateTime(value = enableWhen.expected)
+
                     is Time ->
                       Questionnaire.Item.EnableWhen.Answer.Time(value = enableWhen.expected)
+
                     is String ->
                       Questionnaire.Item.EnableWhen.Answer.String(value = enableWhen.expected)
+
                     is Coding ->
                       Questionnaire.Item.EnableWhen.Answer.Coding(value = enableWhen.expected)
+
                     is Quantity ->
                       Questionnaire.Item.EnableWhen.Answer.Quantity(value = enableWhen.expected)
+
                     is Reference ->
                       Questionnaire.Item.EnableWhen.Answer.Reference(value = enableWhen.expected)
+
                     else ->
                       throw IllegalStateException("Type not supported for ${enableWhen.expected}")
                   },
@@ -1063,14 +1040,14 @@ class EnablementEvaluatorTest {
 
     val questionnaireResponse =
       QuestionnaireResponse.Builder(
-          status = Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.Completed),
+          status = Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.Completed)
         )
         .apply {
           this.item =
             enableWhen
               .mapIndexedTo(mutableListOf()) { index, enableWhen ->
                 QuestionnaireResponse.Item.Builder(
-                    linkId = String.Builder().apply { value = "$index" },
+                    linkId = String.Builder().apply { value = "$index" }
                   )
                   .apply {
                     this.answer =
@@ -1080,25 +1057,37 @@ class EnablementEvaluatorTest {
                             when (it) {
                               is Boolean ->
                                 QuestionnaireResponse.Item.Answer.Value.Boolean(value = it)
+
                               is Decimal ->
                                 QuestionnaireResponse.Item.Answer.Value.Decimal(value = it)
+
                               is Integer ->
                                 QuestionnaireResponse.Item.Answer.Value.Integer(value = it)
+
                               is Date -> QuestionnaireResponse.Item.Answer.Value.Date(value = it)
+
                               is DateTime ->
                                 QuestionnaireResponse.Item.Answer.Value.DateTime(value = it)
+
                               is Time -> QuestionnaireResponse.Item.Answer.Value.Time(value = it)
+
                               is String ->
                                 QuestionnaireResponse.Item.Answer.Value.String(value = it)
+
                               is Uri -> QuestionnaireResponse.Item.Answer.Value.Uri(value = it)
+
                               is Attachment ->
                                 QuestionnaireResponse.Item.Answer.Value.Attachment(value = it)
+
                               is Coding ->
                                 QuestionnaireResponse.Item.Answer.Value.Coding(value = it)
+
                               is Quantity ->
                                 QuestionnaireResponse.Item.Answer.Value.Quantity(value = it)
+
                               is Reference ->
                                 QuestionnaireResponse.Item.Answer.Value.Reference(value = it)
+
                               else -> null
                             }
                         }
@@ -1110,10 +1099,7 @@ class EnablementEvaluatorTest {
         .build()
 
     val result =
-      EnablementEvaluator(
-          questionnaire,
-          questionnaireResponse,
-        )
+      EnablementEvaluator(questionnaire, questionnaireResponse)
         .evaluate(questionnaireItemBuilder.build(), targetResponseItem.build())
     return result
   }

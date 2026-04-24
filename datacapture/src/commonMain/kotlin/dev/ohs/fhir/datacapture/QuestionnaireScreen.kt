@@ -151,6 +151,7 @@ internal fun QuestionnaireScreen(
       is DisplayMode.InitMode -> {
         // Empty state - nothing to show
       }
+
       is DisplayMode.EditMode -> {
         EditModeContent(
           state = questionnaireState,
@@ -159,6 +160,7 @@ internal fun QuestionnaireScreen(
           bottomNavItem = questionnaireState.bottomNavItem,
         )
       }
+
       is DisplayMode.ReviewMode -> {
         ReviewModeContent(
           state = questionnaireState,
@@ -233,9 +235,7 @@ private fun ReviewModeContent(
     },
     bottomBar = {
       if (bottomNavItem != null) {
-        QuestionnaireBottomNavigation(
-          bottomNavItem.questionnaireNavigationUIState,
-        )
+        QuestionnaireBottomNavigation(bottomNavItem.questionnaireNavigationUIState)
       }
     },
   ) { innerPadding ->
@@ -279,6 +279,5 @@ fun QuestionnaireTitleBar(
 }
 
 /** Calculates the progress percentage from given [count] and [totalCount] values. */
-private fun calculateProgressPercentage(count: Int, totalCount: Int): Int {
-  return if (totalCount == 0) 0 else (count * 100 / totalCount)
-}
+private fun calculateProgressPercentage(count: Int, totalCount: Int): Int =
+  if (totalCount == 0) 0 else (count * 100 / totalCount)

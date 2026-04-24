@@ -16,6 +16,7 @@
 
 package dev.ohs.fhir.datacapture.validation
 
+import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
 import dev.ohs.fhir.model.r4.Code
 import dev.ohs.fhir.model.r4.Enumeration
 import dev.ohs.fhir.model.r4.Extension
@@ -23,7 +24,6 @@ import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.String as FhirString
 import dev.ohs.fhir.model.r4.terminologies.PublicationStatus
-import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -37,16 +37,11 @@ class ConstraintItemExtensionValidatorTest {
     val questionnaireItem =
       Questionnaire.Item.Builder(
           linkId = FhirString.Builder().apply { value = "link-id" },
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .build()
     val questionnaireResponseItem =
-      QuestionnaireResponse.Item.Builder(
-          linkId = FhirString.Builder().apply { value = "link-id" },
-        )
+      QuestionnaireResponse.Item.Builder(linkId = FhirString.Builder().apply { value = "link-id" })
         .build()
 
     val questionnaire =
@@ -54,15 +49,12 @@ class ConstraintItemExtensionValidatorTest {
     val questionnaireResponse =
       QuestionnaireResponse.Builder(
           status =
-            Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.In_Progress),
+            Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.In_Progress)
         )
         .build()
 
     val expressionEvaluator = ExpressionEvaluator(questionnaire, questionnaireResponse)
-    val validator =
-      ConstraintItemExtensionValidator(
-        expressionEvaluator,
-      )
+    val validator = ConstraintItemExtensionValidator(expressionEvaluator)
 
     val results = validator.validate(questionnaireItem, questionnaireResponseItem)
 
@@ -74,16 +66,13 @@ class ConstraintItemExtensionValidatorTest {
     val questionnaireItem =
       Questionnaire.Item.Builder(
           linkId = FhirString.Builder().apply { value = "link-id" },
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .apply {
           extension =
             mutableListOf(
               Extension.Builder(
-                  url = "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+                  url = "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint"
                 )
                 .apply {
                   extension =
@@ -98,14 +87,12 @@ class ConstraintItemExtensionValidatorTest {
                         value = Extension.Value.String(value = FhirString(value = "Error message"))
                       },
                     )
-                },
+                }
             )
         }
         .build()
     val questionnaireResponseItem =
-      QuestionnaireResponse.Item.Builder(
-          linkId = FhirString.Builder().apply { value = "link-id" },
-        )
+      QuestionnaireResponse.Item.Builder(linkId = FhirString.Builder().apply { value = "link-id" })
         .build()
 
     val questionnaire =
@@ -113,15 +100,12 @@ class ConstraintItemExtensionValidatorTest {
     val questionnaireResponse =
       QuestionnaireResponse.Builder(
           status =
-            Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.In_Progress),
+            Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.In_Progress)
         )
         .build()
 
     val expressionEvaluator = ExpressionEvaluator(questionnaire, questionnaireResponse)
-    val validator =
-      ConstraintItemExtensionValidator(
-        expressionEvaluator,
-      )
+    val validator = ConstraintItemExtensionValidator(expressionEvaluator)
 
     val results = validator.validate(questionnaireItem, questionnaireResponseItem)
 
@@ -134,16 +118,13 @@ class ConstraintItemExtensionValidatorTest {
     val questionnaireItem =
       Questionnaire.Item.Builder(
           linkId = FhirString.Builder().apply { value = "link-id" },
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .apply {
           extension =
             mutableListOf(
               Extension.Builder(
-                  url = "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+                  url = "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint"
                 )
                 .apply {
                   extension =
@@ -158,14 +139,12 @@ class ConstraintItemExtensionValidatorTest {
                         value = Extension.Value.String(value = FhirString(value = "Error message"))
                       },
                     )
-                },
+                }
             )
         }
         .build()
     val questionnaireResponseItem =
-      QuestionnaireResponse.Item.Builder(
-          linkId = FhirString.Builder().apply { value = "link-id" },
-        )
+      QuestionnaireResponse.Item.Builder(linkId = FhirString.Builder().apply { value = "link-id" })
         .build()
 
     val questionnaire =
@@ -173,15 +152,12 @@ class ConstraintItemExtensionValidatorTest {
     val questionnaireResponse =
       QuestionnaireResponse.Builder(
           status =
-            Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.In_Progress),
+            Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.In_Progress)
         )
         .build()
 
     val expressionEvaluator = ExpressionEvaluator(questionnaire, questionnaireResponse)
-    val validator =
-      ConstraintItemExtensionValidator(
-        expressionEvaluator,
-      )
+    val validator = ConstraintItemExtensionValidator(expressionEvaluator)
 
     val results = validator.validate(questionnaireItem, questionnaireResponseItem)
 

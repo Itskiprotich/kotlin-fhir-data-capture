@@ -19,11 +19,11 @@ package dev.ohs.fhir.datacapture.views.factories
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import dev.ohs.fhir.model.r4.Decimal
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.decimal_format_validation_error_msg
+import dev.ohs.fhir.model.r4.Decimal
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 
 internal val EditTextDecimalViewFactory =
   EditTextViewFactoryDelegate(
@@ -34,8 +34,10 @@ internal val EditTextDecimalViewFactory =
 
       when {
         questionnaireItemViewItemDecimalAnswer == null && draftAnswer.isNullOrEmpty() -> ""
+
         questionnaireItemViewItemDecimalAnswer != null ->
           questionnaireItemViewItemDecimalAnswer.value.value?.toStringExpanded()
+
         else -> draftAnswer
       }
     },
@@ -44,11 +46,10 @@ internal val EditTextDecimalViewFactory =
         questionnaireViewItem.setAnswer(
           QuestionnaireResponse.Item.Answer(
             value =
-              QuestionnaireResponse.Item.Answer.Value.Decimal(Decimal(value = it.toBigDecimal())),
-          ),
+              QuestionnaireResponse.Item.Answer.Value.Decimal(Decimal(value = it.toBigDecimal()))
+          )
         )
-      }
-        ?: questionnaireViewItem.setDraftAnswer(inputText)
+      } ?: questionnaireViewItem.setDraftAnswer(inputText)
     },
     validationMessageStringRes = Res.string.decimal_format_validation_error_msg,
   )

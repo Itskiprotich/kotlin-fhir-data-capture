@@ -36,9 +36,7 @@ import org.jetbrains.compose.resources.StringResource
 
 class BehaviorListViewModel : ViewModel() {
 
-  fun getBehaviorList(): List<Behavior> {
-    return Behavior.entries
-  }
+  fun getBehaviorList(): List<Behavior> = Behavior.entries
 
   enum class Behavior(
     val questionnaireFileName: String,

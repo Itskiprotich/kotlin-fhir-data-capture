@@ -41,12 +41,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.text.AnnotatedString
-import dev.ohs.fhir.model.r4.DateTime
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.FhirDateTime
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
@@ -58,6 +52,12 @@ import dev.ohs.fhir.datacapture.views.components.DATE_TEXT_INPUT_FIELD
 import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_AT_HEADER_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
 import dev.ohs.fhir.datacapture.views.components.TIME_PICKER_INPUT_FIELD
+import dev.ohs.fhir.model.r4.DateTime
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.FhirDateTime
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -84,12 +84,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           text = FhirR4String(value = "Question?"),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -108,12 +103,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           text = FhirR4String(value = "Question?"),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -133,12 +123,7 @@ class DateTimeViewFactoryTest {
           linkId = FhirR4String(value = "datetime-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -170,10 +155,10 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
-                  ),
-              ),
+                          )
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -185,7 +170,7 @@ class DateTimeViewFactoryTest {
     onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree = true).assertTextEquals("01/05/2020")
     onNodeWithTag(TIME_PICKER_INPUT_FIELD, useUnmergedTree = true)
       .assert(
-        hasTextExactly("1:30\u202FAM"),
+        hasTextExactly("1:30\u202FAM")
       ) //  U+202F (Narrow No-Break Space - NNBSP) for time formatting in US Locale
   }
 
@@ -213,10 +198,10 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
-                  ),
-              ),
+                          )
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -258,10 +243,10 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
-                  ),
-              ),
+                          )
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -304,10 +289,10 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
-                  ),
-              ),
+                          )
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -348,10 +333,10 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
-                  ),
-              ),
+                          )
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -387,10 +372,10 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
-                  ),
-              ),
+                          )
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -415,9 +400,9 @@ class DateTimeViewFactoryTest {
                   FhirDateTime.DateTime(
                     dateTime = LocalDateTime(2020, 2, 6, 2, 30),
                     utcOffset = UtcOffset.ZERO,
-                  ),
-              ),
-          ),
+                  )
+              )
+          )
       )
     var draft: String? = "02/07"
     val questionnaireItem =
@@ -439,10 +424,10 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
-                  ),
-              ),
+                          )
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -477,15 +462,15 @@ class DateTimeViewFactoryTest {
                             FhirDateTime.DateTime(
                               dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                               utcOffset = UtcOffset.ZERO,
-                            ),
-                        ),
-                    ),
-                ),
+                            )
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireDateTimeView(questionnaireItem) }
@@ -497,12 +482,7 @@ class DateTimeViewFactoryTest {
           linkId = FhirR4String(value = "datetime-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         draftAnswer = "02/07",
@@ -521,16 +501,11 @@ class DateTimeViewFactoryTest {
             linkId = FhirR4String(value = "datetime-item"),
             type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           ),
-          QuestionnaireResponse.Item(
-            linkId =
-              FhirR4String(
-                value = "datetime-item",
-              ),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           draftAnswer = "02/07",
-        ),
+        )
       )
 
     setContent { QuestionnaireDateTimeView(questionnaireItem) }
@@ -555,10 +530,10 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
-                  ),
-              ),
+                          )
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -577,12 +552,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           text = FhirR4String(value = "Question?"),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         draftAnswer = "11/19",
@@ -601,12 +571,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           text = FhirR4String(value = "Question?"),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         draftAnswer = "",
@@ -625,12 +590,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           text = FhirR4String(value = "Question?"),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         draftAnswer = null,
@@ -649,12 +609,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           text = FhirR4String(value = "Question?"),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         draftAnswer = "11/19/2020",
@@ -673,12 +628,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           required = FhirR4Boolean(value = true),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = Invalid(listOf("Missing answer for required field.")),
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -690,7 +640,7 @@ class DateTimeViewFactoryTest {
         SemanticsMatcher.expectValue(
           SemanticsProperties.Error,
           "Missing answer for required field.",
-        ),
+        )
       )
   }
 
@@ -713,8 +663,8 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
+                          )
+                      )
                   ),
               ),
               Extension(
@@ -727,8 +677,8 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2025, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
+                          )
+                      )
                   ),
               ),
             ),
@@ -746,10 +696,10 @@ class DateTimeViewFactoryTest {
                           FhirDateTime.DateTime(
                             dateTime = LocalDateTime(2023, 1, 5, 1, 30),
                             utcOffset = UtcOffset.ZERO,
-                          ),
-                      ),
-                  ),
-              ),
+                          )
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -775,12 +725,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           text = FhirR4String(value = "Question?"),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         draftAnswer = "11/19/202",
@@ -793,7 +738,7 @@ class DateTimeViewFactoryTest {
         SemanticsMatcher.expectValue(
           SemanticsProperties.Error,
           "Date format needs to be mm/dd/yyyy (e.g. 01/31/2023)",
-        ),
+        )
       )
   }
 
@@ -806,12 +751,7 @@ class DateTimeViewFactoryTest {
           linkId = FhirR4String(value = "datetime-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         draftAnswer = "11/19/202",
@@ -823,7 +763,7 @@ class DateTimeViewFactoryTest {
         SemanticsMatcher.expectValue(
           SemanticsProperties.Error,
           "Date format needs to be mm/dd/yyyy (e.g. 01/31/2023)",
-        ),
+        )
       )
   }
 
@@ -835,12 +775,7 @@ class DateTimeViewFactoryTest {
           linkId = FhirR4String(value = "datetime-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -859,12 +794,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           readOnly = FhirR4Boolean(value = true),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -900,15 +830,15 @@ class DateTimeViewFactoryTest {
                               FhirDateTime.DateTime(
                                 dateTime = LocalDateTime(2020, 1, 5, 1, 30),
                                 utcOffset = UtcOffset.ZERO,
-                              ),
-                          ),
-                      ),
-                  ),
+                              )
+                          )
+                      )
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
         )
 
       setContent { QuestionnaireDateTimeView(questionnaireViewItem) }
@@ -919,7 +849,7 @@ class DateTimeViewFactoryTest {
           SemanticsMatcher.expectValue(
             SemanticsProperties.EditableText,
             AnnotatedString("1:30\u202FAM"),
-          ), // U+202F (Narrow No-Break Space - NNBSP) for time formatting in US Locale
+          ) // U+202F (Narrow No-Break Space - NNBSP) for time formatting in US Locale
         )
 
       questionnaireViewItem =
@@ -942,10 +872,10 @@ class DateTimeViewFactoryTest {
                             FhirDateTime.DateTime(
                               dateTime = LocalDateTime(2021, 1, 5, 2, 30),
                               utcOffset = UtcOffset.ZERO,
-                            ),
-                        ),
-                    ),
-                ),
+                            )
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
@@ -958,7 +888,7 @@ class DateTimeViewFactoryTest {
           SemanticsMatcher.expectValue(
             SemanticsProperties.EditableText,
             AnnotatedString("2:30\u202FAM"),
-          ), // U+202F (Narrow No-Break Space - NNBSP) for time formatting in US Locale
+          ) // U+202F (Narrow No-Break Space - NNBSP) for time formatting in US Locale
         )
 
       questionnaireViewItem =
@@ -968,12 +898,7 @@ class DateTimeViewFactoryTest {
             type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
             text = FhirR4String(value = "Question?"),
           ),
-          QuestionnaireResponse.Item(
-            linkId =
-              FhirR4String(
-                value = "datetime-item",
-              ),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
         )
@@ -990,12 +915,7 @@ class DateTimeViewFactoryTest {
           linkId = FhirR4String(value = "datetime-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -1003,16 +923,14 @@ class DateTimeViewFactoryTest {
     setContent { QuestionnaireDateTimeView(questionnaireItemView) }
     onNodeWithTag(DATE_TEXT_INPUT_FIELD)
       .onChildren()
-      .filterToOne(
-        SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button),
-      )
+      .filterToOne(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
       .performClick()
     onNodeWithText("OK").performClick()
     onNodeWithTag(TIME_PICKER_INPUT_FIELD).performClick()
 
     onNode(
         hasContentDescription("Switch to clock input", substring = true) and
-          SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button),
+          SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)
       )
       .assertIsDisplayed()
     onNode(hasContentDescription("for hour", substring = true) and isEditable()).assertIsDisplayed()
@@ -1027,12 +945,7 @@ class DateTimeViewFactoryTest {
           linkId = FhirR4String(value = "datetime-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -1040,26 +953,22 @@ class DateTimeViewFactoryTest {
     setContent { QuestionnaireDateTimeView(questionnaireItemView) }
     onNodeWithTag(DATE_TEXT_INPUT_FIELD)
       .onChildren()
-      .filterToOne(
-        SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button),
-      )
+      .filterToOne(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
       .performClick()
     onNodeWithText("OK").performClick()
     onNodeWithTag(TIME_PICKER_INPUT_FIELD)
       .onChildren()
-      .filterToOne(
-        SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button),
-      )
+      .filterToOne(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
       .performClick()
 
     onNode(
         hasContentDescription("Switch to text input", substring = true) and
-          SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button),
+          SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)
       )
       .assertIsDisplayed()
     onNode(
         hasAnyChild(SemanticsMatcher.keyIsDefined(SemanticsProperties.TraversalIndex)) and
-          SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup),
+          SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup)
       )
       .assertIsDisplayed()
   }
@@ -1074,12 +983,7 @@ class DateTimeViewFactoryTest {
           text = FhirR4String(value = "Question?"),
           required = FhirR4Boolean(value = true),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = true),
@@ -1100,12 +1004,7 @@ class DateTimeViewFactoryTest {
           text = FhirR4String(value = "Question?"),
           required = FhirR4Boolean(value = true),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = false),
@@ -1125,12 +1024,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           required = FhirR4Boolean(value = true),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = true),
@@ -1149,12 +1043,7 @@ class DateTimeViewFactoryTest {
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
           required = FhirR4Boolean(value = true),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = false),
@@ -1173,12 +1062,7 @@ class DateTimeViewFactoryTest {
           linkId = FhirR4String(value = "datetime-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = true),
@@ -1197,12 +1081,7 @@ class DateTimeViewFactoryTest {
           linkId = FhirR4String(value = "datetime-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.DateTime),
         ),
-        QuestionnaireResponse.Item(
-          linkId =
-            FhirR4String(
-              value = "datetime-item",
-            ),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "datetime-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
         questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = false),

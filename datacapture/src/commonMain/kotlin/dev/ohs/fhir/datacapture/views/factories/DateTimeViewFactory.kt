@@ -30,9 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import dev.ohs.fhir.model.r4.DateTime
-import dev.ohs.fhir.model.r4.FhirDateTime
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.canonicalizeDatePattern
 import dev.ohs.fhir.datacapture.extensions.getDateSeparator
 import dev.ohs.fhir.datacapture.extensions.itemMedia
@@ -52,6 +49,9 @@ import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.components.MediaItem
 import dev.ohs.fhir.datacapture.views.components.TimeFieldItem
 import dev.ohs.fhir.datacapture.views.components.getRequiredOrOptionalText
+import dev.ohs.fhir.model.r4.DateTime
+import dev.ohs.fhir.model.r4.FhirDateTime
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.Dispatchers
@@ -84,10 +84,7 @@ internal object DateTimeViewFactory : QuestionnaireItemViewFactory {
       remember(canonicalizedDatePattern) { canonicalizedDatePattern.lowercase() }
     val dateInputFormat =
       remember(canonicalizedDatePattern, datePatternSeparator) {
-        DateInputFormat(
-          canonicalizedDatePattern,
-          datePatternSeparator,
-        )
+        DateInputFormat(canonicalizedDatePattern, datePatternSeparator)
       }
 
     var questionnaireItemViewItemAnswerLocalDateTime by
@@ -95,7 +92,7 @@ internal object DateTimeViewFactory : QuestionnaireItemViewFactory {
         mutableStateOf(
           (questionnaireViewItem.answers.singleOrNull()?.value?.asDateTime()?.value?.value
               as? FhirDateTime.DateTime)
-            ?.dateTime,
+            ?.dateTime
         )
       }
 
@@ -156,8 +153,10 @@ internal object DateTimeViewFactory : QuestionnaireItemViewFactory {
               // so we display an error.
               invalidDraftDateErrorString
             }
+
             questionnaireViewItem.validationResult is Invalid ->
               questionnaireViewItem.validationResult.singleStringValidationMessage
+
             else -> null
           }
 
@@ -178,7 +177,7 @@ internal object DateTimeViewFactory : QuestionnaireItemViewFactory {
         Modifier.padding(
           horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
           vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-        ),
+        )
     ) {
       Header(questionnaireViewItem)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }
@@ -191,7 +190,8 @@ internal object DateTimeViewFactory : QuestionnaireItemViewFactory {
           dateInputFormat = dateInputFormat,
           dateInput = dateInput,
           labelText = uiDatePatternText,
-          helperText = dateValidationMessage.takeIf { !it.isNullOrBlank() }
+          helperText =
+            dateValidationMessage.takeIf { !it.isNullOrBlank() }
               ?: getRequiredOrOptionalText(questionnaireViewItem),
           isError = !dateValidationMessage.isNullOrBlank(),
           enabled = !itemReadOnly,
@@ -201,11 +201,7 @@ internal object DateTimeViewFactory : QuestionnaireItemViewFactory {
           onDateInputEntry = {
             val (display, date) = it
             if (date != null) {
-              val dateTime =
-                LocalDateTime(
-                  date,
-                  LocalTime(0, 0),
-                )
+              val dateTime = LocalDateTime(date, LocalTime(0, 0))
               coroutineScope.launch {
                 setQuestionnaireItemViewItemAnswer(questionnaireViewItem, dateTime)
               }
@@ -228,11 +224,7 @@ internal object DateTimeViewFactory : QuestionnaireItemViewFactory {
           isError = false,
         ) {
           coroutineScope.launch {
-            val dateTime =
-              LocalDateTime(
-                questionnaireItemViewItemDate!!,
-                it,
-              )
+            val dateTime = LocalDateTime(questionnaireItemViewItemDate!!, it)
             setQuestionnaireItemViewItemAnswer(questionnaireViewItem, dateTime)
           }
         }
@@ -255,9 +247,9 @@ internal object DateTimeViewFactory : QuestionnaireItemViewFactory {
                   FhirDateTime.DateTime(
                     localDateTime,
                     TimeZone.currentSystemDefault().offsetAt(Clock.System.now()),
-                  ),
-              ),
-          ),
-      ),
+                  )
+              )
+          )
+      )
     )
 }

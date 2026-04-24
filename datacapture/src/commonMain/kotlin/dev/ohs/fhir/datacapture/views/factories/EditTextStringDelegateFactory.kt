@@ -20,10 +20,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.String as FhirString
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.required_text_and_new_line
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.String as FhirString
 
 /**
  * Implementation of [EditTextViewFactoryDelegate] used in [EditTextSingleLineViewFactory] and
@@ -45,8 +45,8 @@ internal fun createEditTextStringViewHolderDelegate(multiLine: Boolean = false) 
       } else {
         questionnaireViewItem.setAnswer(
           QuestionnaireResponse.Item.Answer(
-            value = QuestionnaireResponse.Item.Answer.Value.String(FhirString(value = inputText)),
-          ),
+            value = QuestionnaireResponse.Item.Answer.Value.String(FhirString(value = inputText))
+          )
         )
       }
     },

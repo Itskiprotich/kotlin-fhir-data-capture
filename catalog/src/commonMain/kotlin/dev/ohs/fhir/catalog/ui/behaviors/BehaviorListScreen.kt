@@ -36,9 +36,7 @@ fun BehaviorListScreen(
   onBehaviorClick:
     (dev.ohs.fhir.catalog.ui.behaviors.BehaviorListViewModel.Behavior, String) -> Unit,
 ) {
-  Scaffold(
-    topBar = { CatalogTopAppBar() },
-  ) { padding ->
+  Scaffold(topBar = { CatalogTopAppBar() }) { padding ->
     LazyVerticalGrid(
       columns = GridCells.Fixed(2),
       modifier = Modifier.fillMaxSize().padding(padding),

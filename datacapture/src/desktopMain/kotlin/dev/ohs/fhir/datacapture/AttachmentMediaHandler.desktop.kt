@@ -45,8 +45,8 @@ internal class JvmMediaHandler(
             inputMimeTypes
               .flatMap { getExtensionsForMimeType(it) }
               .toSet()
-              .takeIf { it.isNotEmpty() },
-          ),
+              .takeIf { it.isNotEmpty() }
+          )
       )
     return pickedFile?.let {
       val fileName = it.name
@@ -55,27 +55,24 @@ internal class JvmMediaHandler(
         mimeType = it.mimeType()?.toString() ?: "application/octet-stream",
         titleName = fileName,
       )
-    }
-      ?: throw CancellationException()
+    } ?: throw CancellationException()
   }
 
-  private fun getExtensionsForMimeType(mimeType: String): List<String> {
-    return when (mimeType.lowercase()) {
+  private fun getExtensionsForMimeType(mimeType: String): List<String> =
+    when (mimeType.lowercase()) {
       "image/*" -> listOf("jpg", "jpeg", "png", "gif", "bmp")
       "text/*" -> listOf("txt", "md")
       "video/*" -> listOf("mp4", "avi", "mov", "wmv")
       "audio/*" -> listOf("mp3", "wav", "flac", "aac")
       else -> listOf(mimeType.substringAfter("/"))
     }
-  }
 }
 
 @Composable
 internal actual fun rememberMediaHandler(
   maxSupportedFileSizeBytes: BigDecimal,
   supportedMimeTypes: Array<String>,
-): MediaHandler {
-  return remember(maxSupportedFileSizeBytes, supportedMimeTypes) {
+): MediaHandler =
+  remember(maxSupportedFileSizeBytes, supportedMimeTypes) {
     JvmMediaHandler(maxSupportedFileSizeBytes, supportedMimeTypes)
   }
-}

@@ -77,14 +77,7 @@ class EditTextViewFactoryDelegate(
 
     val questionnaireItem = questionnaireViewItem.questionnaireItem
 
-    Column(
-      modifier =
-        Modifier.padding(
-          start = 16.dp,
-          end = 16.dp,
-          bottom = 8.dp,
-        ),
-    ) {
+    Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
       Header(questionnaireViewItem)
 
       questionnaireItem.itemMedia?.let { MediaItem(it) }
@@ -104,8 +97,8 @@ class EditTextViewFactoryDelegate(
    * starts with `Required` text and the rest of the error message is placed on the next line.
    */
   @Composable
-  private fun getValidationErrorMessage(questionnaireViewItem: QuestionnaireViewItem): String? {
-    return if (questionnaireViewItem.draftAnswer != null) {
+  private fun getValidationErrorMessage(questionnaireViewItem: QuestionnaireViewItem): String? =
+    if (questionnaireViewItem.draftAnswer != null) {
       stringResource(validationMessageStringRes, *validationMessageStringResArgs)
     } else {
       when (val validationResult = questionnaireViewItem.validationResult) {
@@ -121,8 +114,8 @@ class EditTextViewFactoryDelegate(
             }
           }
         }
+
         else -> null
       }
     }
-  }
 }

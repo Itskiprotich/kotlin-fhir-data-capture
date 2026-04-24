@@ -22,6 +22,4 @@ import dev.jordond.compass.geolocation.Geolocator
 import dev.jordond.compass.geolocation.NotSupportedLocator
 
 @Composable
-internal actual fun rememberGeolocator(): Geolocator {
-  return remember { Geolocator(NotSupportedLocator) }
-}
+internal actual fun rememberGeolocator(): Geolocator = remember { Geolocator(NotSupportedLocator) }

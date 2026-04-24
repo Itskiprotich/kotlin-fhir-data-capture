@@ -22,10 +22,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Coding
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
@@ -36,6 +32,10 @@ import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_TAG
 import dev.ohs.fhir.datacapture.views.components.HEADER_TAG
 import dev.ohs.fhir.datacapture.views.components.HINT_HEADER_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
@@ -59,7 +59,7 @@ class GroupViewFactoryTest {
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "group-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -79,7 +79,7 @@ class GroupViewFactoryTest {
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "group-item")),
           validationResult = Invalid(listOf("Missing answer for required field.")),
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -100,9 +100,9 @@ class GroupViewFactoryTest {
                 Questionnaire.Item.AnswerOption(
                   value =
                     Questionnaire.Item.AnswerOption.Value.Coding(
-                      value = Coding(display = FhirR4String(value = "display")),
-                    ),
-                ),
+                      value = Coding(display = FhirR4String(value = "display"))
+                    )
+                )
               ),
           ),
           QuestionnaireResponse.Item(
@@ -112,14 +112,14 @@ class GroupViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Coding(
-                      value = Coding(display = FhirR4String(value = "display")),
-                    ),
-                ),
+                      value = Coding(display = FhirR4String(value = "display"))
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -140,13 +140,13 @@ class GroupViewFactoryTest {
                   linkId = FhirR4String(value = "nested-display-question"),
                   type = Enumeration(value = Questionnaire.QuestionnaireItemType.Display),
                   text = FhirR4String(value = "text"),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "group-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -166,7 +166,7 @@ class GroupViewFactoryTest {
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "group-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -185,7 +185,7 @@ class GroupViewFactoryTest {
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "group-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 

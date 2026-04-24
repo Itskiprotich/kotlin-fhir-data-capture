@@ -58,10 +58,7 @@ internal fun QuestionnaireBottomNavigation(
   Column(modifier = modifier.testTag(QUESTIONNAIRE_BOTTOM_NAVIGATION_TEST_TAG).fillMaxWidth()) {
     HorizontalDivider(color = QuestionnaireTheme.colorScheme.onSurface.copy(alpha = 0.15f))
 
-    Surface(
-      color = QuestionnaireTheme.colorScheme.surface,
-      modifier = Modifier.fillMaxWidth(),
-    ) {
+    Surface(color = QuestionnaireTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
       Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.End,
@@ -71,13 +68,11 @@ internal fun QuestionnaireBottomNavigation(
         if (navigationUIState.navCancel is QuestionnaireNavigationViewUIState.Enabled) {
           val cancelNavigationViewState =
             remember(navigationUIState.navCancel) { navigationUIState.navCancel }
-          TextButton(
-            onClick = cancelNavigationViewState.onClickAction,
-            modifier = modifier,
-          ) {
+          TextButton(onClick = cancelNavigationViewState.onClickAction, modifier = modifier) {
             Text(
-              text = cancelNavigationViewState.labelText?.takeIf { it.isNotBlank() }
-                  ?: stringResource(Res.string.cancel_questionnaire),
+              text =
+                cancelNavigationViewState.labelText?.takeIf { it.isNotBlank() }
+                  ?: stringResource(Res.string.cancel_questionnaire)
             )
           }
         }
@@ -127,9 +122,7 @@ private fun PageNavigationButton(
       onClick = navigationViewState.onClickAction,
       modifier = modifier.testTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG),
     ) {
-      Text(
-        text = buttonText,
-      )
+      Text(text = buttonText)
     }
   }
 }

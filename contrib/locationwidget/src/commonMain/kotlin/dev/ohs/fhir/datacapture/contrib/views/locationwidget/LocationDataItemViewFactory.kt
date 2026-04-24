@@ -28,9 +28,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import dev.ohs.fhir.model.r4.Decimal
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import dev.ohs.fhir.datacapture.QuestionnaireItemViewFactoryMatcher
 import dev.ohs.fhir.datacapture.contrib.locationwidget.generated.resources.Res
@@ -40,6 +37,9 @@ import dev.ohs.fhir.datacapture.validation.Invalid
 import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.factories.QuestionnaireItemViewFactory
+import dev.ohs.fhir.model.r4.Decimal
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import org.jetbrains.compose.resources.stringResource
 
 internal const val PRIMARY_GPS_COORDINATE_EXTENSION_URL =
@@ -61,8 +61,7 @@ object LocationDataItemViewFactory : QuestionnaireItemViewFactory {
           ?.asDecimal()
           ?.value
           ?.value
-          ?.toStringExpanded()
-          ?: ""
+          ?.toStringExpanded() ?: ""
       }
     val requiredTextAndNewLineText = stringResource(Res.string.required_text_and_new_line)
     val validationResultMessage =
@@ -78,6 +77,7 @@ object LocationDataItemViewFactory : QuestionnaireItemViewFactory {
               validationResult.singleStringValidationMessage
             }
           }
+
           else -> null
         }
       }
@@ -95,24 +95,27 @@ object LocationDataItemViewFactory : QuestionnaireItemViewFactory {
           when (gpsCoordinateExtensionValue) {
             GPS_COORDINATE_EXTENSION_VALUE_LATITUDE ->
               QuestionnaireResponse.Item.Answer.Value.Decimal(
-                value = Decimal(value = BigDecimal.fromDouble(locationData.latitude)),
+                value = Decimal(value = BigDecimal.fromDouble(locationData.latitude))
               )
+
             GPS_COORDINATE_EXTENSION_VALUE_LONGITUDE ->
               QuestionnaireResponse.Item.Answer.Value.Decimal(
-                value = Decimal(value = BigDecimal.fromDouble(locationData.longitude)),
+                value = Decimal(value = BigDecimal.fromDouble(locationData.longitude))
               )
+
             GPS_COORDINATE_EXTENSION_VALUE_ALTITUDE ->
               locationData.altitude?.let { alt ->
                 QuestionnaireResponse.Item.Answer.Value.Decimal(
-                  value = Decimal(value = BigDecimal.fromDouble(alt)),
+                  value = Decimal(value = BigDecimal.fromDouble(alt))
                 )
               }
+
             else -> null
           }
 
         if (questionnaireResponseAnswerValue != null) {
           questionnaireViewItem.setAnswer(
-            QuestionnaireResponse.Item.Answer(value = questionnaireResponseAnswerValue),
+            QuestionnaireResponse.Item.Answer(value = questionnaireResponseAnswerValue)
           )
         }
       }
@@ -124,13 +127,13 @@ object LocationDataItemViewFactory : QuestionnaireItemViewFactory {
           .padding(
             horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
             vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-          ),
+          )
     ) {
       Header(questionnaireViewItem)
 
       OutlinedTextField(
         value = textState,
-        onValueChange = { /* View shouldn't directly edit coordinate */},
+        onValueChange = { /* View shouldn't directly edit coordinate */ },
         modifier = Modifier.fillMaxWidth(),
         enabled = false,
         isError = !validationResultMessage.isNullOrBlank(),

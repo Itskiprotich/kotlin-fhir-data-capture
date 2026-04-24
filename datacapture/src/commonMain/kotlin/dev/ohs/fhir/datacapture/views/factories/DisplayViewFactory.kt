@@ -37,7 +37,7 @@ internal object DisplayViewFactory : QuestionnaireItemViewFactory {
           .padding(
             horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
             vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-          ),
+          )
     ) {
       Header(questionnaireViewItem)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }

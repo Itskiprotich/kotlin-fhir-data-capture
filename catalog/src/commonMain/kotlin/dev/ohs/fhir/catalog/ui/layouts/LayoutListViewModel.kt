@@ -31,9 +31,7 @@ import org.jetbrains.compose.resources.StringResource
 
 class LayoutListViewModel : ViewModel() {
 
-  fun getLayoutList(): List<Layout> {
-    return Layout.entries
-  }
+  fun getLayoutList(): List<Layout> = Layout.entries
 
   enum class Layout(
     val questionnaireFileName: String,

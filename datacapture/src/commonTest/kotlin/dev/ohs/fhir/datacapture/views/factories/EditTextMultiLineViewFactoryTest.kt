@@ -29,11 +29,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.Integer
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
@@ -44,6 +39,11 @@ import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.EDIT_TEXT_FIELD_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_AT_HEADER_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.Integer
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
@@ -70,7 +70,7 @@ class EditTextMultiLineViewFactoryTest {
             QuestionnaireResponse.Item(linkId = FhirR4String(value = "text-item")),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -94,14 +94,14 @@ class EditTextMultiLineViewFactoryTest {
                   QuestionnaireResponse.Item.Answer(
                     value =
                       QuestionnaireResponse.Item.Answer.Value.String(
-                        value = FhirR4String(value = "Answer"),
-                      ),
-                  ),
+                        value = FhirR4String(value = "Answer")
+                      )
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -124,14 +124,14 @@ class EditTextMultiLineViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.String(
-                      value = FhirR4String(value = "Answer"),
-                    ),
-                ),
+                      value = FhirR4String(value = "Answer")
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireEditTextMultiLineView(questionnaireViewItem) }
@@ -206,7 +206,7 @@ class EditTextMultiLineViewFactoryTest {
                   Extension(
                     url = "http://hl7.org/fhir/StructureDefinition/minLength",
                     value = Extension.Value.Integer(value = Integer(value = 10)),
-                  ),
+                  )
                 ),
             ),
             QuestionnaireResponse.Item(
@@ -216,14 +216,14 @@ class EditTextMultiLineViewFactoryTest {
                   QuestionnaireResponse.Item.Answer(
                     value =
                       QuestionnaireResponse.Item.Answer.Value.String(
-                        value = FhirR4String(value = "hello there"),
-                      ),
-                  ),
+                        value = FhirR4String(value = "hello there")
+                      )
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -244,7 +244,7 @@ class EditTextMultiLineViewFactoryTest {
                   Extension(
                     url = "http://hl7.org/fhir/StructureDefinition/minLength",
                     value = Extension.Value.Integer(value = Integer(value = 10)),
-                  ),
+                  )
                 ),
             ),
             QuestionnaireResponse.Item(
@@ -254,17 +254,17 @@ class EditTextMultiLineViewFactoryTest {
                   QuestionnaireResponse.Item.Answer(
                     value =
                       QuestionnaireResponse.Item.Answer.Value.String(
-                        value = FhirR4String(value = "hello"),
-                      ),
-                  ),
+                        value = FhirR4String(value = "hello")
+                      )
+                  )
                 ),
             ),
             validationResult =
               Invalid(
-                listOf("The minimum number of characters that are permitted in the answer is: 10"),
+                listOf("The minimum number of characters that are permitted in the answer is: 10")
               ),
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -286,7 +286,7 @@ class EditTextMultiLineViewFactoryTest {
             QuestionnaireResponse.Item(linkId = FhirR4String(value = "text-item")),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -307,7 +307,7 @@ class EditTextMultiLineViewFactoryTest {
             QuestionnaireResponse.Item(linkId = FhirR4String(value = "text-item")),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -330,7 +330,7 @@ class EditTextMultiLineViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = true),
-          ),
+          )
       )
     }
 
@@ -353,7 +353,7 @@ class EditTextMultiLineViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = false),
-          ),
+          )
       )
     }
 
@@ -375,7 +375,7 @@ class EditTextMultiLineViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = true),
-          ),
+          )
       )
     }
 
@@ -397,7 +397,7 @@ class EditTextMultiLineViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = false),
-          ),
+          )
       )
     }
 
@@ -418,7 +418,7 @@ class EditTextMultiLineViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = true),
-          ),
+          )
       )
     }
 
@@ -439,7 +439,7 @@ class EditTextMultiLineViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = false),
-          ),
+          )
       )
     }
 

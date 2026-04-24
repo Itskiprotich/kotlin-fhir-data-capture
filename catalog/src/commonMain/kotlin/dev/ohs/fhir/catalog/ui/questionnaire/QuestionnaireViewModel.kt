@@ -17,19 +17,18 @@
 package dev.ohs.fhir.catalog.ui.questionnaire
 
 import androidx.lifecycle.ViewModel
-import dev.ohs.fhir.model.r4.FhirR4Json
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.catalog.generated.resources.Res
 import dev.ohs.fhir.datacapture.validation.Invalid
 import dev.ohs.fhir.datacapture.validation.QuestionnaireResponseValidator
+import dev.ohs.fhir.model.r4.FhirR4Json
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 
 class QuestionnaireViewModel : ViewModel() {
   private val fhirJson = FhirR4Json()
 
-  fun getQuestionnaireResponseJson(response: QuestionnaireResponse): String {
-    return fhirJson.encodeToString(response)
-  }
+  fun getQuestionnaireResponseJson(response: QuestionnaireResponse): String =
+    fhirJson.encodeToString(response)
 
   suspend fun getQuestionnaire(fileName: String) = Res.readBytes("files/$fileName").decodeToString()
 
@@ -63,7 +62,7 @@ class QuestionnaireViewModel : ViewModel() {
   }
 
   private fun buildQuestionnaireItemParentMap(
-    questionnaire: Questionnaire,
+    questionnaire: Questionnaire
   ): Map<Questionnaire.Item, Questionnaire.Item> {
     val map = mutableMapOf<Questionnaire.Item, Questionnaire.Item>()
     fun traverse(item: Questionnaire.Item) {

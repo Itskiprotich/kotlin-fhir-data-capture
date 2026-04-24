@@ -62,22 +62,17 @@ internal class AndroidMediaHandler(
         titleName = it.name,
         mimeType = it.mimeType()?.toString() ?: "application/octet-stream",
       )
-    }
-      ?: throw CancellationException()
+    } ?: throw CancellationException()
   }
 
-  override suspend fun selectFile(
-    inputMimeTypes: Array<String>,
-  ): MediaCaptureResult {
+  override suspend fun selectFile(inputMimeTypes: Array<String>): MediaCaptureResult {
     val imageOnly = inputMimeTypes.all { it.startsWith("image/") }
 
     val fileKitType =
       if (imageOnly) {
         FileKitType.Image
       } else {
-        FileKitType.File(
-          inputMimeTypes.toSet().takeIf { it.isNotEmpty() },
-        )
+        FileKitType.File(inputMimeTypes.toSet().takeIf { it.isNotEmpty() })
       }
     val pickedFile = FileKit.openFilePicker(type = fileKitType)
 
@@ -87,8 +82,7 @@ internal class AndroidMediaHandler(
         mimeType = it.mimeType()?.toString() ?: "application/octet-stream",
         titleName = it.name,
       )
-    }
-      ?: throw CancellationException()
+    } ?: throw CancellationException()
   }
 
   override fun isCameraSupported(): Boolean =

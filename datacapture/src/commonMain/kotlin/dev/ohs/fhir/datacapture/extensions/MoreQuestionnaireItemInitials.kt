@@ -26,31 +26,40 @@ fun Questionnaire.Item.Initial.toQuestionnaireResponseItemAnswer():
       value.let {
         when (it) {
           is Questionnaire.Item.Initial.Value.Attachment ->
-            QuestionnaireResponse.Item.Answer.Value.Attachment(
-              value = it.value,
-            )
+            QuestionnaireResponse.Item.Answer.Value.Attachment(value = it.value)
+
           is Questionnaire.Item.Initial.Value.Boolean ->
             QuestionnaireResponse.Item.Answer.Value.Boolean(value = it.value)
+
           is Questionnaire.Item.Initial.Value.Coding ->
             QuestionnaireResponse.Item.Answer.Value.Coding(value = it.value)
+
           is Questionnaire.Item.Initial.Value.Date ->
             QuestionnaireResponse.Item.Answer.Value.Date(value = it.value)
+
           is Questionnaire.Item.Initial.Value.DateTime ->
             QuestionnaireResponse.Item.Answer.Value.DateTime(value = it.value)
+
           is Questionnaire.Item.Initial.Value.Decimal ->
             QuestionnaireResponse.Item.Answer.Value.Decimal(value = it.value)
+
           is Questionnaire.Item.Initial.Value.Integer ->
             QuestionnaireResponse.Item.Answer.Value.Integer(value = it.value)
+
           is Questionnaire.Item.Initial.Value.Quantity ->
             QuestionnaireResponse.Item.Answer.Value.Quantity(value = it.value)
+
           is Questionnaire.Item.Initial.Value.Reference ->
             QuestionnaireResponse.Item.Answer.Value.Reference(value = it.value)
+
           is Questionnaire.Item.Initial.Value.String ->
             QuestionnaireResponse.Item.Answer.Value.String(value = it.value)
+
           is Questionnaire.Item.Initial.Value.Time ->
             QuestionnaireResponse.Item.Answer.Value.Time(value = it.value)
+
           is Questionnaire.Item.Initial.Value.Uri ->
             QuestionnaireResponse.Item.Answer.Value.Uri(value = it.value)
         }
-      },
+      }
   )

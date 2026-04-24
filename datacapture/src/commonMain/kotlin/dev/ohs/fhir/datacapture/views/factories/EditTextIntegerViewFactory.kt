@@ -19,11 +19,11 @@ package dev.ohs.fhir.datacapture.views.factories
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import dev.ohs.fhir.model.r4.Integer as FhirInteger
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.NumberFormatter
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.integer_format_validation_error_msg
+import dev.ohs.fhir.model.r4.Integer as FhirInteger
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 
 internal val EditTextIntegerViewFactory =
   EditTextViewFactoryDelegate(
@@ -45,9 +45,9 @@ internal val EditTextIntegerViewFactory =
           QuestionnaireResponse.Item.Answer(
             value =
               QuestionnaireResponse.Item.Answer.Value.Integer(
-                FhirInteger(value = inputText.toInt()),
-              ),
-          ),
+                FhirInteger(value = inputText.toInt())
+              )
+          )
         )
       } else {
         questionnaireViewItem.setDraftAnswer(inputText)

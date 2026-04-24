@@ -125,25 +125,22 @@ internal fun OutlinedEditTextFieldItem(
     isError = isError,
     trailingIcon = {
       if (isError) {
-        Icon(painter = painterResource(Res.drawable.error_filled_24dp), contentDescription = "Error")
+        Icon(
+          painter = painterResource(Res.drawable.error_filled_24dp),
+          contentDescription = "Error",
+        )
       }
     },
     readOnly = isReadOnly,
     enabled = !isReadOnly,
     keyboardOptions = keyboardOptions,
-    keyboardActions =
-      KeyboardActions(
-        onNext = { focusManager.moveFocus(FocusDirection.Down) },
-      ),
+    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
   )
 }
 
 @Composable
 internal fun UnitText(unitString: String) {
-  Box(
-    modifier = Modifier.padding(horizontal = 16.dp),
-    contentAlignment = Alignment.Center,
-  ) {
+  Box(modifier = Modifier.padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
     Text(
       unitString,
       style = QuestionnaireTheme.typography.bodyMedium,

@@ -16,13 +16,13 @@
 
 package dev.ohs.fhir.datacapture.validation
 
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Resource
 import dev.ohs.fhir.datacapture.XFhirQueryResolver
 import dev.ohs.fhir.datacapture.enablement.EnablementEvaluator
 import dev.ohs.fhir.datacapture.extensions.packRepeatedGroups
 import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Resource
 
 object QuestionnaireResponseValidator {
 
@@ -61,7 +61,7 @@ object QuestionnaireResponseValidator {
   ): Map<String, List<ValidationResult>> {
     require(
       questionnaireResponse.questionnaire?.value == null ||
-        questionnaire.url?.value == questionnaireResponse.questionnaire?.value,
+        questionnaire.url?.value == questionnaireResponse.questionnaire?.value
     ) {
       "Mismatching Questionnaire ${questionnaire.url?.value} and QuestionnaireResponse (for Questionnaire ${questionnaireResponse.questionnaire?.value})"
     }
@@ -81,7 +81,7 @@ object QuestionnaireResponseValidator {
           questionnaireResponse,
           questionnaireItemParentMap,
           launchContextMap,
-        ),
+        )
       )
     val linkIdToValidationResultMap = mutableMapOf<String, MutableList<ValidationResult>>()
 
@@ -116,11 +116,7 @@ object QuestionnaireResponseValidator {
         questionnaireItem = questionnaireItemListIterator.next()
       } while (questionnaireItem.linkId != questionnaireResponseItem.linkId)
 
-      val enabled =
-        enablementEvaluator.evaluate(
-          questionnaireItem,
-          questionnaireResponseItem,
-        )
+      val enabled = enablementEvaluator.evaluate(questionnaireItem, questionnaireResponseItem)
 
       if (enabled) {
         validateQuestionnaireResponseItem(
@@ -145,6 +141,7 @@ object QuestionnaireResponseValidator {
     checkNotNull(questionnaireItem.type) { "Questionnaire item must have type" }
     when {
       questionnaireItem.type.value == Questionnaire.QuestionnaireItemType.Display -> Unit
+
       (questionnaireItem.type.value == Questionnaire.QuestionnaireItemType.Group &&
         questionnaireItem.repeats?.value != true) ->
         // Nested items under group
@@ -156,9 +153,10 @@ object QuestionnaireResponseValidator {
           questionnaireResponseItemValidator,
           linkIdToValidationResultMap,
         )
+
       else -> {
         require(
-          questionnaireItem.repeats?.value == true || questionnaireResponseItem.answer.size <= 1,
+          questionnaireItem.repeats?.value == true || questionnaireResponseItem.answer.size <= 1
         ) {
           "Multiple answers for non-repeat questionnaire item ${questionnaireItem.linkId}"
         }
@@ -179,7 +177,7 @@ object QuestionnaireResponseValidator {
             questionnaireResponseItemValidator.validate(
               questionnaireItem,
               questionnaireResponseItem,
-            ),
+            )
           )
         }
       }
@@ -220,7 +218,7 @@ object QuestionnaireResponseValidator {
   ) {
     require(
       questionnaireResponse.questionnaire?.value == null ||
-        questionnaire.url?.value == questionnaireResponse.questionnaire?.value,
+        questionnaire.url?.value == questionnaireResponse.questionnaire?.value
     ) {
       "Mismatching Questionnaire ${questionnaire.url?.value} and QuestionnaireResponse (for Questionnaire ${questionnaireResponse.questionnaire?.value})"
     }
@@ -259,14 +257,16 @@ object QuestionnaireResponseValidator {
 
     when {
       questionnaireItem.type.value == Questionnaire.QuestionnaireItemType.Display -> Unit
+
       (questionnaireItem.type.value == Questionnaire.QuestionnaireItemType.Group &&
         questionnaireItem.repeats?.value == false) ->
         // Nested items under group
         // http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.item
         checkQuestionnaireResponseItems(questionnaireItem.item, questionnaireResponseItem.item)
+
       else -> {
         require(
-          questionnaireItem.repeats?.value == true || questionnaireResponseItem.answer.size <= 1,
+          questionnaireItem.repeats?.value == true || questionnaireResponseItem.answer.size <= 1
         ) {
           "Multiple answers for non-repeat questionnaire item ${questionnaireItem.linkId}"
         }
@@ -305,55 +305,68 @@ object QuestionnaireResponseValidator {
         require(answerType == "Boolean") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Decimal ->
         require(answerType == "Decimal") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Integer ->
         require(answerType == "Integer") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Date ->
         require(answerType == "Date") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.DateTime ->
         require(answerType == "DateTime") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Time ->
         require(answerType == "Time") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.String ->
         require(answerType == "String") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Text ->
         require(answerType == "String") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Url ->
         require(answerType == "Url") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Choice,
-      Questionnaire.QuestionnaireItemType.Open_Choice, ->
+      Questionnaire.QuestionnaireItemType.Open_Choice ->
         require(answerType == "Coding" || answerType == "String") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Attachment ->
         require(answerType == "Attachment") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Reference ->
         require(answerType == "Reference") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       Questionnaire.QuestionnaireItemType.Quantity ->
         require(answerType == "Quantity") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
+
       else -> Unit
     }
   }

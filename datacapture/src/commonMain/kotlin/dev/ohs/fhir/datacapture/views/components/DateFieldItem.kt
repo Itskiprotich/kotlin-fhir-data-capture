@@ -89,7 +89,7 @@ internal fun DateFieldItem(
         TextFieldValue(
           text = dateInput.display,
           selection = TextRange(dateInputFormat.pattern.length),
-        ),
+        )
       )
     }
 
@@ -140,10 +140,7 @@ internal fun DateFieldItem(
               text = formattedText,
               selection = TextRange(dateInputFormat.pattern.length),
             )
-          postDelayedNewDateInput(
-            DateInput(formattedText, localDate),
-            HANDLE_INPUT_DEBOUNCE_TIME,
-          )
+          postDelayedNewDateInput(DateInput(formattedText, localDate), HANDLE_INPUT_DEBOUNCE_TIME)
         }
       }
     },
@@ -175,10 +172,7 @@ internal fun DateFieldItem(
         keyboardType = KeyboardType.Number,
         imeAction = ImeAction.Done,
       ),
-    keyboardActions =
-      KeyboardActions(
-        onNext = { focusManager.moveFocus(FocusDirection.Down) },
-      ),
+    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
   )
 
   if (selectableDates != null && showDatePickerModal) {
@@ -193,11 +187,7 @@ internal fun DateFieldItem(
               text = dateDisplay,
               selection = TextRange(dateInputFormat.pattern.length),
             )
-          val newDateInput =
-            DateInput(
-              display = dateDisplay,
-              value = it,
-            )
+          val newDateInput = DateInput(display = dateDisplay, value = it)
           postDelayedNewDateInput(newDateInput, 0L)
         }
       },

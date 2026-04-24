@@ -32,10 +32,7 @@ import kotlinx.datetime.toJavaLocalTime
 import kotlinx.datetime.toKotlinLocalDate
 
 object JVMLocalDateTimeFormatter : LocalDateTimeFormatter {
-  override fun parseStringToLocalDate(
-    str: String,
-    pattern: String,
-  ): LocalDate {
+  override fun parseStringToLocalDate(str: String, pattern: String): LocalDate {
     val localDate = java.time.LocalDate.parse(str, DateTimeFormatter.ofPattern(pattern))
 
     // Throw ParseException if year is less than 4 digits.
@@ -65,12 +62,11 @@ object JVMLocalDateTimeFormatter : LocalDateTimeFormatter {
         Locale.getDefault(),
       )
 
-  override fun localizedTimeString(time: LocalTime): String {
-    return DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).format(time.toJavaLocalTime())
-  }
+  override fun localizedTimeString(time: LocalTime): String =
+    DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).format(time.toJavaLocalTime())
 }
 
 @Composable
-actual fun getLocalDateTimeFormatter(): LocalDateTimeFormatter {
-  return remember { JVMLocalDateTimeFormatter }
+actual fun getLocalDateTimeFormatter(): LocalDateTimeFormatter = remember {
+  JVMLocalDateTimeFormatter
 }

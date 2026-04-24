@@ -88,7 +88,7 @@ object LocationItemViewFactory : QuestionnaireItemViewFactory {
                   latitude = loc.coordinates.latitude,
                   longitude = loc.coordinates.longitude,
                   altitude = loc.mslAltitude?.meters,
-                ),
+                )
               )
             } else if (result is GeolocatorResult.Error) {
               geolocatorError = result.message

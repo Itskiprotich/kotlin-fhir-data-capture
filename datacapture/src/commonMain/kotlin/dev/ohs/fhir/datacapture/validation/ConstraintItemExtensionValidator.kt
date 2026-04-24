@@ -16,11 +16,6 @@
 
 package dev.ohs.fhir.datacapture.validation
 
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Expression
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.String
 import dev.ohs.fhir.datacapture.extensions.ConstraintSeverityTypes
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_QUESTIONNAIRE_CONSTRAINT_EXPRESSION
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_QUESTIONNAIRE_CONSTRAINT_HUMAN
@@ -28,13 +23,18 @@ import dev.ohs.fhir.datacapture.extensions.EXTENSION_QUESTIONNAIRE_CONSTRAINT_SE
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_QUESTIONNAIRE_CONSTRAINT_URL
 import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Expression
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.String
 
 /**
  * TODO: Add constraint support for global case, create a separate validator,
  *   https://github.com/google/android-fhir/issues/2479
  */
 internal class ConstraintItemExtensionValidator(
-  private val expressionEvaluator: ExpressionEvaluator,
+  private val expressionEvaluator: ExpressionEvaluator
 ) : QuestionnaireResponseItemConstraintValidator {
   override suspend fun validate(
     questionnaireItem: Questionnaire.Item,
@@ -42,11 +42,11 @@ internal class ConstraintItemExtensionValidator(
   ): List<ConstraintValidator.Result> {
     return questionnaireItem.extension
       .filter { extension ->
-        /**
-         * TODO: Add constraint support for warning case, update the [ConstraintValidator.Result]
-         *   data class to also include warning state,
-         *   https://github.com/google/android-fhir/issues/2480
-         */
+
+//          TODO: Add constraint support for warning case, update the [ConstraintValidator.Result]
+//            data class to also include warning state,
+//            https://github.com/google/android-fhir/issues/2480
+
         extension.url == EXTENSION_QUESTIONNAIRE_CONSTRAINT_URL &&
           ConstraintSeverityTypes.ERROR.code ==
             extension.extension
@@ -59,7 +59,7 @@ internal class ConstraintItemExtensionValidator(
       .map { extension ->
         val expression =
           Expression.Builder(
-              language = Enumeration(value = Expression.ExpressionLanguage.Text_Fhirpath),
+              language = Enumeration(value = Expression.ExpressionLanguage.Text_Fhirpath)
             )
             .apply {
               expression =
@@ -80,7 +80,7 @@ internal class ConstraintItemExtensionValidator(
               questionnaireItem,
               questionnaireResponseItem,
               expression,
-            ),
+            )
           )
         if (isValid) {
           ConstraintValidator.Result(true, null)

@@ -174,11 +174,7 @@ class ComponentListViewModel : ViewModel() {
       Res.drawable.ic_repeatgroups,
       Res.string.component_name_repeated_group,
     ),
-    HELP(
-      "component_help.json",
-      Res.drawable.ic_help,
-      Res.string.component_name_help,
-    ),
+    HELP("component_help.json", Res.drawable.ic_help, Res.string.component_name_help),
     ITEM_MEDIA(
       "component_item_media.json",
       Res.drawable.ic_item_media,

@@ -16,6 +16,10 @@
 
 package dev.ohs.fhir.datacapture.validation
 
+import dev.ohs.fhir.datacapture.extensions.EXTENSION_CQF_CALCULATED_VALUE_URL
+import dev.ohs.fhir.datacapture.extensions.FhirR4DateType
+import dev.ohs.fhir.datacapture.extensions.FhirR4String
+import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
 import dev.ohs.fhir.model.r4.Enumeration
 import dev.ohs.fhir.model.r4.Expression
 import dev.ohs.fhir.model.r4.Extension
@@ -24,10 +28,6 @@ import dev.ohs.fhir.model.r4.Integer
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.QuestionnaireResponse.QuestionnaireResponseStatus
-import dev.ohs.fhir.datacapture.extensions.EXTENSION_CQF_CALCULATED_VALUE_URL
-import dev.ohs.fhir.datacapture.extensions.FhirR4DateType
-import dev.ohs.fhir.datacapture.extensions.FhirR4String
-import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -48,19 +48,13 @@ class MaxValueValidatorTest {
     val questionnaireItem =
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .build()
     val answer =
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
-          value =
-            QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = Integer(value = 10),
-            )
+          value = QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 10))
         }
         .build()
 
@@ -74,10 +68,7 @@ class MaxValueValidatorTest {
     val questionnaireItem =
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .apply {
           extension =
@@ -85,17 +76,14 @@ class MaxValueValidatorTest {
               Extension.Builder(url = MAX_VALUE_EXTENSION_URL).apply {
                 value =
                   Extension.Value.Integer(value = Integer.Builder().apply { value = 15 }.build())
-              },
+              }
             )
         }
         .build()
     val answer =
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
-          value =
-            QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = Integer(value = 10),
-            )
+          value = QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 10))
         }
         .build()
 
@@ -109,10 +97,7 @@ class MaxValueValidatorTest {
     val questionnaireItem =
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .apply {
           extension =
@@ -120,17 +105,14 @@ class MaxValueValidatorTest {
               Extension.Builder(url = MAX_VALUE_EXTENSION_URL).apply {
                 value =
                   Extension.Value.Integer(value = Integer.Builder().apply { value = 15 }.build())
-              },
+              }
             )
         }
         .build()
     val answer =
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
-          value =
-            QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = Integer(value = 15),
-            )
+          value = QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 15))
         }
         .build()
 
@@ -144,10 +126,7 @@ class MaxValueValidatorTest {
     val questionnaireItem =
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Integer,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Integer),
         )
         .apply {
           extension =
@@ -155,17 +134,14 @@ class MaxValueValidatorTest {
               Extension.Builder(url = MAX_VALUE_EXTENSION_URL).apply {
                 value =
                   Extension.Value.Integer(value = Integer.Builder().apply { value = 15 }.build())
-              },
+              }
             )
         }
         .build()
     val answer =
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
-          value =
-            QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = Integer(value = 20),
-            )
+          value = QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 20))
         }
         .build()
 
@@ -182,10 +158,7 @@ class MaxValueValidatorTest {
       val questionnaireItem =
         Questionnaire.Item(
           linkId = FhirR4String(value = "test-item"),
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Date,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
           extension =
             listOf(
               Extension(
@@ -204,16 +177,16 @@ class MaxValueValidatorTest {
                                     Expression(
                                       language =
                                         Enumeration(
-                                          value = Expression.ExpressionLanguage.Text_Fhirpath,
+                                          value = Expression.ExpressionLanguage.Text_Fhirpath
                                         ),
                                       expression = FhirR4String(value = "today() - 7 days"),
-                                    ),
+                                    )
                                 ),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         )
 
@@ -221,14 +194,8 @@ class MaxValueValidatorTest {
         QuestionnaireResponse.Item.Answer(
           value =
             QuestionnaireResponse.Item.Answer.Value.Date(
-              value =
-                FhirR4DateType(
-                  value =
-                    FhirDate.Date(
-                      today,
-                    ),
-                ),
-            ),
+              value = FhirR4DateType(value = FhirDate.Date(today))
+            )
         )
 
       val validationResult =
@@ -236,7 +203,7 @@ class MaxValueValidatorTest {
           FhirPathService.evaluate(
               it.expression?.value!!,
               QuestionnaireResponse(
-                status = Enumeration(value = QuestionnaireResponseStatus.In_Progress),
+                status = Enumeration(value = QuestionnaireResponseStatus.In_Progress)
               ),
             )
             .singleOrNull()
@@ -258,10 +225,7 @@ class MaxValueValidatorTest {
       val questionnaireItem =
         Questionnaire.Item(
           linkId = FhirR4String(value = "test-item"),
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Date,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
           extension =
             listOf(
               Extension(
@@ -281,16 +245,16 @@ class MaxValueValidatorTest {
                                     Expression(
                                       language =
                                         Enumeration(
-                                          value = Expression.ExpressionLanguage.Text_Fhirpath,
+                                          value = Expression.ExpressionLanguage.Text_Fhirpath
                                         ),
                                       expression = FhirR4String(value = "today() - 7 days"),
-                                    ),
+                                    )
                                 ),
-                            ),
+                            )
                           ),
-                      ),
+                      )
                   ),
-              ),
+              )
             ),
         )
 
@@ -298,14 +262,8 @@ class MaxValueValidatorTest {
         QuestionnaireResponse.Item.Answer(
           value =
             QuestionnaireResponse.Item.Answer.Value.Date(
-              value =
-                FhirR4DateType(
-                  value =
-                    FhirDate.Date(
-                      today,
-                    ),
-                ),
-            ),
+              value = FhirR4DateType(value = FhirDate.Date(today))
+            )
         )
 
       val validationResult =
@@ -313,7 +271,7 @@ class MaxValueValidatorTest {
           FhirPathService.evaluate(
               it.expression?.value!!,
               QuestionnaireResponse(
-                status = Enumeration(value = QuestionnaireResponseStatus.In_Progress),
+                status = Enumeration(value = QuestionnaireResponseStatus.In_Progress)
               ),
             )
             .singleOrNull()
@@ -332,10 +290,7 @@ class MaxValueValidatorTest {
       val questionnaireItem =
         Questionnaire.Item(
           linkId = FhirR4String(value = "test-item"),
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.Date,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
           extension =
             listOf(
               Extension(
@@ -354,19 +309,19 @@ class MaxValueValidatorTest {
                                     Expression(
                                       language =
                                         Enumeration(
-                                          value = Expression.ExpressionLanguage.Text_Fhirpath,
+                                          value = Expression.ExpressionLanguage.Text_Fhirpath
                                         ),
                                       expression =
                                         FhirR4String(
-                                          value = "yesterday()",
+                                          value = "yesterday()"
                                         ), // invalid FHIRPath expression
-                                    ),
+                                    )
                                 ),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         )
 
@@ -378,21 +333,18 @@ class MaxValueValidatorTest {
                 FhirR4DateType(
                   value =
                     FhirDate.Date(
-                      Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
-                    ),
-                ),
-            ),
+                      Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                    )
+                )
+            )
         )
 
       val validationResult =
-        MaxValueValidator.validate(
-          questionnaireItem,
-          answer,
-        ) {
+        MaxValueValidator.validate(questionnaireItem, answer) {
           FhirPathService.evaluate(
               it.expression?.value!!,
               QuestionnaireResponse(
-                status = Enumeration(value = QuestionnaireResponseStatus.In_Progress),
+                status = Enumeration(value = QuestionnaireResponseStatus.In_Progress)
               ),
             )
             .singleOrNull()
@@ -407,10 +359,7 @@ class MaxValueValidatorTest {
     val questionnaireItem =
       Questionnaire.Item(
         linkId = FhirR4String(value = "test-item"),
-        type =
-          Enumeration(
-            value = Questionnaire.QuestionnaireItemType.Date,
-          ),
+        type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
         extension =
           listOf(
             Extension(
@@ -429,16 +378,16 @@ class MaxValueValidatorTest {
                                   Expression(
                                     language =
                                       Enumeration(
-                                        value = Expression.ExpressionLanguage.Text_Fhirpath,
+                                        value = Expression.ExpressionLanguage.Text_Fhirpath
                                       ),
                                     expression = FhirR4String(value = "today()"),
-                                  ),
+                                  )
                               ),
-                          ),
-                        ),
-                    ),
+                          )
+                        )
+                    )
                 ),
-            ),
+            )
           ),
       )
 
@@ -450,21 +399,18 @@ class MaxValueValidatorTest {
               FhirR4DateType(
                 value =
                   FhirDate.Date(
-                    Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
-                  ),
-              ),
-          ),
+                    Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                  )
+              )
+          )
       )
 
     val validationResult =
-      MaxValueValidator.validate(
-        questionnaireItem,
-        answer,
-      ) {
+      MaxValueValidator.validate(questionnaireItem, answer) {
         FhirPathService.evaluate(
             it.expression?.value!!,
             QuestionnaireResponse(
-              status = Enumeration(value = QuestionnaireResponseStatus.In_Progress),
+              status = Enumeration(value = QuestionnaireResponseStatus.In_Progress)
             ),
           )
           .singleOrNull()

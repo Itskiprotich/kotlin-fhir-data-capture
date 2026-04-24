@@ -1,4 +1,5 @@
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
   repositories {
     google()
@@ -18,5 +19,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "kotlin-fhir-data-capture"
+
 include(":datacapture")
+
 include(":contrib:barcode", ":contrib:locationwidget", ":catalog")

@@ -28,7 +28,7 @@ fun Project.configureLicensee() {
 
     ignoreDependencies("com.ibm.icu", "icu4j") {
       because(
-        "ICU uses an ICU license that was mispaced and cannot be loaded by this tool right now",
+        "ICU uses an ICU license that was mispaced and cannot be loaded by this tool right now"
       )
     }
 
@@ -79,15 +79,13 @@ fun Project.configureLicensee() {
     // Jakarta Activation API 2.1 Specification
     allowDependency("jakarta.activation", "jakarta.activation-api", "2.1.2") {
       because(
-        "Licensed under Eclipse Distribution License 1.0. http://www.eclipse.org/org/documents/edl-v10.php",
+        "Licensed under Eclipse Distribution License 1.0. http://www.eclipse.org/org/documents/edl-v10.php"
       )
     }
 
     // Jakarta Annotation API 2.1 Specification
     allowDependency("jakarta.annotation", "jakarta.annotation-api", "2.1.1") {
-      because(
-        "Licensed under EPL 2.0",
-      )
+      because("Licensed under EPL 2.0")
     }
 
     // Javax Annotation API

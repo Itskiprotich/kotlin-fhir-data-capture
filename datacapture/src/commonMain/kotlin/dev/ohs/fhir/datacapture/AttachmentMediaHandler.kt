@@ -17,15 +17,15 @@
 package dev.ohs.fhir.datacapture
 
 import androidx.compose.runtime.Composable
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
+import dev.ohs.fhir.datacapture.extensions.FhirR4String
+import dev.ohs.fhir.datacapture.extensions.inMBs
 import dev.ohs.fhir.model.r4.Attachment
 import dev.ohs.fhir.model.r4.Base64Binary
 import dev.ohs.fhir.model.r4.Code
 import dev.ohs.fhir.model.r4.DateTime
 import dev.ohs.fhir.model.r4.FhirDateTime
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import com.ionspin.kotlin.bignum.decimal.toBigDecimal
-import dev.ohs.fhir.datacapture.extensions.FhirR4String
-import dev.ohs.fhir.datacapture.extensions.inMBs
 import kotlin.io.encoding.Base64
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -57,9 +57,7 @@ internal interface MediaHandler {
    * @param supportedMimeTypes Function to check if a MIME type is supported
    * @return MediaCaptureResult containing the Attachment or error message
    */
-  suspend fun selectFile(
-    inputMimeTypes: Array<String>,
-  ): MediaCaptureResult
+  suspend fun selectFile(inputMimeTypes: Array<String>): MediaCaptureResult
 
   fun isCameraSupported(): Boolean
 }
@@ -75,7 +73,7 @@ internal fun MediaHandler.captureResult(
 ): MediaCaptureResult {
   if (byteArray.size.toBigDecimal() > maxSupportedFileSizeBytes) {
     return MediaCaptureResult.Error(
-      "Error: File size is larger than the allowed ${maxSupportedFileSizeBytes.inMBs} MB",
+      "Error: File size is larger than the allowed ${maxSupportedFileSizeBytes.inMBs} MB"
     )
   }
 
@@ -93,7 +91,7 @@ internal fun MediaHandler.captureResult(
             FhirDateTime.DateTime(
               dateTime = Clock.System.now().toLocalDateTime(currentTimeZone),
               utcOffset = currentTimeZone.offsetAt(Clock.System.now()),
-            ),
+            )
         ),
     )
   return MediaCaptureResult.Success(attachment)

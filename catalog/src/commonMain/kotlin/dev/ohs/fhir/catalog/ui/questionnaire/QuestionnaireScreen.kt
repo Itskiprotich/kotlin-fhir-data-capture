@@ -83,13 +83,12 @@ fun QuestionnaireScreen(
 ) {
   val viewItemMatchersProvider = remember {
     object : QuestionnaireItemViewFactoryMatchersProvider {
-      override fun get(): List<QuestionnaireItemViewFactoryMatcher> {
-        return listOf(
+      override fun get(): List<QuestionnaireItemViewFactoryMatcher> =
+        listOf(
           BarcodeItemViewFactoryMatcher,
           LocationItemViewFactoryMatcher,
           LocationDataItemViewFactoryMatcher,
         )
-      }
     }
   }
 
@@ -118,25 +117,22 @@ fun QuestionnaireScreen(
           title = { Text(title) },
           navigationIcon = {
             IconButton(onClick = onBackClick) {
-              Icon(painter = painterResource(Res.drawable.arrow_back_filled_24dp), contentDescription = "Back")
+              Icon(
+                painter = painterResource(Res.drawable.arrow_back_filled_24dp),
+                contentDescription = "Back",
+              )
             }
           },
           actions = {
             if (validationFileName != null) {
-              ErrorStateToggleAction(
-                isErrorState = isErrorState,
-                onToggle = { isErrorState = it },
-              )
+              ErrorStateToggleAction(isErrorState = isErrorState, onToggle = { isErrorState = it })
             }
           },
         )
       }
-    },
+    }
   ) { paddingValues ->
-    Surface(
-      modifier = Modifier.fillMaxSize().padding(paddingValues),
-      color = Color(0xFFF5F5F5),
-    ) {
+    Surface(modifier = Modifier.fillMaxSize().padding(paddingValues), color = Color(0xFFF5F5F5)) {
       Box(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxWidth()) {
           questionnaireJson?.let { json ->
@@ -158,12 +154,11 @@ fun QuestionnaireScreen(
               matchersProvider = viewItemMatchersProvider,
               onCancel = {},
             )
-          }
-            ?: run { Text(stringResource(Res.string.loading), modifier = Modifier.padding(16.dp)) }
+          } ?: run { Text(stringResource(Res.string.loading), modifier = Modifier.padding(16.dp)) }
         }
 
         if (title == skipLogicTitle || title == calculatedExpressionTitle) {
-          _root_ide_package_.dev.ohs.fhir.catalog.ui.questionnaire.InfoCard(
+          InfoCard(
             modifier = Modifier.fillMaxWidth().align(BiasAlignment(0f, 0.8f)).padding(16.dp),
             title = title,
             info =
@@ -183,10 +178,7 @@ fun QuestionnaireScreen(
 fun InfoCard(title: String, info: String, modifier: Modifier = Modifier) {
   Card(
     modifier = modifier,
-    colors =
-      CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-      ),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
   ) {
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
       Row(verticalAlignment = Alignment.CenterVertically) {

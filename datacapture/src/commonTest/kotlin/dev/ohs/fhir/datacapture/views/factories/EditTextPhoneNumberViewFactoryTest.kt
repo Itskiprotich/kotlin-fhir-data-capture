@@ -29,14 +29,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Code
-import dev.ohs.fhir.model.r4.CodeableConcept
-import dev.ohs.fhir.model.r4.Coding
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Uri
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_ITEM_CONTROL_SYSTEM
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_ITEM_CONTROL_URL
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
@@ -48,6 +40,14 @@ import dev.ohs.fhir.datacapture.validation.NotValidated
 import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.EDIT_TEXT_FIELD_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
+import dev.ohs.fhir.model.r4.Code
+import dev.ohs.fhir.model.r4.CodeableConcept
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Uri
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
@@ -79,11 +79,11 @@ class EditTextPhoneNumberViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "phone-number"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           text = FhirR4String(value = "Question?"),
         ),
@@ -117,11 +117,11 @@ class EditTextPhoneNumberViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "phone-number"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           text = FhirR4String(value = "Question?"),
         ),
@@ -132,9 +132,9 @@ class EditTextPhoneNumberViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.String(
-                    value = FhirR4String(value = "+12345678910"),
-                  ),
-              ),
+                    value = FhirR4String(value = "+12345678910")
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -167,11 +167,11 @@ class EditTextPhoneNumberViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "phone-number"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(
@@ -181,14 +181,14 @@ class EditTextPhoneNumberViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.String(
-                      value = FhirR4String(value = "+12345678910"),
-                    ),
-                ),
+                      value = FhirR4String(value = "+12345678910")
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireEditTextPhoneNumberView(questionnaireViewItem) }
@@ -211,11 +211,11 @@ class EditTextPhoneNumberViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "phone-number"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "phone-number-item")),
@@ -247,11 +247,11 @@ class EditTextPhoneNumberViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "phone-number"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "phone-number-item")),
@@ -287,11 +287,11 @@ class EditTextPhoneNumberViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "phone-number"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "phone-number-item")),
@@ -325,9 +325,9 @@ class EditTextPhoneNumberViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "phone-number"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
               ),
               Extension(
@@ -343,9 +343,9 @@ class EditTextPhoneNumberViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.String(
-                    value = FhirR4String(value = "hello there"),
-                  ),
-              ),
+                    value = FhirR4String(value = "hello there")
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -377,11 +377,11 @@ class EditTextPhoneNumberViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "phone-number"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           maxLength = FhirR4Integer(value = 10),
         ),
@@ -392,14 +392,14 @@ class EditTextPhoneNumberViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.String(
-                    value = FhirR4String(value = "+1234567891011"),
-                  ),
-              ),
+                    value = FhirR4String(value = "+1234567891011")
+                  )
+              )
             ),
         ),
         validationResult =
           Invalid(
-            listOf("The maximum number of characters that are permitted in the answer is: 10"),
+            listOf("The maximum number of characters that are permitted in the answer is: 10")
           ),
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -432,11 +432,11 @@ class EditTextPhoneNumberViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "phone-number"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           readOnly = FhirR4Boolean(value = true),
         ),

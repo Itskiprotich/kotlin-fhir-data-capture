@@ -33,9 +33,7 @@ class RegexValidatorTest {
       Questionnaire.Item.Builder(
           linkId = FhirString.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .build()
     val answer =
@@ -43,7 +41,7 @@ class RegexValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.String(
-              value = FhirString(value = "some answer"),
+              value = FhirString(value = "some answer")
             )
         }
         .build()
@@ -59,9 +57,7 @@ class RegexValidatorTest {
       Questionnaire.Item.Builder(
           linkId = FhirString.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply {
           extension =
@@ -69,9 +65,9 @@ class RegexValidatorTest {
               Extension.Builder(url = REGEX_EXTENSION_URL).apply {
                 value =
                   Extension.Value.String(
-                    value = FhirString.Builder().apply { value = "^[0-9]+$" }.build(),
+                    value = FhirString.Builder().apply { value = "^[0-9]+$" }.build()
                   )
-              },
+              }
             )
         }
         .build()
@@ -79,9 +75,7 @@ class RegexValidatorTest {
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
           value =
-            QuestionnaireResponse.Item.Answer.Value.String(
-              value = FhirString(value = "12345"),
-            )
+            QuestionnaireResponse.Item.Answer.Value.String(value = FhirString(value = "12345"))
         }
         .build()
 
@@ -96,9 +90,7 @@ class RegexValidatorTest {
       Questionnaire.Item.Builder(
           linkId = FhirString.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply {
           extension =
@@ -106,9 +98,9 @@ class RegexValidatorTest {
               Extension.Builder(url = REGEX_EXTENSION_URL).apply {
                 value =
                   Extension.Value.String(
-                    value = FhirString.Builder().apply { value = "^[0-9]+$" }.build(),
+                    value = FhirString.Builder().apply { value = "^[0-9]+$" }.build()
                   )
-              },
+              }
             )
         }
         .build()
@@ -116,9 +108,7 @@ class RegexValidatorTest {
       QuestionnaireResponse.Item.Answer.Builder()
         .apply {
           value =
-            QuestionnaireResponse.Item.Answer.Value.String(
-              value = FhirString(value = "123a45"),
-            )
+            QuestionnaireResponse.Item.Answer.Value.String(value = FhirString(value = "123a45"))
         }
         .build()
 

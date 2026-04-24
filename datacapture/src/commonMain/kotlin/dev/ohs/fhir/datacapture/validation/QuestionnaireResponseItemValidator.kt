@@ -16,21 +16,16 @@
 
 package dev.ohs.fhir.datacapture.validation
 
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.isHidden
 import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 
-internal class QuestionnaireResponseItemValidator(
-  val expressionEvaluator: ExpressionEvaluator,
-) {
+internal class QuestionnaireResponseItemValidator(val expressionEvaluator: ExpressionEvaluator) {
 
   /** Validators for [QuestionnaireResponse.Item]. */
   private val questionnaireResponseItemConstraintValidators =
-    listOf(
-      RequiredValidator,
-      ConstraintItemExtensionValidator(expressionEvaluator),
-    )
+    listOf(RequiredValidator, ConstraintItemExtensionValidator(expressionEvaluator))
 
   /** Validators for [QuestionnaireResponse.Item.Answer]. */
   private val answerConstraintValidators =
@@ -80,7 +75,7 @@ internal class QuestionnaireResponseItemValidator(
     } else {
       Invalid(
         questionnaireResponseItemConstraintValidationResult.mapNotNull { it.errorMessage } +
-          questionnaireResponseItemAnswerConstraintValidationResult.mapNotNull { it.errorMessage },
+          questionnaireResponseItemAnswerConstraintValidationResult.mapNotNull { it.errorMessage }
       )
     }
   }

@@ -50,10 +50,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuestionnaireResponseScreen(
-  responseJson: String,
-  onBackClick: () -> Unit,
-) {
+fun QuestionnaireResponseScreen(responseJson: String, onBackClick: () -> Unit) {
   Scaffold(
     topBar = {
       TopAppBar(
@@ -65,11 +62,14 @@ fun QuestionnaireResponseScreen(
         },
         navigationIcon = {
           IconButton(onClick = onBackClick) {
-            Icon(painter = painterResource(Res.drawable.arrow_back_filled_24dp), contentDescription = "Back")
+            Icon(
+              painter = painterResource(Res.drawable.arrow_back_filled_24dp),
+              contentDescription = "Back",
+            )
           }
         },
       )
-    },
+    }
   ) { padding ->
     Column(
       modifier =

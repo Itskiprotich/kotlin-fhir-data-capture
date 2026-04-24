@@ -27,9 +27,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.flattened
 import dev.ohs.fhir.datacapture.views.components.ValidationErrorDialog
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -157,10 +157,7 @@ fun Questionnaire(
   LaunchedEffect(Unit) { viewModel.setOnCancelButtonClickListener { onCancel() } }
 
   Box(modifier = Modifier.fillMaxSize()) {
-    QuestionnaireScreen(
-      viewModel = viewModel,
-      matchersProvider = effectiveMatchersProvider,
-    )
+    QuestionnaireScreen(viewModel = viewModel, matchersProvider = effectiveMatchersProvider)
 
     if (showValidationDialog) {
       ValidationErrorDialog(

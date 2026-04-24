@@ -177,7 +177,7 @@ data class QuestionnaireTextStyles(
   val titleText: TextStyle,
 ) {
   internal constructor(
-    typography: Typography,
+    typography: Typography
   ) : this(
     groupTypeQuestionText = typography.titleMedium,
     questionText = typography.titleMedium,
@@ -259,11 +259,7 @@ fun QuestionnaireTheme(
       large = RoundedCornerShape(16.dp),
     )
 
-  MaterialTheme(
-    colorScheme = colorScheme,
-    typography = typography,
-    shapes = materialShapes,
-  ) {
+  MaterialTheme(colorScheme = colorScheme, typography = typography, shapes = materialShapes) {
     CompositionLocalProvider(
       LocalQuestionnaireDimensions provides dimensions,
       LocalQuestionnaireShapes provides shapes,

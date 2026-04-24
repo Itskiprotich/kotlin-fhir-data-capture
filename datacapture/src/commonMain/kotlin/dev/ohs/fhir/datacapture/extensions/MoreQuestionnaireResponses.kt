@@ -56,12 +56,11 @@ internal fun QuestionnaireResponse.Builder.packRepeatedGroups(questionnaire: Que
 }
 
 private fun List<QuestionnaireResponse.Item.Builder>.packRepeatedGroups(
-  questionnaireItems: List<Questionnaire.Item>,
+  questionnaireItems: List<Questionnaire.Item>
 ): List<QuestionnaireResponse.Item.Builder> {
   return groupByAndZipByLinkId(questionnaireItems, map { it.build() }) {
       questionnaireItems,
-      questionnaireResponseItems,
-      ->
+      questionnaireResponseItems ->
       if (questionnaireItems.isEmpty()) {
         return@groupByAndZipByLinkId questionnaireResponseItems.map { it.toBuilder() }
       }
@@ -91,7 +90,7 @@ private fun List<QuestionnaireResponse.Item.Builder>.packRepeatedGroups(
                   }
                 }
                 .toMutableList()
-          },
+          }
         )
       } else {
         updatedResponseItems.map { it.toBuilder() }
@@ -124,16 +123,14 @@ internal fun QuestionnaireResponse.Builder.unpackRepeatedGroups(questionnaire: Q
 private fun unpackRepeatedGroups(
   questionnaireItems: List<Questionnaire.Item>,
   questionnaireResponseItems: List<QuestionnaireResponse.Item.Builder>,
-): List<QuestionnaireResponse.Item.Builder> {
-  return questionnaireItems
+): List<QuestionnaireResponse.Item.Builder> =
+  questionnaireItems
     .zipByLinkId(questionnaireResponseItems.map { it.build() }) {
       questionnaireItem,
-      questionnaireResponseItem,
-      ->
+      questionnaireResponseItem ->
       unpackRepeatedGroups(questionnaireItem, questionnaireResponseItem.toBuilder())
     }
     .flatten()
-}
 
 private fun unpackRepeatedGroups(
   questionnaireItem: Questionnaire.Item,
@@ -147,15 +144,11 @@ private fun unpackRepeatedGroups(
   return if (questionnaireItem.isRepeatedGroup) {
     questionnaireResponseItem.answer.map {
       QuestionnaireResponse.Item.Builder(
-          dev.ohs.fhir.model.r4.String.Builder().apply {
-            value = questionnaireItem.linkId.value
-          },
+          dev.ohs.fhir.model.r4.String.Builder().apply { value = questionnaireItem.linkId.value }
         )
         .apply {
           linkId =
-            dev.ohs.fhir.model.r4.String.Builder().apply {
-              value = questionnaireItem.linkId.value
-            }
+            dev.ohs.fhir.model.r4.String.Builder().apply { value = questionnaireItem.linkId.value }
           text =
             dev.ohs.fhir.model.r4.String.Builder().apply {
               value = questionnaireItem.localizedTextAnnotatedString?.toString()

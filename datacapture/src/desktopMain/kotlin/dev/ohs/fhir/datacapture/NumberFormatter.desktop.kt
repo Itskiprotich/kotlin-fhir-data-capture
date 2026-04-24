@@ -20,7 +20,6 @@ import java.text.DecimalFormat
 import java.util.Locale
 
 actual object NumberFormatter {
-  actual fun formatInteger(value: Int): String {
-    return DecimalFormat.getInstance(Locale.getDefault()).format(value)
-  }
+  actual fun formatInteger(value: Int): String =
+    DecimalFormat.getInstance(Locale.getDefault()).format(value)
 }

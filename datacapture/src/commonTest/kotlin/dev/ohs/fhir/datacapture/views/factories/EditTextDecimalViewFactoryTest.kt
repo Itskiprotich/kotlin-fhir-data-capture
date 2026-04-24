@@ -29,13 +29,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Code
-import dev.ohs.fhir.model.r4.Coding
-import dev.ohs.fhir.model.r4.Decimal
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
@@ -48,6 +41,13 @@ import dev.ohs.fhir.datacapture.views.components.EDIT_TEXT_FIELD_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_AT_HEADER_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
 import dev.ohs.fhir.datacapture.views.components.UNIT_TEXT_TEST_TAG
+import dev.ohs.fhir.model.r4.Code
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.Decimal
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
@@ -73,7 +73,7 @@ class EditTextDecimalViewFactoryTest {
             QuestionnaireResponse.Item(linkId = FhirR4String(value = "decimal-item")),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -97,14 +97,14 @@ class EditTextDecimalViewFactoryTest {
                   QuestionnaireResponse.Item.Answer(
                     value =
                       QuestionnaireResponse.Item.Answer.Value.Decimal(
-                        value = Decimal(value = "1.1".toBigDecimal()),
-                      ),
-                  ),
+                        value = Decimal(value = "1.1".toBigDecimal())
+                      )
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -127,14 +127,14 @@ class EditTextDecimalViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Decimal(
-                      value = Decimal(value = "1.1".toBigDecimal()),
-                    ),
-                ),
+                      value = Decimal(value = "1.1".toBigDecimal())
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireEditTextDecimalView(questionnaireViewItem) }
@@ -166,11 +166,8 @@ class EditTextDecimalViewFactoryTest {
             listOf(
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-                value =
-                  Extension.Value.Coding(
-                    value = Coding(code = Code(value = "kg")),
-                  ),
-              ),
+                value = Extension.Value.Coding(value = Coding(code = Code(value = "kg"))),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -180,20 +177,16 @@ class EditTextDecimalViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Decimal(
-                    value = Decimal(value = "1.1".toBigDecimal()),
-                  ),
-              ),
+                    value = Decimal(value = "1.1".toBigDecimal())
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
 
-    setContent {
-      QuestionnaireEditTextDecimalView(
-        questionnaireViewItem,
-      )
-    }
+    setContent { QuestionnaireEditTextDecimalView(questionnaireViewItem) }
 
     onNodeWithTag(UNIT_TEXT_TEST_TAG).assertIsDisplayed().assertTextEquals("kg")
   }
@@ -210,11 +203,8 @@ class EditTextDecimalViewFactoryTest {
               listOf(
                 Extension(
                   url = "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-                  value =
-                    Extension.Value.Coding(
-                      value = Coding(code = Code("kg")),
-                    ),
-                ),
+                  value = Extension.Value.Coding(value = Coding(code = Code("kg"))),
+                )
               ),
           ),
           QuestionnaireResponse.Item(
@@ -224,14 +214,14 @@ class EditTextDecimalViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Decimal(
-                      value = Decimal(value = "1.1".toBigDecimal()),
-                    ),
-                ),
+                      value = Decimal(value = "1.1".toBigDecimal())
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireEditTextDecimalView(questionnaireViewItem) }
@@ -241,9 +231,7 @@ class EditTextDecimalViewFactoryTest {
           linkId = FhirR4String(value = "decimal-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.Decimal),
         ),
-        QuestionnaireResponse.Item(
-          linkId = FhirR4String(value = "decimal-item"),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "decimal-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -261,9 +249,7 @@ class EditTextDecimalViewFactoryTest {
           linkId = FhirR4String(value = "decimal-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.Decimal),
         ),
-        QuestionnaireResponse.Item(
-          linkId = FhirR4String(value = "decimal-item"),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "decimal-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, result, _ -> answers = result },
       )
@@ -283,9 +269,7 @@ class EditTextDecimalViewFactoryTest {
           linkId = FhirR4String(value = "decimal-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.Decimal),
         ),
-        QuestionnaireResponse.Item(
-          linkId = FhirR4String(value = "decimal-item"),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "decimal-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -305,9 +289,7 @@ class EditTextDecimalViewFactoryTest {
           linkId = FhirR4String(value = "decimal-item"),
           type = Enumeration(value = Questionnaire.QuestionnaireItemType.Decimal),
         ),
-        QuestionnaireResponse.Item(
-          linkId = FhirR4String(value = "decimal-item"),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "decimal-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, result -> draftAnswer = result },
       )
@@ -346,14 +328,14 @@ class EditTextDecimalViewFactoryTest {
                   QuestionnaireResponse.Item.Answer(
                     value =
                       QuestionnaireResponse.Item.Answer.Value.Decimal(
-                        value = Decimal(value = "3.3".toBigDecimal()),
-                      ),
-                  ),
+                        value = Decimal(value = "3.3".toBigDecimal())
+                      )
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -388,14 +370,14 @@ class EditTextDecimalViewFactoryTest {
                   QuestionnaireResponse.Item.Answer(
                     value =
                       QuestionnaireResponse.Item.Answer.Value.Decimal(
-                        value = Decimal(value = "1.1".toBigDecimal()),
-                      ),
-                  ),
+                        value = Decimal(value = "1.1".toBigDecimal())
+                      )
+                  )
                 ),
             ),
             validationResult = Invalid(listOf("Minimum value allowed is:2.1")),
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -416,7 +398,7 @@ class EditTextDecimalViewFactoryTest {
             QuestionnaireResponse.Item(linkId = FhirR4String(value = "decimal-item")),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -437,7 +419,7 @@ class EditTextDecimalViewFactoryTest {
             QuestionnaireResponse.Item(linkId = FhirR4String(value = "decimal-item")),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -460,7 +442,7 @@ class EditTextDecimalViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = true),
-          ),
+          )
       )
     }
 
@@ -483,7 +465,7 @@ class EditTextDecimalViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = false),
-          ),
+          )
       )
     }
 
@@ -505,7 +487,7 @@ class EditTextDecimalViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = true),
-          ),
+          )
       )
     }
 
@@ -527,7 +509,7 @@ class EditTextDecimalViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = false),
-          ),
+          )
       )
     }
 
@@ -548,7 +530,7 @@ class EditTextDecimalViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = true),
-          ),
+          )
       )
     }
 
@@ -569,7 +551,7 @@ class EditTextDecimalViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = false),
-          ),
+          )
       )
     }
 
@@ -589,7 +571,7 @@ class EditTextDecimalViewFactoryTest {
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           draftAnswer = "1.1.1.1",
-        ),
+        )
       )
 
     setContent { QuestionnaireEditTextDecimalView(questionnaireViewItem) }
@@ -627,14 +609,14 @@ class EditTextDecimalViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Decimal(
-                      value = Decimal(value = "124.5".toBigDecimal()),
-                    ),
-                ),
+                      value = Decimal(value = "124.5".toBigDecimal())
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireEditTextDecimalView(questionnaireViewItem) }
@@ -650,11 +632,11 @@ class EditTextDecimalViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Decimal(
-                      value = Decimal(value = "124.578".toBigDecimal()),
-                    ),
-                ),
+                      value = Decimal(value = "124.578".toBigDecimal())
+                    )
+                )
               ),
-          ),
+          )
       )
     onNodeWithTag(EDIT_TEXT_FIELD_TEST_TAG).assertTextEquals("124.578")
   }

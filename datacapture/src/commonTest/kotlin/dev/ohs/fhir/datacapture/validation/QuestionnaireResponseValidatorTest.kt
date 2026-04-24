@@ -43,23 +43,23 @@ class QuestionnaireResponseValidatorTest {
     val questionnaireResponse =
       QuestionnaireResponse.Builder(
           status =
-            Enumeration(QuestionnaireResponse.QuestionnaireResponseStatus.Completed.getCode()),
+            Enumeration(QuestionnaireResponse.QuestionnaireResponseStatus.Completed.getCode())
         )
         .apply {
           this.item.add(
             QuestionnaireResponse.Item.Builder(
-                linkId = FhirString.Builder().apply { value = "a-question" },
+                linkId = FhirString.Builder().apply { value = "a-question" }
               )
               .apply {
                 this.answer.add(
                   QuestionnaireResponse.Item.Answer.Builder().apply {
                     value =
                       QuestionnaireResponse.Item.Answer.Value.String(
-                        value = FhirString(value = "some answer"),
+                        value = FhirString(value = "some answer")
                       )
-                  },
+                  }
                 )
-              },
+              }
           )
         }
         .build()
@@ -89,13 +89,13 @@ class QuestionnaireResponseValidatorTest {
     val questionnaireResponse =
       QuestionnaireResponse.Builder(
           status =
-            Enumeration(QuestionnaireResponse.QuestionnaireResponseStatus.Completed.getCode()),
+            Enumeration(QuestionnaireResponse.QuestionnaireResponseStatus.Completed.getCode())
         )
         .apply {
           this.item.add(
             QuestionnaireResponse.Item.Builder(
-              linkId = FhirString.Builder().apply { value = "a-question" },
-            ),
+              linkId = FhirString.Builder().apply { value = "a-question" }
+            )
           )
         }
         .build()

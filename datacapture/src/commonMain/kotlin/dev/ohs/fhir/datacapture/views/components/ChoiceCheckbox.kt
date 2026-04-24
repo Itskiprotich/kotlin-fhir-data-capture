@@ -84,7 +84,7 @@ internal fun ChoiceCheckbox(
             Modifier.border(1.dp, borderColor, shape)
           } else {
             Modifier
-          },
+          }
         )
         .toggleable(
           value = checked,
@@ -121,12 +121,9 @@ internal fun ChoiceCheckbox(
       )
     }
     Spacer(
-      modifier = Modifier.width(QuestionnaireTheme.dimensions.optionItemBetweenTextAndIconPadding),
+      modifier = Modifier.width(QuestionnaireTheme.dimensions.optionItemBetweenTextAndIconPadding)
     )
-    Text(
-      text = label,
-      color = textColor,
-    )
+    Text(text = label, color = textColor)
     Spacer(modifier = Modifier.width(QuestionnaireTheme.dimensions.optionItemAfterTextPadding))
   }
 }

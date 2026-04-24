@@ -29,8 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import dev.ohs.fhir.model.r4.Attachment
 import dev.ohs.fhir.datacapture.extensions.imageData
+import dev.ohs.fhir.model.r4.Attachment
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
 @Composable
@@ -47,14 +47,8 @@ fun ImageMediaItem(imageBitmap: ImageBitmap, imageName: String?) {
   Image(
     modifier =
       Modifier.testTag("media-image")
-        .padding(
-          horizontal = 16.dp,
-          vertical = 8.dp,
-        )
-        .sizeIn(
-          maxHeight = 200.dp,
-          maxWidth = 200.dp,
-        ),
+        .padding(horizontal = 16.dp, vertical = 8.dp)
+        .sizeIn(maxHeight = 200.dp, maxWidth = 200.dp),
     bitmap = imageBitmap,
     contentDescription = imageName,
   )

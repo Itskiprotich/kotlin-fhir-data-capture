@@ -31,14 +31,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Code
-import dev.ohs.fhir.model.r4.CodeableConcept
-import dev.ohs.fhir.model.r4.Coding
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Uri
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_ITEM_CONTROL_SYSTEM
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_ITEM_CONTROL_URL
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_SLIDER_STEP_VALUE_URL
@@ -54,6 +46,14 @@ import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_AT_HEADER_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
 import dev.ohs.fhir.datacapture.views.components.SLIDER_TAG
+import dev.ohs.fhir.model.r4.Code
+import dev.ohs.fhir.model.r4.CodeableConcept
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Uri
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -85,11 +85,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           text = FhirR4String(value = "Question?"),
         ),
@@ -123,11 +123,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -136,10 +136,8 @@ class SliderViewFactoryTest {
             listOf(
               QuestionnaireResponse.Item.Answer(
                 value =
-                  QuestionnaireResponse.Item.Answer.Value.Integer(
-                    value = FhirR4Integer(value = 10),
-                  ),
-              ),
+                  QuestionnaireResponse.Item.Answer.Value.Integer(value = FhirR4Integer(value = 10))
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -172,9 +170,9 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
               ),
               Extension(
@@ -194,7 +192,7 @@ class SliderViewFactoryTest {
 
     onNodeWithTag(SLIDER_TAG)
       .assertRangeInfoEquals(
-        ProgressBarRangeInfo(current = 0f, range = 0f..100f, steps = sliderStepsFromStepSize10),
+        ProgressBarRangeInfo(current = 0f, range = 0f..100f, steps = sliderStepsFromStepSize10)
       )
   }
 
@@ -218,11 +216,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "slider-step-value")),
@@ -236,7 +234,7 @@ class SliderViewFactoryTest {
 
     onNodeWithTag(SLIDER_TAG)
       .assertRangeInfoEquals(
-        ProgressBarRangeInfo(current = 0f, range = 0f..100f, steps = sliderStepsWithStepSize1),
+        ProgressBarRangeInfo(current = 0f, range = 0f..100f, steps = sliderStepsWithStepSize1)
       )
   }
 
@@ -260,9 +258,9 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
               ),
               Extension(
@@ -302,11 +300,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "slider-item")),
@@ -340,9 +338,9 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
               ),
               Extension(
@@ -382,11 +380,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "slider-item")),
@@ -420,9 +418,9 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
               ),
               Extension(
@@ -465,11 +463,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "slider-item")),
@@ -508,11 +506,11 @@ class SliderViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "slider"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(
@@ -522,14 +520,14 @@ class SliderViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Integer(
-                      value = FhirR4Integer(value = 10),
-                    ),
+                      value = FhirR4Integer(value = 10)
+                    )
                 ),
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Integer(
-                      value = FhirR4Integer(value = 10),
-                    ),
+                      value = FhirR4Integer(value = 10)
+                    )
                 ),
               ),
           ),
@@ -563,9 +561,9 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
               ),
               Extension(
@@ -584,10 +582,8 @@ class SliderViewFactoryTest {
             listOf(
               QuestionnaireResponse.Item.Answer(
                 value =
-                  QuestionnaireResponse.Item.Answer.Value.Integer(
-                    value = FhirR4Integer(value = 75),
-                  ),
-              ),
+                  QuestionnaireResponse.Item.Answer.Value.Integer(value = FhirR4Integer(value = 75))
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -619,9 +615,9 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
               ),
               Extension(
@@ -640,10 +636,8 @@ class SliderViewFactoryTest {
             listOf(
               QuestionnaireResponse.Item.Answer(
                 value =
-                  QuestionnaireResponse.Item.Answer.Value.Integer(
-                    value = FhirR4Integer(value = 25),
-                  ),
-              ),
+                  QuestionnaireResponse.Item.Answer.Value.Integer(value = FhirR4Integer(value = 25))
+              )
             ),
         ),
         validationResult = Invalid(listOf("Minimum value allowed is:50")),
@@ -675,11 +669,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "slider-item")),
@@ -712,11 +706,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           readOnly = FhirR4Boolean(value = true),
         ),
@@ -752,11 +746,11 @@ class SliderViewFactoryTest {
                                 Coding(
                                   system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                   code = Code(value = "slider"),
-                                ),
-                              ),
-                          ),
+                                )
+                              )
+                          )
                       ),
-                  ),
+                  )
                 ),
             ),
             QuestionnaireResponse.Item(
@@ -766,14 +760,14 @@ class SliderViewFactoryTest {
                   QuestionnaireResponse.Item.Answer(
                     value =
                       QuestionnaireResponse.Item.Answer.Value.Integer(
-                        value = FhirR4Integer(value = 10),
-                      ),
-                  ),
+                        value = FhirR4Integer(value = 10)
+                      )
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
         )
 
       setContent { QuestionnaireSliderView(questionnaireViewItem) }
@@ -799,11 +793,11 @@ class SliderViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "slider"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(
@@ -813,9 +807,9 @@ class SliderViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Integer(
-                      value = FhirR4Integer(value = 12),
-                    ),
-                ),
+                      value = FhirR4Integer(value = 12)
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
@@ -843,9 +837,9 @@ class SliderViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "slider"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
                 ),
                 Extension(
@@ -883,11 +877,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           text = FhirR4String(value = "Question"),
           required = FhirR4Boolean(value = true),
@@ -923,11 +917,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           required = FhirR4Boolean(value = true),
         ),
@@ -961,11 +955,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           required = FhirR4Boolean(value = true),
         ),
@@ -1000,11 +994,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           text = FhirR4String(value = "Question"),
         ),
@@ -1039,11 +1033,11 @@ class SliderViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "slider"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           text = FhirR4String(value = "Question"),
         ),

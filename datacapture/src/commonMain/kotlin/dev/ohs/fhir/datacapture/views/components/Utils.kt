@@ -41,10 +41,12 @@ fun getRequiredOrOptionalText(questionnaireViewItem: QuestionnaireViewItem): Str
         questionnaireViewItem.questionViewTextConfiguration.showRequiredText) -> {
         requiredTextString
       }
+
       (questionnaireViewItem.questionnaireItem.required?.value != true &&
         questionnaireViewItem.questionViewTextConfiguration.showOptionalText) -> {
         optionalHelperTextString
       }
+
       else -> {
         null
       }

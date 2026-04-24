@@ -23,8 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.FhirR4Integer
 import dev.ohs.fhir.datacapture.extensions.itemMedia
 import dev.ohs.fhir.datacapture.extensions.sliderStepValue
@@ -40,6 +38,8 @@ import dev.ohs.fhir.datacapture.views.components.ErrorText
 import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.components.MediaItem
 import dev.ohs.fhir.datacapture.views.components.SliderItem
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -92,7 +92,7 @@ internal object SliderViewFactory : QuestionnaireItemViewFactory {
           .padding(
             horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
             vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-          ),
+          )
     ) {
       Header(questionnaireViewItem, showRequiredOrOptionalText = true)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }
@@ -106,10 +106,8 @@ internal object SliderViewFactory : QuestionnaireItemViewFactory {
           questionnaireViewItem.setAnswer(
             QuestionnaireResponse.Item.Answer(
               value =
-                QuestionnaireResponse.Item.Answer.Value.Integer(
-                  FhirR4Integer(value = it.toInt()),
-                ),
-            ),
+                QuestionnaireResponse.Item.Answer.Value.Integer(FhirR4Integer(value = it.toInt()))
+            )
           )
         }
       }
@@ -120,7 +118,8 @@ internal object SliderViewFactory : QuestionnaireItemViewFactory {
   private fun displayValidationResult(validationResult: ValidationResult) =
     when (validationResult) {
       is NotValidated,
-      Valid, -> null
+      Valid -> null
+
       is Invalid -> validationResult.singleStringValidationMessage
     }
 
@@ -131,6 +130,5 @@ internal object SliderViewFactory : QuestionnaireItemViewFactory {
         is Extension.Value.Integer -> it.value.value?.toFloat()
         else -> throw IllegalArgumentException()
       }
-    }
-      ?: ifNull
+    } ?: ifNull
 }

@@ -36,14 +36,13 @@ internal object FhirPathService {
     expression: String,
     resource: Resource,
     variables: Map<String, Any?> = emptyMap(),
-  ): List<Any> {
-    return try {
+  ): List<Any> =
+    try {
       r4FhirPathEngine.evaluateExpression(expression, resource, variables).toList()
     } catch (throwable: Throwable) {
       Logger.e("Error evaluating fhirPath expression $expression", throwable)
       emptyList()
     }
-  }
 
   /** Converts the FHIRPath evaluation [result] to a boolean. */
   fun convertToBoolean(result: List<Any>): Boolean {
@@ -53,16 +52,15 @@ internal object FhirPathService {
   }
 
   /** Converts the FHIRPath evaluation [results] to a string. */
-  fun convertToString(results: List<Any>): String {
-    return when {
+  fun convertToString(results: List<Any>): String =
+    when {
       results.isEmpty() -> ""
       results.size == 1 -> convertSingleResultToString(results.first())
       else -> results.joinToString(", ") { convertSingleResultToString(it) }
     }
-  }
 
-  private fun convertSingleResultToString(value: Any): String {
-    return when (value) {
+  private fun convertSingleResultToString(value: Any): String =
+    when (value) {
       is dev.ohs.fhir.model.r4.String -> value.value ?: ""
       is dev.ohs.fhir.model.r4.Integer -> value.value?.toString() ?: ""
       is dev.ohs.fhir.model.r4.Decimal -> value.value?.toString() ?: ""
@@ -76,7 +74,6 @@ internal object FhirPathService {
       is dev.ohs.fhir.model.r4.Quantity -> value.value?.value?.toString() ?: ""
       else -> value.toString()
     }
-  }
 
   /** Extracts the resource type from the given FHIRPath. */
   fun extractResourceTypeFromPath(fhirPath: String): String? {
@@ -86,10 +83,7 @@ internal object FhirPathService {
   }
 
   /** Evaluates the [expression] on the [resource] and returns the result as a string. */
-  fun evaluateFhirPathToString(
-    expression: String,
-    resource: Resource?,
-  ): String {
+  fun evaluateFhirPathToString(expression: String, resource: Resource?): String {
     if (resource == null) return ""
     return convertToString(evaluate(expression, resource))
   }

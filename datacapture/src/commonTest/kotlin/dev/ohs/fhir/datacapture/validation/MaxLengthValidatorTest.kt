@@ -32,9 +32,7 @@ class MaxLengthValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .build()
     val answer =
@@ -42,7 +40,7 @@ class MaxLengthValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.String(
-              value = dev.ohs.fhir.model.r4.String(value = "some answer"),
+              value = dev.ohs.fhir.model.r4.String(value = "some answer")
             )
         }
         .build()
@@ -58,9 +56,7 @@ class MaxLengthValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply { maxLength = Integer.Builder().apply { value = 10 } }
         .build()
@@ -69,7 +65,7 @@ class MaxLengthValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.String(
-              value = dev.ohs.fhir.model.r4.String(value = "short"),
+              value = dev.ohs.fhir.model.r4.String(value = "short")
             )
         }
         .build()
@@ -85,9 +81,7 @@ class MaxLengthValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply { maxLength = Integer.Builder().apply { value = 10 } }
         .build()
@@ -96,7 +90,7 @@ class MaxLengthValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.String(
-              value = dev.ohs.fhir.model.r4.String(value = "1234567890"),
+              value = dev.ohs.fhir.model.r4.String(value = "1234567890")
             )
         }
         .build()
@@ -112,9 +106,7 @@ class MaxLengthValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply { maxLength = Integer.Builder().apply { value = 10 } }
         .build()
@@ -123,7 +115,7 @@ class MaxLengthValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.String(
-              value = dev.ohs.fhir.model.r4.String(value = "very long answer"),
+              value = dev.ohs.fhir.model.r4.String(value = "very long answer")
             )
         }
         .build()

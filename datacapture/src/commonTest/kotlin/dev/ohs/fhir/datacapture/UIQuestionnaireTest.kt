@@ -41,10 +41,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.testing.TestLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.FhirR4Json
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.terminologies.PublicationStatus
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.button_pagination_next
@@ -62,6 +58,10 @@ import dev.ohs.fhir.datacapture.views.components.REPEATED_GROUP_INSTANCE_HEADER_
 import dev.ohs.fhir.datacapture.views.components.SLIDER_TAG
 import dev.ohs.fhir.datacapture.views.factories.NO_CHOICE_RADIO_BUTTON_TAG
 import dev.ohs.fhir.datacapture.views.factories.YES_CHOICE_RADIO_BUTTON_TAG
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.FhirR4Json
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.terminologies.PublicationStatus
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import org.jetbrains.compose.resources.getString
@@ -172,9 +172,7 @@ class UIQuestionnaireTest {
     setQuestionnaireContent("files/text_questionnaire_integer.json", isReviewMode = true)
 
     val reviewButtonText = getString(Res.string.button_review)
-    onNode(
-        hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and hasText(reviewButtonText),
-      )
+    onNode(hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and hasText(reviewButtonText))
       .performClick()
 
     onNodeWithTag(QUESTIONNAIRE_PROGRESS_INDICATOR_TEST_TAG).assertDoesNotExist()
@@ -185,9 +183,7 @@ class UIQuestionnaireTest {
     setQuestionnaireContent("files/text_questionnaire_integer.json", isReviewMode = true)
 
     val reviewButtonText = getString(Res.string.button_review)
-    onNode(
-        hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and hasText(reviewButtonText),
-      )
+    onNode(hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and hasText(reviewButtonText))
       .performClick()
 
     onNodeWithText(getString(Res.string.edit_button_text)).performClick()
@@ -333,7 +329,7 @@ class UIQuestionnaireTest {
             Questionnaire.Item(
               linkId = FhirR4String(value = "a-link-id"),
               type = Enumeration(value = Questionnaire.QuestionnaireItemType.Boolean),
-            ),
+            )
           ),
       )
     setQuestionnaireContent(questionnaire, isReviewMode = true, showReviewPageFirst = true)
@@ -341,9 +337,7 @@ class UIQuestionnaireTest {
     onNodeWithText(getString(Res.string.edit_button_text)).assertIsDisplayed()
     onNode(
         hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and
-          hasText(
-            getString(Res.string.submit_questionnaire),
-          ),
+          hasText(getString(Res.string.submit_questionnaire))
       )
       .assertIsDisplayed()
   }
@@ -359,14 +353,12 @@ class UIQuestionnaireTest {
             Questionnaire.Item(
               linkId = FhirR4String(value = "a-link-id"),
               type = Enumeration(value = Questionnaire.QuestionnaireItemType.Boolean),
-            ),
+            )
           ),
       )
     val customButtonText = "Apply"
     setQuestionnaireContent(questionnaire, submitText = customButtonText)
-    onNode(
-        hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and hasText(customButtonText),
-      )
+    onNode(hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and hasText(customButtonText))
       .assertIsDisplayed()
   }
 
@@ -436,11 +428,7 @@ class UIQuestionnaireTest {
     setQuestionnaireContent(questionnaire)
     onNode(
         hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and
-          hasText(
-            getString(
-              Res.string.button_pagination_previous,
-            ),
-          ),
+          hasText(getString(Res.string.button_pagination_previous))
       )
       .assertDoesNotExist()
   }
@@ -457,22 +445,20 @@ class UIQuestionnaireTest {
               Questionnaire.Item(
                 linkId = FhirR4String(value = "a-link-id"),
                 type = Enumeration(value = Questionnaire.QuestionnaireItemType.Boolean),
-              ),
+              )
             ),
         )
       setQuestionnaireContent(questionnaire, showNavigationLongScroll = false)
 
       onNode(
           hasTestTag(QUESTIONNAIRE_BOTTOM_NAVIGATION_TEST_TAG) and
-            hasAnyAncestor(hasTestTag(QUESTIONNAIRE_EDIT_LIST)),
+            hasAnyAncestor(hasTestTag(QUESTIONNAIRE_EDIT_LIST))
         )
         .assertDoesNotExist()
 
       onNode(
           hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and
-            hasText(
-              getString(Res.string.submit_questionnaire),
-            ),
+            hasText(getString(Res.string.submit_questionnaire))
         )
         .assertIsDisplayed()
         .assertIsEnabled()
@@ -490,22 +476,20 @@ class UIQuestionnaireTest {
               Questionnaire.Item(
                 linkId = FhirR4String(value = "a-link-id"),
                 type = Enumeration(value = Questionnaire.QuestionnaireItemType.Boolean),
-              ),
+              )
             ),
         )
       setQuestionnaireContent(questionnaire, showNavigationLongScroll = true)
 
       onNode(
           hasTestTag(QUESTIONNAIRE_BOTTOM_NAVIGATION_TEST_TAG) and
-            hasAnyAncestor(hasTestTag(QUESTIONNAIRE_EDIT_LIST)),
+            hasAnyAncestor(hasTestTag(QUESTIONNAIRE_EDIT_LIST))
         )
         .assertExists()
 
       onNode(
           hasTestTag(QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG) and
-            hasText(
-              getString(Res.string.submit_questionnaire),
-            ),
+            hasText(getString(Res.string.submit_questionnaire))
         )
         .assertIsDisplayed()
         .assertIsEnabled()

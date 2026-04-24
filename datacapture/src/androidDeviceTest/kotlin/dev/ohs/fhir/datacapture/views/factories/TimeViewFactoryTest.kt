@@ -25,16 +25,16 @@ import androidx.compose.ui.test.hasTextExactly
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Time
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import dev.ohs.fhir.datacapture.validation.NotValidated
 import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
 import dev.ohs.fhir.datacapture.views.components.TIME_PICKER_INPUT_FIELD
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Time
 import java.util.Locale
 import kotlin.test.Test
 import kotlinx.datetime.LocalTime
@@ -104,9 +104,9 @@ class TimeViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Time(
-                    value = Time(value = LocalTime.parse("10:10:00")),
-                  ),
-              ),
+                    value = Time(value = LocalTime.parse("10:10:00"))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -135,9 +135,9 @@ class TimeViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Time(
-                    value = Time(value = LocalTime.parse("10:10:00")),
-                  ),
-              ),
+                    value = Time(value = LocalTime.parse("10:10:00"))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -147,9 +147,7 @@ class TimeViewFactoryTest {
     setContent { QuestionnaireTimeView(questionnaireViewItem) }
 
     onNodeWithTag(TIME_PICKER_INPUT_FIELD, useUnmergedTree = true)
-      .assert(
-        hasTextExactly("10:10 AM"),
-      )
+      .assert(hasTextExactly("10:10 AM"))
   }
 
   @Test
@@ -169,9 +167,9 @@ class TimeViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Time(
-                    value = Time(value = LocalTime.parse("22:10:00")),
-                  ),
-              ),
+                    value = Time(value = LocalTime.parse("22:10:00"))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -181,9 +179,7 @@ class TimeViewFactoryTest {
     setContent { QuestionnaireTimeView(questionnaireViewItem) }
 
     onNodeWithTag(TIME_PICKER_INPUT_FIELD, useUnmergedTree = true)
-      .assert(
-        hasTextExactly("10:10 PM"),
-      )
+      .assert(hasTextExactly("10:10 PM"))
   }
 
   @Test
@@ -203,9 +199,9 @@ class TimeViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Time(
-                    value = Time(value = LocalTime.parse("22:10:00")),
-                  ),
-              ),
+                    value = Time(value = LocalTime.parse("22:10:00"))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,

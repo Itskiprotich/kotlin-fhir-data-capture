@@ -82,10 +82,7 @@ internal fun RepeatedGroupHeaderItem(
         tint = color,
       )
       Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-      Text(
-        text = stringResource(Res.string.delete),
-        color = color,
-      )
+      Text(text = stringResource(Res.string.delete), color = color)
     }
   }
 }

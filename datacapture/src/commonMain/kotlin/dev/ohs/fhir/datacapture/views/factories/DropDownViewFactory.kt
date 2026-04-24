@@ -75,6 +75,7 @@ internal object DropDownViewFactory : QuestionnaireItemViewFactory {
               validationResult.singleStringValidationMessage
             }
           }
+
           else -> ""
         }
       }
@@ -107,7 +108,7 @@ internal object DropDownViewFactory : QuestionnaireItemViewFactory {
           .padding(
             horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
             vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-          ),
+          )
     ) {
       Header(questionnaireViewItem)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }
@@ -129,9 +130,7 @@ internal object DropDownViewFactory : QuestionnaireItemViewFactory {
 
         coroutineScope.launch {
           if (selectedAnswer != null) {
-            questionnaireViewItem.setAnswer(
-              selectedAnswer.toQuestionnaireResponseItemAnswer(),
-            )
+            questionnaireViewItem.setAnswer(selectedAnswer.toQuestionnaireResponseItemAnswer())
           } else {
             questionnaireViewItem.clearAnswer()
           }

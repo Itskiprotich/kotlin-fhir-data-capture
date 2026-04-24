@@ -44,8 +44,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import dev.ohs.fhir.model.r4.Element
-import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.datacapture.extensions.displayString
 import dev.ohs.fhir.datacapture.extensions.elementValue
 import dev.ohs.fhir.datacapture.extensions.itemAnswerOptionImage
@@ -53,6 +51,8 @@ import dev.ohs.fhir.datacapture.extensions.toAnnotatedString
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.ic_clear
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
+import dev.ohs.fhir.model.r4.Element
+import dev.ohs.fhir.model.r4.Questionnaire
 import org.jetbrains.compose.resources.painterResource
 
 internal const val CLEAR_TEXT_ICON_BUTTON_TAG = "clear_field_text"
@@ -142,14 +142,7 @@ internal fun DropDownAnswerMenuItem(
       )
     },
     leadingIcon =
-      answerOption.iconImage?.let {
-        {
-          Icon(
-            it,
-            contentDescription = answerOption.displayString,
-          )
-        }
-      },
+      answerOption.iconImage?.let { { Icon(it, contentDescription = answerOption.displayString) } },
     enabled = enabled,
     onClick = { onSelected() },
     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -252,11 +245,7 @@ internal fun AutoCompleteDropDownItem(
           }
           ExposedDropdownMenuDefaults.TrailingIcon(
             expanded = expanded,
-            modifier =
-              Modifier.menuAnchor(
-                ExposedDropdownMenuAnchorType.SecondaryEditable,
-                enabled,
-              ),
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.SecondaryEditable, enabled),
           )
         }
       },

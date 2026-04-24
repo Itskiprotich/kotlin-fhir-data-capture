@@ -52,9 +52,7 @@ internal object AutoCompleteViewFactory : QuestionnaireItemViewFactory {
     var selectedAnswerOptions by
       remember(questionnaireViewItem.answers, enabledAnswerOptions) {
         val answersElementSet = questionnaireViewItem.answers.map { it.elementValue }.toSet()
-        mutableStateOf(
-          enabledAnswerOptions.filter { it.elementValue in answersElementSet },
-        )
+        mutableStateOf(enabledAnswerOptions.filter { it.elementValue in answersElementSet })
       }
     val errorTextMessage =
       remember(questionnaireViewItem.validationResult) {
@@ -74,7 +72,7 @@ internal object AutoCompleteViewFactory : QuestionnaireItemViewFactory {
           .padding(
             horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
             vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-          ),
+          )
     ) {
       Header(questionnaireViewItem, showRequiredOrOptionalText = true)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }
@@ -128,7 +126,7 @@ internal object AutoCompleteViewFactory : QuestionnaireItemViewFactory {
                 }
 
               questionnaireViewItem.removeAnswer(
-                deSelectedAnswerOption.toQuestionnaireResponseItemAnswer(),
+                deSelectedAnswerOption.toQuestionnaireResponseItemAnswer()
               )
             } else {
               questionnaireViewItem.clearAnswer()

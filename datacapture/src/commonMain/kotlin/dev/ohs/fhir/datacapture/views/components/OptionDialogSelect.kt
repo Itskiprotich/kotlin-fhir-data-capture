@@ -49,7 +49,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.datacapture.extensions.displayString
 import dev.ohs.fhir.datacapture.extensions.elementValue
 import dev.ohs.fhir.datacapture.extensions.itemAnswerOptionImage
@@ -64,6 +63,7 @@ import dev.ohs.fhir.datacapture.generated.resources.open_choice_other_add_anothe
 import dev.ohs.fhir.datacapture.generated.resources.open_choice_other_hint
 import dev.ohs.fhir.datacapture.generated.resources.save
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
+import dev.ohs.fhir.model.r4.Questionnaire
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.concurrent.atomics.fetchAndIncrement
@@ -164,9 +164,10 @@ internal fun OptionDialogSelect(
                   when {
                     ind == index || option == optionSelectRow -> {
                       optionSelectRow.copy(
-                        option = optionSelectRow.option.copy(selected = selected),
+                        option = optionSelectRow.option.copy(selected = selected)
                       )
                     }
+
                     selected &&
                       multiSelect &&
                       (optionSelectRow.option.item.optionExclusive ||
@@ -179,10 +180,12 @@ internal fun OptionDialogSelect(
                       // deselect optionExclusive answer option.
                       option.copy(option = option.option.copy(selected = false))
                     }
+
                     !multiSelect -> {
                       // In single-select mode, we need to disable all of the other rows
                       option.copy(option = option.option.copy(selected = false))
                     }
+
                     else -> {
                       option
                     }
@@ -211,6 +214,7 @@ internal fun OptionDialogSelect(
                     choiceOptions =
                       choiceOptions.map { it.copy(option = it.option.copy(selected = false)) }
                   }
+
                   selected -> {
                     choiceOptions =
                       choiceOptions.map {
@@ -254,9 +258,7 @@ internal fun OptionDialogSelect(
                 )
 
                 if (multiSelect) {
-                  IconButton(
-                    onClick = { otherOptionEditTexts.removeAt(index) },
-                  ) {
+                  IconButton(onClick = { otherOptionEditTexts.removeAt(index) }) {
                     Icon(
                       painterResource(Res.drawable.delete_24px),
                       contentDescription = stringResource(Res.string.delete),
@@ -271,7 +273,7 @@ internal fun OptionDialogSelect(
           if (showAddAnother) {
             item {
               Button(
-                onClick = { otherOptionEditTexts.add(OptionSelectRow.OtherEditText.fromText("")) },
+                onClick = { otherOptionEditTexts.add(OptionSelectRow.OtherEditText.fromText("")) }
               ) {
                 Text(stringResource(Res.string.open_choice_other_add_another))
               }
@@ -289,11 +291,7 @@ internal fun OptionDialogSelect(
               Modifier.padding(QuestionnaireTheme.dimensions.dialogConfirmationButtonPadding),
             onClick = onDismiss,
           ) {
-            Text(
-              stringResource(Res.string.cancel),
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis,
-            )
+            Text(stringResource(Res.string.cancel), maxLines = 1, overflow = TextOverflow.Ellipsis)
           }
           TextButton(
             modifier =
@@ -304,16 +302,12 @@ internal fun OptionDialogSelect(
                   options = choiceOptions.map { it.option },
                   otherOptions =
                     otherOptionEditTexts.map { it.currentText }.filterNot { it.isBlank() },
-                ),
+                )
               )
               onDismiss()
             },
           ) {
-            Text(
-              stringResource(Res.string.save),
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis,
-            )
+            Text(stringResource(Res.string.save), maxLines = 1, overflow = TextOverflow.Ellipsis)
           }
         }
       }
@@ -352,10 +346,7 @@ internal fun OptionChoice(
   }
 }
 
-data class SelectedOptions(
-  val options: List<OptionSelectOption>,
-  val otherOptions: List<String>,
-) {
+data class SelectedOptions(val options: List<OptionSelectOption>, val otherOptions: List<String>) {
 
   @get:Composable
   val selectedSummary: String
@@ -363,10 +354,7 @@ data class SelectedOptions(
 }
 
 /** Represents selectable options in the multi-select page. */
-data class OptionSelectOption(
-  val item: Questionnaire.Item.AnswerOption,
-  val selected: Boolean,
-) {
+data class OptionSelectOption(val item: Questionnaire.Item.AnswerOption, val selected: Boolean) {
   @get:Composable
   val displayString: String
     get() = item.displayString()
@@ -387,11 +375,7 @@ internal sealed class OptionSelectRow {
     @OptIn(ExperimentalAtomicApi::class)
     companion object {
       fun fromText(text: String) =
-        OtherEditText(
-          id = idProvider.fetchAndIncrement(),
-          startingText = text,
-          currentText = text,
-        )
+        OtherEditText(id = idProvider.fetchAndIncrement(), startingText = text, currentText = text)
 
       private val idProvider = AtomicInt(0)
     }

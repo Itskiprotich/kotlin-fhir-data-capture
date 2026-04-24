@@ -28,6 +28,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
+import dev.ohs.fhir.datacapture.extensions.FhirR4String
+import dev.ohs.fhir.datacapture.validation.NotValidated
+import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.model.r4.Attachment
 import dev.ohs.fhir.model.r4.Base64Binary
 import dev.ohs.fhir.model.r4.Code
@@ -35,9 +38,6 @@ import dev.ohs.fhir.model.r4.Enumeration
 import dev.ohs.fhir.model.r4.Extension
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.datacapture.extensions.FhirR4String
-import dev.ohs.fhir.datacapture.validation.NotValidated
-import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
@@ -60,7 +60,7 @@ class AttachmentViewFactoryTest {
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/mimeType",
                 value = Extension.Value.Code(value = Code(value = "image/*")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "attachment-item")),
@@ -87,7 +87,7 @@ class AttachmentViewFactoryTest {
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/mimeType",
                 value = Extension.Value.Code(value = Code(value = "audio/*")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "attachment-item")),
@@ -113,7 +113,7 @@ class AttachmentViewFactoryTest {
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/mimeType",
                 value = Extension.Value.Code(value = Code(value = "video/*")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "attachment-item")),
@@ -139,7 +139,7 @@ class AttachmentViewFactoryTest {
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/mimeType",
                 value = Extension.Value.Code(value = Code(value = "application/pdf")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "attachment-item")),
@@ -196,7 +196,7 @@ class AttachmentViewFactoryTest {
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/mimeType",
                 value = Extension.Value.Code(value = Code(value = "image/*")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -212,11 +212,11 @@ class AttachmentViewFactoryTest {
                         contentType = Code(value = "image/*"),
                         data =
                           Base64Binary(
-                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                           ),
-                      ),
-                  ),
-              ),
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -241,7 +241,7 @@ class AttachmentViewFactoryTest {
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/mimeType",
                 value = Extension.Value.Code(value = Code(value = "audio/*")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -257,11 +257,11 @@ class AttachmentViewFactoryTest {
                         contentType = Code(value = "audio/*"),
                         data =
                           Base64Binary(
-                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                           ),
-                      ),
-                  ),
-              ),
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -286,7 +286,7 @@ class AttachmentViewFactoryTest {
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/mimeType",
                 value = Extension.Value.Code(value = Code(value = "video/*")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -302,11 +302,11 @@ class AttachmentViewFactoryTest {
                         contentType = Code(value = "video/*"),
                         data =
                           Base64Binary(
-                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                           ),
-                      ),
-                  ),
-              ),
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -331,7 +331,7 @@ class AttachmentViewFactoryTest {
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/mimeType",
                 value = Extension.Value.Code(value = Code(value = "application/pdf")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -347,11 +347,11 @@ class AttachmentViewFactoryTest {
                         contentType = Code(value = "application/pdf"),
                         data =
                           Base64Binary(
-                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                           ),
-                      ),
-                  ),
-              ),
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -426,16 +426,16 @@ class AttachmentViewFactoryTest {
                           contentType = Code(value = "image/jpeg"),
                           data =
                             Base64Binary(
-                              value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                              value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                             ),
-                        ),
-                    ),
-                ),
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireAttachmentView(questionnaireViewItem) }
@@ -501,16 +501,16 @@ class AttachmentViewFactoryTest {
                             contentType = Code(value = "image/jpeg"),
                             data =
                               Base64Binary(
-                                value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                                value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                               ),
-                          ),
-                      ),
-                  ),
+                          )
+                      )
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
         )
 
       setContent { QuestionnaireAttachmentView(questionnaireViewItem) }
@@ -548,11 +548,11 @@ class AttachmentViewFactoryTest {
                           contentType = Code(value = "application/pdf"),
                           data =
                             Base64Binary(
-                              value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                              value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                             ),
-                        ),
-                    ),
-                ),
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
@@ -576,7 +576,7 @@ class AttachmentViewFactoryTest {
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/mimeType",
                 value = Extension.Value.Code(value = Code(value = "image/*")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -592,11 +592,11 @@ class AttachmentViewFactoryTest {
                         contentType = Code(value = "image/jpeg"),
                         data =
                           Base64Binary(
-                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                            value = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                           ),
-                      ),
-                  ),
-              ),
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,

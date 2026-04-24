@@ -31,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.ChoiceOrientationTypes
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import dev.ohs.fhir.datacapture.extensions.choiceOrientation
@@ -44,6 +43,7 @@ import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.ChoiceRadioButton
 import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.components.MediaItem
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -76,9 +76,9 @@ internal object BooleanChoiceViewFactory : QuestionnaireItemViewFactory {
           QuestionnaireResponse.Item.Answer(
             value =
               QuestionnaireResponse.Item.Answer.Value.Boolean(
-                value = FhirR4Boolean(value = selected),
-              ),
-          ),
+                value = FhirR4Boolean(value = selected)
+              )
+          )
         )
       } else {
         // clear selection
@@ -93,7 +93,7 @@ internal object BooleanChoiceViewFactory : QuestionnaireItemViewFactory {
           .padding(
             horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
             vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-          ),
+          )
     ) {
       Header(
         questionnaireViewItem,
@@ -129,6 +129,7 @@ internal object BooleanChoiceViewFactory : QuestionnaireItemViewFactory {
             )
           }
         }
+
         ChoiceOrientationTypes.VERTICAL -> {
           Column(
             modifier = Modifier.selectableGroup().fillMaxWidth(),

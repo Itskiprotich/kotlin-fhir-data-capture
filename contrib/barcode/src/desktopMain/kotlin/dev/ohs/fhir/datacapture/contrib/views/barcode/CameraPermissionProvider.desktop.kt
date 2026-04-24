@@ -20,6 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 
 @Composable
-internal actual fun rememberCameraPermissionProvider(): CameraPermissionProvider {
-  return remember { CameraPermissionProvider {} }
+internal actual fun rememberCameraPermissionProvider(): CameraPermissionProvider = remember {
+  CameraPermissionProvider {}
 }

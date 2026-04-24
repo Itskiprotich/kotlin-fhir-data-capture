@@ -28,7 +28,7 @@ class MoreExpressionsTest {
   fun isXFhirQueryShouldReturnTrue() {
     val expression =
       Expression(
-        language = Enumeration(value = Expression.ExpressionLanguage.Application_X_Fhir_Query),
+        language = Enumeration(value = Expression.ExpressionLanguage.Application_X_Fhir_Query)
       )
 
     assertTrue(expression.isXFhirQuery)
@@ -54,7 +54,7 @@ class MoreExpressionsTest {
   fun isFhirPathShouldReturnFalse() {
     val expression =
       Expression(
-        language = Enumeration(value = Expression.ExpressionLanguage.Application_X_Fhir_Query),
+        language = Enumeration(value = Expression.ExpressionLanguage.Application_X_Fhir_Query)
       )
 
     assertFalse(expression.isFhirPath)

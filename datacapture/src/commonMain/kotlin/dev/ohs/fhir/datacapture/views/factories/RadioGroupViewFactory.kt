@@ -31,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
-import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.datacapture.extensions.ChoiceOrientationTypes
 import dev.ohs.fhir.datacapture.extensions.choiceOrientation
 import dev.ohs.fhir.datacapture.extensions.displayString
@@ -44,6 +43,7 @@ import dev.ohs.fhir.datacapture.views.components.ChoiceRadioButton
 import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.components.MediaItem
 import dev.ohs.fhir.datacapture.views.isAnswerOptionSelected
+import dev.ohs.fhir.model.r4.Questionnaire
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -66,16 +66,14 @@ internal object RadioGroupViewFactory : QuestionnaireItemViewFactory {
     var selectedAnswerOption by
       remember(questionnaireViewItem) {
         mutableStateOf(
-          enabledAnswerOptions.singleOrNull { questionnaireViewItem.isAnswerOptionSelected(it) },
+          enabledAnswerOptions.singleOrNull { questionnaireViewItem.isAnswerOptionSelected(it) }
         )
       }
     val onAnswerOptionChoiceChange: suspend (Questionnaire.Item.AnswerOption) -> Unit =
       { answerOption ->
         if (selectedAnswerOption != answerOption) {
           selectedAnswerOption = answerOption
-          questionnaireViewItem.setAnswer(
-            answerOption.toQuestionnaireResponseItemAnswer(),
-          )
+          questionnaireViewItem.setAnswer(answerOption.toQuestionnaireResponseItemAnswer())
         } else {
           // Deselect an answerOption
           selectedAnswerOption = null
@@ -89,7 +87,7 @@ internal object RadioGroupViewFactory : QuestionnaireItemViewFactory {
           .padding(
             horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
             vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-          ),
+          )
     ) {
       Header(
         questionnaireViewItem,
@@ -121,6 +119,7 @@ internal object RadioGroupViewFactory : QuestionnaireItemViewFactory {
             }
           }
         }
+
         ChoiceOrientationTypes.VERTICAL -> {
           Column(
             modifier = Modifier.selectableGroup().fillMaxWidth(),

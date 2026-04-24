@@ -83,7 +83,7 @@ internal fun ChoiceRadioButton(
             Modifier.border(1.dp, borderColor, shape)
           } else {
             Modifier
-          },
+          }
         )
         .selectable(
           selected = selected,
@@ -99,11 +99,7 @@ internal fun ChoiceRadioButton(
         ),
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    RadioButton(
-      selected = selected,
-      onClick = null,
-      enabled = enabled,
-    )
+    RadioButton(selected = selected, onClick = null, enabled = enabled)
     // Display image
     image?.let {
       Spacer(modifier = Modifier.width(8.dp))
@@ -114,12 +110,9 @@ internal fun ChoiceRadioButton(
       )
     }
     Spacer(
-      modifier = Modifier.width(QuestionnaireTheme.dimensions.optionItemBetweenTextAndIconPadding),
+      modifier = Modifier.width(QuestionnaireTheme.dimensions.optionItemBetweenTextAndIconPadding)
     )
-    Text(
-      text = label,
-      color = textColor,
-    )
+    Text(text = label, color = textColor)
     Spacer(modifier = Modifier.width(QuestionnaireTheme.dimensions.optionItemAfterTextPadding))
   }
 }

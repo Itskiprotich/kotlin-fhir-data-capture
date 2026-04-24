@@ -60,7 +60,8 @@ fun Questionnaire.Item.AnswerOption.itemAnswerOptionImage(): ImageBitmap? {
       when (it.contentType?.value!!) {
         "image/jpeg",
         "image/jpg",
-        "image/png", -> it.data?.data?.decodeToImageBitmap()
+        "image/png" -> it.data?.data?.decodeToImageBitmap()
+
         else -> null
       }
     }
@@ -86,31 +87,24 @@ fun Questionnaire.Item.AnswerOption.toQuestionnaireResponseItemAnswer():
       value.let {
         when (it) {
           is Questionnaire.Item.AnswerOption.Value.Integer ->
-            QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = it.value,
-            )
+            QuestionnaireResponse.Item.Answer.Value.Integer(value = it.value)
+
           is Questionnaire.Item.AnswerOption.Value.Coding ->
-            QuestionnaireResponse.Item.Answer.Value.Coding(
-              value = it.value,
-            )
+            QuestionnaireResponse.Item.Answer.Value.Coding(value = it.value)
+
           is Questionnaire.Item.AnswerOption.Value.Date ->
-            QuestionnaireResponse.Item.Answer.Value.Date(
-              value = it.value,
-            )
+            QuestionnaireResponse.Item.Answer.Value.Date(value = it.value)
+
           is Questionnaire.Item.AnswerOption.Value.Reference ->
-            QuestionnaireResponse.Item.Answer.Value.Reference(
-              value = it.value,
-            )
+            QuestionnaireResponse.Item.Answer.Value.Reference(value = it.value)
+
           is Questionnaire.Item.AnswerOption.Value.String ->
-            QuestionnaireResponse.Item.Answer.Value.String(
-              value = it.value,
-            )
+            QuestionnaireResponse.Item.Answer.Value.String(value = it.value)
+
           is Questionnaire.Item.AnswerOption.Value.Time ->
-            QuestionnaireResponse.Item.Answer.Value.Time(
-              value = it.value,
-            )
+            QuestionnaireResponse.Item.Answer.Value.Time(value = it.value)
         }
-      },
+      }
   )
 
 val Questionnaire.Item.AnswerOption.Value.id: String?

@@ -71,7 +71,7 @@ internal fun TimePickerDialog(
         onClick = {
           onConfirm(timePickerState.hour, timePickerState.minute)
           onDismiss()
-        },
+        }
       ) {
         Text(stringResource(Res.string.ok))
       }
@@ -101,7 +101,7 @@ internal fun TimePickerDialog(
                 } else {
                   TimeInputMode.CLOCK
                 }
-            },
+            }
           ) {
             val iconRes =
               if (inputType == TimeInputMode.CLOCK) {

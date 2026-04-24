@@ -16,13 +16,13 @@
 
 package dev.ohs.fhir.datacapture.enablement
 
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Resource
 import dev.ohs.fhir.datacapture.XFhirQueryResolver
 import dev.ohs.fhir.datacapture.extensions.enableWhenExpression
 import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Resource
 
 /**
  * Evaluator for the enablement status of a [Questionnaire.Item].
@@ -93,10 +93,7 @@ internal class EnablementEvaluator(
 
   /** The map from each item in the [QuestionnaireResponse] to its parent. */
   private val questionnaireResponseItemParentMap =
-    mutableMapOf<
-      QuestionnaireResponse.Item,
-      QuestionnaireResponse.Item,
-    >()
+    mutableMapOf<QuestionnaireResponse.Item, QuestionnaireResponse.Item>()
 
   init {
     /** Adds each child-parent pair in the [QuestionnaireResponse] to the parent map. */
@@ -143,7 +140,7 @@ internal class EnablementEvaluator(
           questionnaireItem,
           questionnaireResponseItem,
           questionnaireItem.enableWhenExpression!!,
-        ),
+        )
       )
     }
 
@@ -163,8 +160,10 @@ internal class EnablementEvaluator(
     return when (val value = questionnaireItem.enableBehavior?.value) {
       Questionnaire.EnableWhenBehavior.All ->
         enableWhenList.all { evaluateEnableWhen(it, questionnaireItem, questionnaireResponseItem) }
+
       Questionnaire.EnableWhenBehavior.Any ->
         enableWhenList.any { evaluateEnableWhen(it, questionnaireItem, questionnaireResponseItem) }
+
       else -> throw IllegalStateException("Unrecognized enable when behavior $value")
     }
   }
@@ -262,16 +261,22 @@ private val Questionnaire.Item.EnableWhen.predicate: (QuestionnaireResponse.Item
     when (operator.value) {
       Questionnaire.QuestionnaireItemOperator.EqualTo ->
         it.value equalsFhirValue answer.getActualValue()
+
       Questionnaire.QuestionnaireItemOperator.NotEqualTo ->
         !(it.value equalsFhirValue answer.getActualValue())
+
       Questionnaire.QuestionnaireItemOperator.GreaterThan ->
         (it.value compareFhirValue answer.getActualValue()) > 0
+
       Questionnaire.QuestionnaireItemOperator.GreaterThanOrEqualTo ->
         it.value compareFhirValue answer.getActualValue() >= 0
+
       Questionnaire.QuestionnaireItemOperator.LessThan ->
         (it.value compareFhirValue answer.getActualValue()) < 0
+
       Questionnaire.QuestionnaireItemOperator.LessThanOrEqualTo ->
         (it.value compareFhirValue answer.getActualValue()) <= 0
+
       else -> throw NotImplementedError("Enable when operator $operator is not implemented.")
     }
   }

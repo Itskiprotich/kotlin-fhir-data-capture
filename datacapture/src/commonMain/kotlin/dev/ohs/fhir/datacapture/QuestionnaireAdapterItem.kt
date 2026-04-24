@@ -16,8 +16,8 @@
 
 package dev.ohs.fhir.datacapture
 
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 
 /** Various types of rows that can be used in a Questionnaire RecyclerView. */
 internal sealed interface QuestionnaireAdapterItem {
@@ -39,10 +39,8 @@ internal sealed interface QuestionnaireAdapterItem {
     val title: String,
   ) : QuestionnaireAdapterItem
 
-  data class RepeatedGroupAddButton(
-    var id: String?,
-    val item: QuestionnaireViewItem,
-  ) : QuestionnaireAdapterItem
+  data class RepeatedGroupAddButton(var id: String?, val item: QuestionnaireViewItem) :
+    QuestionnaireAdapterItem
 
   data class Navigation(val questionnaireNavigationUIState: QuestionnaireNavigationUIState) :
     QuestionnaireAdapterItem, QuestionnaireReviewItem

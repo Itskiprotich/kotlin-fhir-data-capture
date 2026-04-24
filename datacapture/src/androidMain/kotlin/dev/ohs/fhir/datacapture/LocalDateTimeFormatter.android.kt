@@ -40,10 +40,7 @@ import kotlinx.datetime.toKotlinLocalDate
 
 class AndroidLocalDateFormatter(private val context: Context) : LocalDateTimeFormatter {
 
-  override fun parseStringToLocalDate(
-    str: String,
-    pattern: String,
-  ): LocalDate {
+  override fun parseStringToLocalDate(str: String, pattern: String): LocalDate {
     val localDate =
       java.time.LocalDate.parse(
         str,
@@ -91,7 +88,7 @@ class AndroidLocalDateFormatter(private val context: Context) : LocalDateTimeFor
       Date.from(
         LocalDateTime.of(java.time.LocalDate.now(), time.toJavaLocalTime())
           .atZone(ZoneId.systemDefault())
-          .toInstant(),
+          .toInstant()
       )
 
     // Using applicationContext to allow for changing of locale in tests

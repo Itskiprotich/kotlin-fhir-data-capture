@@ -39,7 +39,7 @@ actual object DataCapture {
       return configuration
     } else {
       throw Exception(
-        "DataCapture not initialized. Initialize the library with DataCapture.initialize(context) ",
+        "DataCapture not initialized. Initialize the library with DataCapture.initialize(context) "
       )
     }
   }

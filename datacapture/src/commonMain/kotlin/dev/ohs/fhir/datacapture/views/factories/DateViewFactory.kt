@@ -28,8 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import dev.ohs.fhir.model.r4.FhirDate
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.FhirR4DateType
 import dev.ohs.fhir.datacapture.extensions.canonicalizeDatePattern
 import dev.ohs.fhir.datacapture.extensions.entryFormat
@@ -51,6 +49,8 @@ import dev.ohs.fhir.datacapture.views.components.DateInputFormat
 import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.components.MediaItem
 import dev.ohs.fhir.datacapture.views.components.getRequiredOrOptionalText
+import dev.ohs.fhir.model.r4.FhirDate
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.Dispatchers
@@ -90,17 +90,14 @@ internal object DateViewFactory : QuestionnaireItemViewFactory {
       remember(canonicalizedDatePattern) { canonicalizedDatePattern.lowercase() }
     val dateInputFormat =
       remember(canonicalizedDatePattern, datePatternSeparator) {
-        DateInputFormat(
-          canonicalizedDatePattern,
-          datePatternSeparator,
-        )
+        DateInputFormat(canonicalizedDatePattern, datePatternSeparator)
       }
     var questionnaireItemAnswerLocalDate by
       remember(questionnaireViewItem) {
         mutableStateOf(
           (questionnaireViewItem.answers.singleOrNull()?.value?.asDate()?.value?.value
               as? FhirDate.Date)
-            ?.date,
+            ?.date
         )
       }
 
@@ -145,8 +142,10 @@ internal object DateViewFactory : QuestionnaireItemViewFactory {
               // so we display an error.
               invalidDraftDateErrorString
             }
+
             questionnaireViewItem.validationResult is Invalid ->
               questionnaireViewItem.validationResult.singleStringValidationMessage
+
             else -> null
           }
 
@@ -176,7 +175,7 @@ internal object DateViewFactory : QuestionnaireItemViewFactory {
         Modifier.padding(
           horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
           vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-        ),
+        )
     ) {
       Header(questionnaireViewItem)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }
@@ -188,7 +187,8 @@ internal object DateViewFactory : QuestionnaireItemViewFactory {
         dateInputFormat = dateInputFormat,
         dateInput = dateInput,
         labelText = uiDatePatternText,
-        helperText = validationMessage.takeIf { !it.isNullOrBlank() }
+        helperText =
+          validationMessage.takeIf { !it.isNullOrBlank() }
             ?: getRequiredOrOptionalText(questionnaireViewItem),
         isError = !validationMessage.isNullOrBlank(),
         enabled = !(isReadOnly || prohibitInput),
@@ -220,7 +220,7 @@ internal object DateViewFactory : QuestionnaireItemViewFactory {
   }
 
   private fun getSelectableDates(
-    questionnaireViewItem: QuestionnaireViewItem,
+    questionnaireViewItem: QuestionnaireViewItem
   ): Result<SelectableDates> {
     val min =
       (questionnaireViewItem.minAnswerValue?.asDate()?.value?.value as? FhirDate.Date)
@@ -249,9 +249,9 @@ internal object DateViewFactory : QuestionnaireItemViewFactory {
       QuestionnaireResponse.Item.Answer(
         value =
           QuestionnaireResponse.Item.Answer.Value.Date(
-            value = FhirR4DateType(value = FhirDate.Date(date = localDate)),
-          ),
-      ),
+            value = FhirR4DateType(value = FhirDate.Date(date = localDate))
+          )
+      )
     )
 }
 
@@ -264,8 +264,7 @@ internal fun selectableDates(minDateMillis: Long?, maxDateMillis: Long?) =
 
     private fun getYear(timeInMillis: Long) = timeInMillis.toLocalDate().year
 
-    override fun isSelectableYear(year: Int): Boolean {
-      return (minDateMillis == null || year >= getYear(minDateMillis)) &&
+    override fun isSelectableYear(year: Int): Boolean =
+      (minDateMillis == null || year >= getYear(minDateMillis)) &&
         (maxDateMillis == null || year <= getYear(maxDateMillis))
-    }
   }

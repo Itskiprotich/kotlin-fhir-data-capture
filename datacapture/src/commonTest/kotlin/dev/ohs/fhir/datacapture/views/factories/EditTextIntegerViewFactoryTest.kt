@@ -29,11 +29,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.Integer
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
@@ -44,6 +39,11 @@ import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.EDIT_TEXT_FIELD_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_AT_HEADER_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.Integer
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
@@ -69,7 +69,7 @@ class EditTextIntegerViewFactoryTest {
             QuestionnaireResponse.Item(linkId = FhirR4String(value = "integer-item")),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -92,13 +92,13 @@ class EditTextIntegerViewFactoryTest {
                 listOf(
                   QuestionnaireResponse.Item.Answer(
                     value =
-                      QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 5)),
-                  ),
+                      QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 5))
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -120,13 +120,13 @@ class EditTextIntegerViewFactoryTest {
               listOf(
                 QuestionnaireResponse.Item.Answer(
                   value =
-                    QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 5)),
-                ),
+                    QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 5))
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireEditTextIntegerView(questionnaireViewItem) }
@@ -234,13 +234,13 @@ class EditTextIntegerViewFactoryTest {
                 listOf(
                   QuestionnaireResponse.Item.Answer(
                     value =
-                      QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 3)),
-                  ),
+                      QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 3))
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -274,13 +274,13 @@ class EditTextIntegerViewFactoryTest {
                 listOf(
                   QuestionnaireResponse.Item.Answer(
                     value =
-                      QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 1)),
-                  ),
+                      QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 1))
+                  )
                 ),
             ),
             validationResult = Invalid(listOf("Minimum value allowed is:2")),
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -301,7 +301,7 @@ class EditTextIntegerViewFactoryTest {
             QuestionnaireResponse.Item(linkId = FhirR4String(value = "integer-item")),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -322,7 +322,7 @@ class EditTextIntegerViewFactoryTest {
             QuestionnaireResponse.Item(linkId = FhirR4String(value = "integer-item")),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
       )
     }
 
@@ -345,7 +345,7 @@ class EditTextIntegerViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = true),
-          ),
+          )
       )
     }
 
@@ -368,7 +368,7 @@ class EditTextIntegerViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = false),
-          ),
+          )
       )
     }
 
@@ -390,7 +390,7 @@ class EditTextIntegerViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = true),
-          ),
+          )
       )
     }
 
@@ -412,7 +412,7 @@ class EditTextIntegerViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = false),
-          ),
+          )
       )
     }
 
@@ -433,7 +433,7 @@ class EditTextIntegerViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = true),
-          ),
+          )
       )
     }
 
@@ -454,7 +454,7 @@ class EditTextIntegerViewFactoryTest {
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
             questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = false),
-          ),
+          )
       )
     }
 
@@ -474,7 +474,7 @@ class EditTextIntegerViewFactoryTest {
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           draftAnswer = "9999999999",
-        ),
+        )
       )
 
     setContent { QuestionnaireEditTextIntegerView(questionnaireViewItem) }
@@ -511,13 +511,13 @@ class EditTextIntegerViewFactoryTest {
               listOf(
                 QuestionnaireResponse.Item.Answer(
                   value =
-                    QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 12)),
-                ),
+                    QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 12))
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireEditTextIntegerView(questionnaireViewItem) }
@@ -532,10 +532,10 @@ class EditTextIntegerViewFactoryTest {
               listOf(
                 QuestionnaireResponse.Item.Answer(
                   value =
-                    QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 120)),
-                ),
+                    QuestionnaireResponse.Item.Answer.Value.Integer(value = Integer(value = 120))
+                )
               ),
-          ),
+          )
       )
 
     onNodeWithTag(EDIT_TEXT_FIELD_TEST_TAG).assertTextEquals("120")

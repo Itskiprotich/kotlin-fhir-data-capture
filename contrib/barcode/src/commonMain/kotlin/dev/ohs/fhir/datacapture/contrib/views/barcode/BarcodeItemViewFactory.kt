@@ -42,10 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.String
 import dev.ohs.fhir.datacapture.QuestionnaireItemViewFactoryMatcher
 import dev.ohs.fhir.datacapture.contrib.barcode.generated.resources.Res
 import dev.ohs.fhir.datacapture.contrib.barcode.generated.resources.ic_barcode
@@ -57,6 +53,10 @@ import dev.ohs.fhir.datacapture.validation.Valid
 import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.factories.QuestionnaireItemViewFactory
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.String
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -93,7 +93,7 @@ internal object BarcodeItemViewFactory : QuestionnaireItemViewFactory {
             .padding(
               horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
               vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-            ),
+            )
       ) {
         Header(questionnaireViewItem)
 
@@ -135,9 +135,7 @@ internal object BarcodeItemViewFactory : QuestionnaireItemViewFactory {
       }
 
       if (showScanner) {
-        ScannerViewDialog(
-          onDismiss = { showScanner = false },
-        ) { result ->
+        ScannerViewDialog(onDismiss = { showScanner = false }) { result ->
           coroutineScope.launch {
             when (result) {
               is BarcodeResult.OnSuccess -> {
@@ -150,15 +148,17 @@ internal object BarcodeItemViewFactory : QuestionnaireItemViewFactory {
                     QuestionnaireResponse.Item.Answer(
                       value =
                         QuestionnaireResponse.Item.Answer.Value.String(
-                          value = String(value = barcode),
-                        ),
-                    ),
+                          value = String(value = barcode)
+                        )
+                    )
                   )
                 }
               }
+
               is BarcodeResult.OnFailed -> {
                 result.exception.printStackTrace()
               }
+
               is BarcodeResult.OnCanceled -> {}
             }
           }
@@ -171,18 +171,10 @@ internal object BarcodeItemViewFactory : QuestionnaireItemViewFactory {
   fun ScannerViewDialog(onDismiss: () -> Unit, onBarcodeResult: (BarcodeResult) -> Unit) {
     Dialog(
       onDismissRequest = onDismiss,
-      properties =
-        DialogProperties(
-          usePlatformDefaultWidth = false,
-        ),
+      properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
       Surface(modifier = Modifier.fillMaxSize()) {
-        ScannerView(
-          codeTypes =
-            listOf(
-              BarcodeFormat.FORMAT_ALL_FORMATS,
-            ),
-        ) { result ->
+        ScannerView(codeTypes = listOf(BarcodeFormat.FORMAT_ALL_FORMATS)) { result ->
           onBarcodeResult(result)
           onDismiss()
         }
@@ -197,16 +189,13 @@ internal object BarcodeItemViewFactory : QuestionnaireItemViewFactory {
       QuestionnaireViewItem(
         Questionnaire.Item(
           linkId = String(value = "preview"),
-          type =
-            Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+          type = Enumeration(value = Questionnaire.QuestionnaireItemType.String),
           text = String(value = "Test Barcode text"),
         ),
         QuestionnaireResponse.Item(linkId = String(value = "preview")),
         validationResult = Valid,
         answersChangedCallback = { _, _, _, _ -> },
-      ),
+      )
     )
   }
 }

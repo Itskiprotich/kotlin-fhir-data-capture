@@ -32,15 +32,13 @@ class RequiredValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply { required = Boolean.Builder().apply { value = false } }
         .build()
     val questionnaireResponseItem =
       QuestionnaireResponse.Item.Builder(
-          linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
+          linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" }
         )
         .build()
 
@@ -55,15 +53,13 @@ class RequiredValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply { required = Boolean.Builder().apply { value = true } }
         .build()
     val questionnaireResponseItem =
       QuestionnaireResponse.Item.Builder(
-          linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
+          linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" }
         )
         .apply {
           answer =
@@ -71,9 +67,9 @@ class RequiredValidatorTest {
               QuestionnaireResponse.Item.Answer.Builder().apply {
                 value =
                   QuestionnaireResponse.Item.Answer.Value.String(
-                    value = dev.ohs.fhir.model.r4.String(value = "some answer"),
+                    value = dev.ohs.fhir.model.r4.String(value = "some answer")
                   )
-              },
+              }
             )
         }
         .build()
@@ -89,15 +85,13 @@ class RequiredValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply { required = Boolean.Builder().apply { value = true } }
         .build()
     val questionnaireResponseItem =
       QuestionnaireResponse.Item.Builder(
-          linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
+          linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" }
         )
         .build()
 

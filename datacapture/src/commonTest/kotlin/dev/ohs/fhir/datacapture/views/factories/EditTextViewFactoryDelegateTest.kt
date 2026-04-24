@@ -28,10 +28,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Decimal
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.datacapture.generated.resources.Res
@@ -40,6 +36,10 @@ import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import dev.ohs.fhir.datacapture.validation.NotValidated
 import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.EDIT_TEXT_FIELD_TEST_TAG
+import dev.ohs.fhir.model.r4.Decimal
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
@@ -77,14 +77,14 @@ class EditTextViewFactoryDelegateTest {
                   QuestionnaireResponse.Item.Answer(
                     value =
                       QuestionnaireResponse.Item.Answer.Value.Decimal(
-                        value = Decimal(value = 1.toBigDecimal()),
-                      ),
-                  ),
+                        value = Decimal(value = 1.toBigDecimal())
+                      )
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
         )
 
       setContent { QuestionnaireTheme { editTextFactory.Content(questionnaireViewItem) } }
@@ -102,9 +102,9 @@ class EditTextViewFactoryDelegateTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Decimal(
-                      value = Decimal(value = 1.1.toBigDecimal()),
-                    ),
-                ),
+                      value = Decimal(value = 1.1.toBigDecimal())
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,

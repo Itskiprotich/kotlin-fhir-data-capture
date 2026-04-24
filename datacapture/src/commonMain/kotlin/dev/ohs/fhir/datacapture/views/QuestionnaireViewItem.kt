@@ -17,9 +17,6 @@
 package dev.ohs.fhir.datacapture.views
 
 import androidx.compose.ui.text.AnnotatedString
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.elementValue
 import dev.ohs.fhir.datacapture.extensions.isHelpCode
 import dev.ohs.fhir.datacapture.extensions.localizedTextAnnotatedString
@@ -29,6 +26,9 @@ import dev.ohs.fhir.datacapture.extensions.toAnnotatedString
 import dev.ohs.fhir.datacapture.validation.NotValidated
 import dev.ohs.fhir.datacapture.validation.Valid
 import dev.ohs.fhir.datacapture.validation.ValidationResult
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 
 /**
  * Data item for [QuestionnaireItemViewHolder] in [androidx.compose.foundation.lazy.LazyColumn].
@@ -70,10 +70,7 @@ data class QuestionnaireViewItem(
   val validationResult: ValidationResult,
   internal val answersChangedCallback:
     suspend (
-      Questionnaire.Item,
-      QuestionnaireResponse.Item,
-      List<QuestionnaireResponse.Item.Answer>,
-      Any?,
+      Questionnaire.Item, QuestionnaireResponse.Item, List<QuestionnaireResponse.Item.Answer>, Any?,
     ) -> Unit,
   val enabledAnswerOptions: List<Questionnaire.Item.AnswerOption> =
     questionnaireItem.answerOption.ifEmpty { emptyList() },
@@ -100,11 +97,10 @@ data class QuestionnaireViewItem(
 
   /** Updates the answers. This will override any existing answers and removes the draft answer. */
   suspend fun setAnswer(
-    vararg questionnaireResponseItemAnswerComponent: QuestionnaireResponse.Item.Answer,
+    vararg questionnaireResponseItemAnswerComponent: QuestionnaireResponse.Item.Answer
   ) {
     check(
-      questionnaireItem.repeats?.value == true ||
-        questionnaireResponseItemAnswerComponent.size <= 1,
+      questionnaireItem.repeats?.value == true || questionnaireResponseItemAnswerComponent.size <= 1
     ) {
       "Questionnaire item with linkId ${questionnaireItem.linkId} has repeated answers."
     }
@@ -123,7 +119,7 @@ data class QuestionnaireViewItem(
 
   /** Adds an answer to the existing answers and removes the draft answer. */
   suspend fun addAnswer(
-    questionnaireResponseItemAnswerComponent: QuestionnaireResponse.Item.Answer,
+    questionnaireResponseItemAnswerComponent: QuestionnaireResponse.Item.Answer
   ) {
     check(questionnaireItem.repeats?.value == true) {
       "Questionnaire item with linkId ${questionnaireItem.linkId} does not allow repeated answers"
@@ -138,7 +134,7 @@ data class QuestionnaireViewItem(
 
   /** Removes an answer from the existing answers, as well as any draft answer. */
   suspend fun removeAnswer(
-    vararg questionnaireResponseItemAnswerComponent: QuestionnaireResponse.Item.Answer,
+    vararg questionnaireResponseItemAnswerComponent: QuestionnaireResponse.Item.Answer
   ) {
     check(questionnaireItem.repeats?.value == true) {
       "Questionnaire item with linkId ${questionnaireItem.linkId} does not allow repeated answers"
@@ -187,17 +183,6 @@ data class QuestionnaireViewItem(
   }
 
   /**
-   * Returns a given answer (The respondent's answer(s) to the question) along with [displayString]
-   * if question is answered else 'Not Answered'
-   */
-
-  //  fun answerString(context: Context): String {
-  //    if (!questionnaireResponseItem.hasAnswer()) return context.getString(R.string.not_answered)
-  //    return questionnaireResponseItem.answer.joinToString { it.value.displayString(context) }
-  //  }
-  //
-
-  /**
    * Returns whether this [QuestionnaireViewItem] and the `other` [QuestionnaireViewItem] have the
    * same [Questionnaire.Item] and [QuestionnaireResponse.Item].
    *
@@ -242,7 +227,7 @@ data class QuestionnaireViewItem(
 }
 
 internal fun QuestionnaireViewItem.isAnswerOptionSelected(
-  answerOption: Questionnaire.Item.AnswerOption,
+  answerOption: Questionnaire.Item.AnswerOption
 ): Boolean {
   return answers.any { it.elementValue == answerOption.elementValue }
 }

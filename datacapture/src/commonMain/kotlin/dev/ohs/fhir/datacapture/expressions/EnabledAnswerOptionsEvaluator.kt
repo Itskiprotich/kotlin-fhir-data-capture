@@ -16,11 +16,6 @@
 
 package dev.ohs.fhir.datacapture.expressions
 
-import dev.ohs.fhir.model.r4.Coding
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Resource
-import dev.ohs.fhir.model.r4.ValueSet
 import dev.ohs.fhir.datacapture.ExternalAnswerValueSetResolver
 import dev.ohs.fhir.datacapture.XFhirQueryResolver
 import dev.ohs.fhir.datacapture.extensions.answerExpression
@@ -30,6 +25,11 @@ import dev.ohs.fhir.datacapture.extensions.isFhirPath
 import dev.ohs.fhir.datacapture.extensions.isXFhirQuery
 import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Resource
+import dev.ohs.fhir.model.r4.ValueSet
 
 /**
  * Evaluates and manages answer options within a [Questionnaire] and its corresponding
@@ -84,24 +84,15 @@ internal class EnabledAnswerOptionsEvaluator(
   internal suspend fun evaluate(
     questionnaireItem: Questionnaire.Item,
     questionnaireResponseItem: QuestionnaireResponse.Item,
-  ): Pair<
-    List<Questionnaire.Item.AnswerOption>,
-    List<QuestionnaireResponse.Item.Answer>,
-  > {
-    val resolvedAnswerOptions =
-      answerOptions(
-        questionnaireItem,
-      )
+  ): Pair<List<Questionnaire.Item.AnswerOption>, List<QuestionnaireResponse.Item.Answer>> {
+    val resolvedAnswerOptions = answerOptions(questionnaireItem)
 
     if (questionnaireItem.answerOptionsToggleExpressions.isEmpty()) {
       return Pair(resolvedAnswerOptions, emptyList())
     }
 
     val enabledQuestionnaireAnswerOptions =
-      evaluateAnswerOptionsToggleExpressions(
-        questionnaireItem,
-        resolvedAnswerOptions,
-      )
+      evaluateAnswerOptionsToggleExpressions(questionnaireItem, resolvedAnswerOptions)
     val disabledAnswers =
       questionnaireResponseItem.answer
         .takeIf { it.isNotEmpty() }
@@ -123,16 +114,16 @@ internal class EnabledAnswerOptionsEvaluator(
    * defined in `Questionnaire.item.answerValueSet`, the answer value set will be expanded.
    */
   private suspend fun answerOptions(
-    questionnaireItem: Questionnaire.Item,
+    questionnaireItem: Questionnaire.Item
   ): List<Questionnaire.Item.AnswerOption> =
     when {
       questionnaireItem.answerOption.isNotEmpty() -> questionnaireItem.answerOption
+
       !questionnaireItem.answerValueSet?.value.isNullOrEmpty() ->
         resolveAnswerValueSet(questionnaireItem.answerValueSet!!.value!!)
-      questionnaireItem.answerExpression != null ->
-        resolveAnswerExpression(
-          questionnaireItem,
-        )
+
+      questionnaireItem.answerExpression != null -> resolveAnswerExpression(questionnaireItem)
+
       else -> emptyList()
     }
 
@@ -166,8 +157,8 @@ internal class EnabledAnswerOptionsEvaluator(
                             code = component.code?.toBuilder()
                             display = component.display?.toBuilder()
                           }
-                          .build(),
-                      ),
+                          .build()
+                      )
                   )
                   .build()
               }
@@ -176,11 +167,10 @@ internal class EnabledAnswerOptionsEvaluator(
         // Ask the client to provide the answers from an external expanded value set.
         externalValueSetResolver?.resolve(uri)?.map { coding ->
           Questionnaire.Item.AnswerOption(
-            value = Questionnaire.Item.AnswerOption.Value.Coding(coding.copy()),
+            value = Questionnaire.Item.AnswerOption.Value.Coding(coding.copy())
           )
         }
-      }
-        ?: emptyList()
+      } ?: emptyList()
     // save it so that we avoid have cache misses.
     answerValueSetMap[uri] = options
     return options
@@ -190,7 +180,7 @@ internal class EnabledAnswerOptionsEvaluator(
   // answer and FHIRPath in x-fhir-query
   // https://build.fhir.org/ig/HL7/sdc/expressions.html#x-fhir-query-enhancements
   private suspend fun resolveAnswerExpression(
-    item: Questionnaire.Item,
+    item: Questionnaire.Item
   ): List<Questionnaire.Item.AnswerOption> {
     // Check cache first for database queries
     val answerExpression = item.answerExpression ?: return emptyList()
@@ -201,11 +191,7 @@ internal class EnabledAnswerOptionsEvaluator(
           "XFhirQueryResolver cannot be null. Please provide the XFhirQueryResolver via DataCaptureConfig."
         }
         val variablesMap =
-          expressionEvaluator.extractItemDependentVariables(
-            answerExpression,
-            item,
-            null,
-          )
+          expressionEvaluator.extractItemDependentVariables(answerExpression, item, null)
         val xFhirExpressionString =
           expressionEvaluator.createXFhirQueryFromExpression(answerExpression, variablesMap)
         if (answerExpressionMap.containsKey(xFhirExpressionString)) {
@@ -218,13 +204,15 @@ internal class EnabledAnswerOptionsEvaluator(
         xFhirExpressionString?.let { answerExpressionMap[it] = options }
         options
       }
+
       answerExpression.isFhirPath -> {
         val data = expressionEvaluator.evaluateExpression(item, null, answerExpression)
         item.extractAnswerOptions(data)
       }
+
       else ->
         throw UnsupportedOperationException(
-          "${answerExpression.language} not supported for answer-expression yet",
+          "${answerExpression.language} not supported for answer-expression yet"
         )
     }
   }
@@ -240,11 +228,11 @@ internal class EnabledAnswerOptionsEvaluator(
           val evaluationResult =
             if (expression?.value?.isFhirPath == true) {
               FhirPathService.convertToBoolean(
-                expressionEvaluator.evaluateExpression(item, null, expression.value),
+                expressionEvaluator.evaluateExpression(item, null, expression.value)
               )
             } else {
               throw UnsupportedOperationException(
-                "${expression?.value?.language} not supported yet for answer-options-toggle-expression",
+                "${expression?.value?.language} not supported yet for answer-options-toggle-expression"
               )
             }
           evaluationResult to toggleOptions

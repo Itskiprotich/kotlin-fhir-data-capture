@@ -53,32 +53,26 @@ interface LocalDateTimeFormatter {
 internal fun LocalDateTimeFormatter.parseLocalDateOrNull(
   dateToDisplay: String,
   pattern: String,
-): LocalDate? {
-  return try {
+): LocalDate? =
+  try {
     parseStringToLocalDate(dateToDisplay, pattern)
   } catch (_: Exception) {
     null
   }
-}
 
 @OptIn(ExperimentalTime::class, FormatStringsInDatetimeFormats::class)
-internal fun LocalDateTimeFormatter.isValidDateEntryFormat(entryFormat: String?): Boolean {
-  return entryFormat?.let {
+internal fun LocalDateTimeFormatter.isValidDateEntryFormat(entryFormat: String?): Boolean =
+  entryFormat?.let {
     try {
       val dateFormat = LocalDate.Format { byUnicodePattern(entryFormat) }
       val text =
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.format(dateFormat)
-      parseStringToLocalDate(
-        text,
-        entryFormat,
-      )
+      parseStringToLocalDate(text, entryFormat)
       true
     } catch (e: Exception) {
       Logger.w(messageString = e.message ?: "Error parsing date", throwable = e)
       false
     }
-  }
-    ?: false
-}
+  } ?: false
 
 @Composable expect fun getLocalDateTimeFormatter(): LocalDateTimeFormatter

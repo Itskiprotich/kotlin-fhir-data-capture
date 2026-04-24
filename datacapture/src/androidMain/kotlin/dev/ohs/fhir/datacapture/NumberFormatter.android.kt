@@ -22,11 +22,10 @@ import android.os.Build
 import java.util.Locale
 
 actual object NumberFormatter {
-  actual fun formatInteger(value: Int): String {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+  actual fun formatInteger(value: Int): String =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
       NumberFormatter.withLocale(Locale.getDefault()).format(value).toString()
     } else {
       DecimalFormat.getInstance(Locale.getDefault()).format(value)
     }
-  }
 }

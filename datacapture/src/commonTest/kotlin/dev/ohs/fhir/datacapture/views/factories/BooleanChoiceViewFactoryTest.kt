@@ -26,9 +26,6 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import dev.ohs.fhir.datacapture.extensions.FhirR4String
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
@@ -39,6 +36,9 @@ import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_AT_HEADER_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
 import dev.ohs.fhir.datacapture.views.components.REQUIRED_OPTIONAL_HEADER_TEXT_TAG
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -126,9 +126,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = true),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = true)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -154,9 +154,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = true),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = true)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -185,9 +185,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = false),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = false)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -214,9 +214,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = false),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = false)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -287,9 +287,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = true),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = true)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -318,9 +318,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = true),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = true)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -349,9 +349,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = false),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = false)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -380,9 +380,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = false),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = false)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -430,9 +430,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = true),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = true)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -461,9 +461,9 @@ class BooleanChoiceViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Boolean(
-                    value = FhirR4Boolean(value = true),
-                  ),
-              ),
+                    value = FhirR4Boolean(value = true)
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,

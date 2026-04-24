@@ -23,8 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Time
 import dev.ohs.fhir.datacapture.extensions.itemMedia
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.required_text_and_new_line
@@ -37,6 +35,8 @@ import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.components.MediaItem
 import dev.ohs.fhir.datacapture.views.components.TimeFieldItem
 import dev.ohs.fhir.datacapture.views.components.getRequiredOrOptionalText
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Time
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.Dispatchers
@@ -97,7 +97,7 @@ object TimeViewFactory : QuestionnaireItemViewFactory {
         Modifier.padding(
           horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
           vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-        ),
+        )
     ) {
       Header(questionnaireViewItem)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }
@@ -127,7 +127,7 @@ object TimeViewFactory : QuestionnaireItemViewFactory {
   ) =
     questionnaireViewItem.setAnswer(
       QuestionnaireResponse.Item.Answer(
-        value = QuestionnaireResponse.Item.Answer.Value.Time(value = Time(value = localDateTime)),
-      ),
+        value = QuestionnaireResponse.Item.Answer.Value.Time(value = Time(value = localDateTime))
+      )
     )
 }

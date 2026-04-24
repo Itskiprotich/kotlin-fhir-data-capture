@@ -39,11 +39,7 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun CatalogItemCard(
-  icon: DrawableResource,
-  text: String,
-  onClick: () -> Unit,
-) {
+fun CatalogItemCard(icon: DrawableResource, text: String, onClick: () -> Unit) {
   Surface(
     onClick = onClick,
     modifier = Modifier.padding(4.dp).fillMaxWidth().height(180.dp),
@@ -62,10 +58,7 @@ fun CatalogItemCard(
           contentScale = ContentScale.None,
         )
       }
-      Box(
-        modifier = Modifier.fillMaxSize().padding(8.dp),
-        contentAlignment = Alignment.Center,
-      ) {
+      Box(modifier = Modifier.fillMaxSize().padding(8.dp), contentAlignment = Alignment.Center) {
         Text(
           text = text,
           style = MaterialTheme.typography.bodyMedium,

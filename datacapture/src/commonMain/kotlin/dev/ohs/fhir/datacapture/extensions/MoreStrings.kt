@@ -20,9 +20,7 @@ import androidx.compose.ui.text.AnnotatedString
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 
-internal fun String.toAnnotatedString(): AnnotatedString {
-  return AnnotatedString(this)
-}
+internal fun String.toAnnotatedString(): AnnotatedString = AnnotatedString(this)
 
 internal fun String.toBigDecimalOrNull(): BigDecimal? =
   try {

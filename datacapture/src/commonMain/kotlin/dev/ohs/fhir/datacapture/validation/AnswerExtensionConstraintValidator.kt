@@ -16,11 +16,11 @@
 
 package dev.ohs.fhir.datacapture.validation
 
+import dev.ohs.fhir.datacapture.extensions.populateCqfCalculatedValue
 import dev.ohs.fhir.model.r4.Expression
 import dev.ohs.fhir.model.r4.Extension
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.datacapture.extensions.populateCqfCalculatedValue
 
 /**
  * Validates [QuestionnaireResponse.Item.Answer] against a constraint defined in an extension.
@@ -53,10 +53,7 @@ internal open class AnswerExtensionConstraintValidator(
 
       // Only checks constraint if both extension and answer have a value
       if (extensionValue != null && answer.value != null && predicate(extensionValue, answer)) {
-        return ConstraintValidator.Result(
-          false,
-          messageGenerator(extensionValue),
-        )
+        return ConstraintValidator.Result(false, messageGenerator(extensionValue))
       }
     }
     return ConstraintValidator.Result(true, null)

@@ -26,6 +26,5 @@ import kotlinx.datetime.format.byUnicodePattern
 //  See: https://developer.android.com/guide/topics/resources/internationalization#24h-setting
 //  Currently using basic 24h format as fallback.
 @OptIn(FormatStringsInDatetimeFormats::class)
-internal fun LocalDateTime.toLocalizedTimeString(): String {
-  return LocalDateTime.Format { byUnicodePattern("HH:mm") }.format(this)
-}
+internal fun LocalDateTime.toLocalizedTimeString(): String =
+  LocalDateTime.Format { byUnicodePattern("HH:mm") }.format(this)

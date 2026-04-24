@@ -18,6 +18,10 @@ package dev.ohs.fhir.datacapture.extensions
 
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
+import dev.ohs.fhir.datacapture.QuestionnaireViewHolderType
+import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
 import dev.ohs.fhir.model.r4.Attachment
 import dev.ohs.fhir.model.r4.Coding
 import dev.ohs.fhir.model.r4.Date
@@ -30,10 +34,6 @@ import dev.ohs.fhir.model.r4.Reference
 import dev.ohs.fhir.model.r4.Resource
 import dev.ohs.fhir.model.r4.String as FhirString
 import dev.ohs.fhir.model.r4.Time
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import com.ionspin.kotlin.bignum.decimal.toBigDecimal
-import dev.ohs.fhir.datacapture.QuestionnaireViewHolderType
-import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
 
 internal const val MIN_VALUE_EXTENSION_URL = "http://hl7.org/fhir/StructureDefinition/minValue"
 
@@ -363,15 +363,14 @@ val Questionnaire.Item.localizedPrefixAnnotatedString: AnnotatedString?
  * list that are of type `Questionnaire.QuestionnaireItemType.DISPLAY` and have the
  * `isInstructionsCode` flag set. The instructions are separated by newlines.
  */
-fun List<Questionnaire.Item>.getLocalizedInstructionsAnnotatedString(
-  separator: String = "\n",
-) = buildAnnotatedString {
-  this@getLocalizedInstructionsAnnotatedString.filter { questionnaireItem ->
-      questionnaireItem.type.value == Questionnaire.QuestionnaireItemType.Display &&
-        questionnaireItem.isInstructionsCode
-    }
-    .joinTo(this, separator) { it.localizedTextAnnotatedString.toString() }
-}
+fun List<Questionnaire.Item>.getLocalizedInstructionsAnnotatedString(separator: String = "\n") =
+  buildAnnotatedString {
+    this@getLocalizedInstructionsAnnotatedString.filter { questionnaireItem ->
+        questionnaireItem.type.value == Questionnaire.QuestionnaireItemType.Display &&
+          questionnaireItem.isInstructionsCode
+      }
+      .joinTo(this, separator) { it.localizedTextAnnotatedString.toString() }
+  }
 
 val List<Questionnaire.Item>.localizedFlyoverAnnotatedString: AnnotatedString?
   get() =
@@ -414,6 +413,7 @@ internal val Questionnaire.Item.isInstructionsCode: Boolean
             ?.code
         code?.value == EXTENSION_DISPLAY_CATEGORY_INSTRUCTIONS
       }
+
       else -> {
         false
       }
@@ -430,6 +430,7 @@ internal val Questionnaire.Item.isFlyoverCode: Boolean
       Questionnaire.QuestionnaireItemType.Display -> {
         displayItemControl == DisplayItemControlType.FLYOVER
       }
+
       else -> {
         false
       }
@@ -443,6 +444,7 @@ internal val Questionnaire.Item.isHelpCode: Boolean
       Questionnaire.QuestionnaireItemType.Display -> {
         displayItemControl == DisplayItemControlType.HELP
       }
+
       else -> {
         false
       }
@@ -482,14 +484,12 @@ enum class MimeType(val value: String) {
 }
 
 /** Returns true if at least one mime type matches the given type. */
-fun Questionnaire.Item.hasMimeType(type: String): Boolean {
-  return mimeTypes.any { it.substringBefore("/") == type }
-}
+fun Questionnaire.Item.hasMimeType(type: String): Boolean =
+  mimeTypes.any { it.substringBefore("/") == type }
 
 /** Returns true if all mime types match the given type. */
-fun Questionnaire.Item.hasMimeTypeOnly(type: String): Boolean {
-  return mimeTypes.all { it.substringBefore("/") == type }
-}
+fun Questionnaire.Item.hasMimeTypeOnly(type: String): Boolean =
+  mimeTypes.all { it.substringBefore("/") == type }
 
 /** The maximum size of an attachment in Bytes. */
 internal val Questionnaire.Item.maxSizeInBytes: BigDecimal?
@@ -570,7 +570,7 @@ internal val Questionnaire.Item.unitOption: List<Coding>
       .plus(
         // https://build.fhir.org/ig/HL7/sdc/behavior.html#initial
         // quantity given as initial without value is for default unit reference purpose
-        this.initial.mapNotNull { it.value.asQuantity()?.value?.toCoding() },
+        this.initial.mapNotNull { it.value.asQuantity()?.value?.toCoding() }
       )
       .distinctBy { it.code }
   }
@@ -595,7 +595,7 @@ internal val Questionnaire.Item.answerOptionsToggleExpressions
             .map { it.value }
         if (options.isEmpty()) {
           throw IllegalArgumentException(
-            "Questionnaire item $linkId with extension '$EXTENSION_ANSWER_EXPRESSION_URL' requires at least one option. See http://hl7.org/fhir/uv/sdc/STU3/StructureDefinition-sdc-questionnaire-answerOptionsToggleExpression.html.",
+            "Questionnaire item $linkId with extension '$EXTENSION_ANSWER_EXPRESSION_URL' requires at least one option. See http://hl7.org/fhir/uv/sdc/STU3/StructureDefinition-sdc-questionnaire-answerOptionsToggleExpression.html."
           )
         }
         val expression =
@@ -626,11 +626,8 @@ internal val Questionnaire.Item.variableExpressions: List<Expression>
  * @param variableName the [String] to match the variable
  * @return an [Expression]
  */
-internal fun Questionnaire.Item.findVariableExpression(
-  variableName: String,
-): Expression? {
-  return variableExpressions.find { variableName == it.name?.value }
-}
+internal fun Questionnaire.Item.findVariableExpression(variableName: String): Expression? =
+  variableExpressions.find { variableName == it.name?.value }
 
 /** Returns Calculated expression, or null */
 internal val Questionnaire.Item.calculatedExpression: Expression?
@@ -649,9 +646,7 @@ internal val Questionnaire.Item.expressionBasedExtensions
  * (e.g. if [item] has an expression `%resource.item.where(linkId='this-question')` where
  * `this-question` is the link ID of the current questionnaire item).
  */
-internal fun Questionnaire.Item.isReferencedBy(
-  item: Questionnaire.Item,
-) =
+internal fun Questionnaire.Item.isReferencedBy(item: Questionnaire.Item) =
   item.expressionBasedExtensions.any {
     it.value
       ?.asExpression()
@@ -676,6 +671,7 @@ internal val Questionnaire.Item.candidateExpression: Expression?
 
 // TODO implement full functionality of choice column
 // https://github.com/google/android-fhir/issues/1495
+
 /**
  * Choice column extension https://build.fhir.org/ig/HL7/sdc/examples.html#choiceColumn
  *
@@ -693,8 +689,8 @@ internal val Questionnaire.Item.choiceColumn: List<ChoiceColumn>
       .map { extension ->
         extension.extension.let { nestedExtensions ->
           ChoiceColumn(
-            path = nestedExtensions.find { it.url == "path" }!!.value?.asString()?.value?.value
-                ?: "",
+            path =
+              nestedExtensions.find { it.url == "path" }!!.value?.asString()?.value?.value ?: "",
             label = nestedExtensions.find { it.url == "label" }?.value?.asString()?.value?.value,
             forDisplay =
               nestedExtensions.any {
@@ -714,6 +710,7 @@ internal data class ChoiceColumn(val path: String, val label: String?, val forDi
 
 // TODO implement full functionality of choice column
 // https://github.com/google/android-fhir/issues/1495
+
 /**
  * Apply and add each choice-column mapping to answer options
  * https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-choiceColumn.html
@@ -727,9 +724,9 @@ internal data class ChoiceColumn(val path: String, val label: String?, val forDi
  * @return list of answer options [Questionnaire.Item.AnswerOption]
  */
 internal fun Questionnaire.Item.extractAnswerOptions(
-  dataList: List<Any>,
-): List<Questionnaire.Item.AnswerOption> {
-  return when (this.type.value) {
+  dataList: List<Any>
+): List<Questionnaire.Item.AnswerOption> =
+  when (this.type.value) {
     Questionnaire.QuestionnaireItemType.Reference -> {
       require(dataList.all { it is Resource }) {
         "'${this.type.value?.getCode()}' cannot be used to populate $EXTENSION_CHOICE_COLUMN_URL. Only Resources can be used to populate the choice columns."
@@ -750,6 +747,7 @@ internal fun Questionnaire.Item.extractAnswerOptions(
           .build()
       }
     }
+
     else -> {
       require(dataList.all { it !is Resource }) {
         "$EXTENSION_CHOICE_COLUMN_URL not applicable for '${this.type.value?.getCode()}'. Only type reference is allowed with resource."
@@ -767,12 +765,9 @@ internal fun Questionnaire.Item.extractAnswerOptions(
       else -> null
     }?.let { value -> Questionnaire.Item.AnswerOption(value = value) }
   }
-}
 
 /** See http://hl7.org/fhir/constraint-severity */
-enum class ConstraintSeverityTypes(
-  val code: String,
-) {
+enum class ConstraintSeverityTypes(val code: String) {
   ERROR("error"),
   WARNING("warning"),
 }
@@ -795,19 +790,14 @@ enum class ConstraintSeverityTypes(
  */
 internal inline fun <T> List<Questionnaire.Item>.zipByLinkId(
   questionnaireResponseItemList: List<QuestionnaireResponse.Item>,
-  transform:
-    (
-      Questionnaire.Item,
-      QuestionnaireResponse.Item,
-    ) -> T,
+  transform: (Questionnaire.Item, QuestionnaireResponse.Item) -> T,
 ): List<T> {
   val linkIdToQuestionnaireResponseItemListMap = questionnaireResponseItemList.groupBy { it.linkId }
   return flatMap { questionnaireItem ->
     linkIdToQuestionnaireResponseItemListMap[questionnaireItem.linkId]?.mapNotNull {
       questionnaireResponseItem ->
       transform(questionnaireItem, questionnaireResponseItem)
-    }
-      ?: emptyList()
+    } ?: emptyList()
   }
 }
 
@@ -823,11 +813,7 @@ internal inline fun <T> List<Questionnaire.Item>.zipByLinkId(
 internal inline fun <T> groupByAndZipByLinkId(
   questionnaireItemList: List<Questionnaire.Item>,
   questionnaireResponseItemList: List<QuestionnaireResponse.Item>,
-  transform:
-    (
-      List<Questionnaire.Item>,
-      List<QuestionnaireResponse.Item>,
-    ) -> T,
+  transform: (List<Questionnaire.Item>, List<QuestionnaireResponse.Item>) -> T,
 ): List<T> {
   val linkIdToQuestionnaireItemListMap = questionnaireItemList.groupBy { it.linkId }
   val linkIdToQuestionnaireResponseItemListMap = questionnaireResponseItemList.groupBy { it.linkId }
@@ -953,13 +939,13 @@ private fun Questionnaire.Item.createQuestionnaireResponseItemAnswers():
       type.value == Questionnaire.QuestionnaireItemType.Display
   ) {
     throw IllegalArgumentException(
-      "Questionnaire item ${linkId.value} has initial value(s) and is a group or display item. See rule que-8 at https://www.hl7.org/fhir/questionnaire-definitions.html#Questionnaire.item.initial.",
+      "Questionnaire item ${linkId.value} has initial value(s) and is a group or display item. See rule que-8 at https://www.hl7.org/fhir/questionnaire-definitions.html#Questionnaire.item.initial."
     )
   }
 
   if ((answerOption.initialSelected.size > 1 || initial.size > 1) && repeats?.value == false) {
     throw IllegalArgumentException(
-      "Questionnaire item ${linkId.value} can only have multiple initial values for repeating items. See rule que-13 at https://www.hl7.org/fhir/questionnaire-definitions.html#Questionnaire.item.initial.",
+      "Questionnaire item ${linkId.value} can only have multiple initial values for repeating items. See rule que-13 at https://www.hl7.org/fhir/questionnaire-definitions.html#Questionnaire.item.initial."
     )
   }
 
@@ -980,9 +966,7 @@ private fun Questionnaire.Item.createQuestionnaireResponseItemAnswers():
 fun List<Questionnaire.Item>.flattened(): List<Questionnaire.Item> =
   mutableListOf<Questionnaire.Item>().also { flattenInto(it) }
 
-private fun List<Questionnaire.Item>.flattenInto(
-  output: MutableList<Questionnaire.Item>,
-) {
+private fun List<Questionnaire.Item>.flattenInto(output: MutableList<Questionnaire.Item>) {
   forEach {
     output.add(it)
     it.item.flattenInto(output)

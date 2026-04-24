@@ -45,8 +45,7 @@ enum class QuestionnaireViewHolderType(val value: Int) {
   SLIDER(15),
   PHONE_NUMBER(16),
   ATTACHMENT(17),
-  TIME_PICKER(18),
-  ;
+  TIME_PICKER(18);
 
   companion object {
     private val VALUES = values()

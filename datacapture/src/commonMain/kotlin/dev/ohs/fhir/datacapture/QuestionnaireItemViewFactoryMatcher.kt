@@ -16,8 +16,8 @@
 
 package dev.ohs.fhir.datacapture
 
-import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.datacapture.views.factories.QuestionnaireItemViewFactory
+import dev.ohs.fhir.model.r4.Questionnaire
 
 /**
  * Data class that holds a matcher function ([matches]) which evaluates whether a given [factory]

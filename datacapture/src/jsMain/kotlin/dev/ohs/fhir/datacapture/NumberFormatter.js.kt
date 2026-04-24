@@ -17,7 +17,5 @@
 package dev.ohs.fhir.datacapture
 
 actual object NumberFormatter {
-  actual fun formatInteger(value: Int): String {
-    return value.toString()
-  }
+  actual fun formatInteger(value: Int): String = value.toString()
 }

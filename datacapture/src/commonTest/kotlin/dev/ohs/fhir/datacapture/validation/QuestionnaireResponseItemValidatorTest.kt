@@ -16,6 +16,7 @@
 
 package dev.ohs.fhir.datacapture.validation
 
+import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
 import dev.ohs.fhir.model.r4.Boolean
 import dev.ohs.fhir.model.r4.Enumeration
 import dev.ohs.fhir.model.r4.Extension
@@ -24,7 +25,6 @@ import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.String as FhirString
 import dev.ohs.fhir.model.r4.terminologies.PublicationStatus
-import dev.ohs.fhir.datacapture.fhirpath.ExpressionEvaluator
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
@@ -57,7 +57,7 @@ class QuestionnaireResponseItemValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.Integer(
-              value = Integer.Builder().apply { value = 275 }.build(),
+              value = Integer.Builder().apply { value = 275 }.build()
             )
         }
         .build()
@@ -67,31 +67,22 @@ class QuestionnaireResponseItemValidatorTest {
         .build()
     val questionnaireResponse =
       QuestionnaireResponse.Builder(
-          status = Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.Completed),
+          status = Enumeration(value = QuestionnaireResponse.QuestionnaireResponseStatus.Completed)
         )
         .apply {
           this.item.add(
             QuestionnaireResponse.Item.Builder(
-                linkId = FhirString.Builder().apply { value = "a-question" },
+                linkId = FhirString.Builder().apply { value = "a-question" }
               )
-              .apply { this.answer.add(answer.toBuilder()) },
+              .apply { this.answer.add(answer.toBuilder()) }
           )
         }
         .build()
-    val expressionEvaluator =
-      ExpressionEvaluator(
-        questionnaire,
-        questionnaireResponse,
-      )
+    val expressionEvaluator = ExpressionEvaluator(questionnaire, questionnaireResponse)
 
     val validationResult =
-      QuestionnaireResponseItemValidator(
-          expressionEvaluator,
-        )
-        .validate(
-          questionnaire.item.first(),
-          questionnaireResponse.item.first(),
-        )
+      QuestionnaireResponseItemValidator(expressionEvaluator)
+        .validate(questionnaire.item.first(), questionnaireResponse.item.first())
 
     assertTrue(validationResult is Valid)
   }
@@ -123,7 +114,7 @@ class QuestionnaireResponseItemValidatorTest {
           .apply {
             value =
               QuestionnaireResponse.Item.Answer.Value.Integer(
-                value = Integer.Builder().apply { value = 50 }.build(),
+                value = Integer.Builder().apply { value = 50 }.build()
               )
           }
           .build(),
@@ -131,7 +122,7 @@ class QuestionnaireResponseItemValidatorTest {
           .apply {
             value =
               QuestionnaireResponse.Item.Answer.Value.Integer(
-                value = Integer.Builder().apply { value = 150 }.build(),
+                value = Integer.Builder().apply { value = 150 }.build()
               )
           }
           .build(),
@@ -139,7 +130,7 @@ class QuestionnaireResponseItemValidatorTest {
           .apply {
             value =
               QuestionnaireResponse.Item.Answer.Value.Integer(
-                value = Integer.Builder().apply { value = 250 }.build(),
+                value = Integer.Builder().apply { value = 250 }.build()
               )
           }
           .build(),
@@ -151,38 +142,29 @@ class QuestionnaireResponseItemValidatorTest {
     val questionnaireResponse =
       QuestionnaireResponse.Builder(
           status =
-            Enumeration(QuestionnaireResponse.QuestionnaireResponseStatus.Completed.getCode()),
+            Enumeration(QuestionnaireResponse.QuestionnaireResponseStatus.Completed.getCode())
         )
         .apply {
           this.item.add(
             QuestionnaireResponse.Item.Builder(
-                linkId = FhirString.Builder().apply { value = "a-question" },
+                linkId = FhirString.Builder().apply { value = "a-question" }
               )
-              .apply { answers.forEach { this.answer.add(it.toBuilder()) } },
+              .apply { answers.forEach { this.answer.add(it.toBuilder()) } }
           )
         }
         .build()
-    val expressionEvaluator =
-      ExpressionEvaluator(
-        questionnaire,
-        questionnaireResponse,
-      )
+    val expressionEvaluator = ExpressionEvaluator(questionnaire, questionnaireResponse)
 
     val validationResult =
-      QuestionnaireResponseItemValidator(
-          expressionEvaluator,
-        )
-        .validate(
-          questionnaire.item.first(),
-          questionnaireResponse.item.first(),
-        )
+      QuestionnaireResponseItemValidator(expressionEvaluator)
+        .validate(questionnaire.item.first(), questionnaireResponse.item.first())
 
     assertTrue(validationResult is Invalid)
     assertTrue(
-      validationResult.singleStringValidationMessage.contains("Minimum value allowed is:100"),
+      validationResult.singleStringValidationMessage.contains("Minimum value allowed is:100")
     )
     assertTrue(
-      validationResult.singleStringValidationMessage.contains("Maximum value allowed is:200"),
+      validationResult.singleStringValidationMessage.contains("Maximum value allowed is:200")
     )
   }
 
@@ -202,35 +184,26 @@ class QuestionnaireResponseItemValidatorTest {
     val questionnaireResponse =
       QuestionnaireResponse.Builder(
           status =
-            Enumeration(QuestionnaireResponse.QuestionnaireResponseStatus.Completed.getCode()),
+            Enumeration(QuestionnaireResponse.QuestionnaireResponseStatus.Completed.getCode())
         )
         .apply {
           this.item.add(
             QuestionnaireResponse.Item.Builder(
-              linkId = FhirString.Builder().apply { value = "a-question" },
-            ),
+              linkId = FhirString.Builder().apply { value = "a-question" }
+            )
           )
         }
         .build()
 
-    val expressionEvaluator =
-      ExpressionEvaluator(
-        questionnaire,
-        questionnaireResponse,
-      )
+    val expressionEvaluator = ExpressionEvaluator(questionnaire, questionnaireResponse)
 
     val validationResult =
       QuestionnaireResponseItemValidator(expressionEvaluator)
-        .validate(
-          questionnaire.item.first(),
-          questionnaireResponse.item.first(),
-        )
+        .validate(questionnaire.item.first(), questionnaireResponse.item.first())
 
     assertTrue(validationResult is Invalid)
     assertTrue(
-      validationResult.singleStringValidationMessage.contains(
-        "Missing answer for required field.",
-      ),
+      validationResult.singleStringValidationMessage.contains("Missing answer for required field.")
     )
   }
 }

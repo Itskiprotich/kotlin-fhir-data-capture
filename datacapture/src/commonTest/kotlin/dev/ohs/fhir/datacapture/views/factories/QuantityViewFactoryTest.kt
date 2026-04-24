@@ -33,14 +33,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Code
-import dev.ohs.fhir.model.r4.Coding
-import dev.ohs.fhir.model.r4.Decimal
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Uri
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
@@ -55,6 +47,14 @@ import dev.ohs.fhir.datacapture.views.components.DROP_DOWN_TEXT_FIELD_TAG
 import dev.ohs.fhir.datacapture.views.components.EDIT_TEXT_FIELD_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_AT_HEADER_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
+import dev.ohs.fhir.model.r4.Code
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.Decimal
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Uri
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
@@ -94,7 +94,7 @@ class QuantityViewFactoryTest {
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "quantity-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireQuantityView(questionnaireViewItem) }
@@ -120,15 +120,15 @@ class QuantityViewFactoryTest {
                     QuestionnaireResponse.Item.Answer.Value.Quantity(
                       value =
                         _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
-                          value = "5".toBigDecimal(),
-                        ),
-                    ),
-                ),
+                          value = "5".toBigDecimal()
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireQuantityView(questionnaireViewItem) }
@@ -154,15 +154,15 @@ class QuantityViewFactoryTest {
                     QuestionnaireResponse.Item.Answer.Value.Quantity(
                       value =
                         _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
-                          value = "5".toBigDecimal(),
-                        ),
-                    ),
-                ),
+                          value = "5".toBigDecimal()
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireQuantityView(questionnaireViewItem) }
@@ -201,15 +201,15 @@ class QuantityViewFactoryTest {
                     QuestionnaireResponse.Item.Answer.Value.Quantity(
                       value =
                         _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
-                          unit = "kg",
-                        ),
-                    ),
-                ),
+                          unit = "kg"
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireQuantityView(questionnaireViewItem) }
@@ -233,9 +233,9 @@ class QuantityViewFactoryTest {
                       _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
                         unit = "kg",
                         code = "kilo",
-                      ),
-                  ),
-              ),
+                      )
+                  )
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "quantity-item")),
@@ -266,15 +266,15 @@ class QuantityViewFactoryTest {
                     QuestionnaireResponse.Item.Answer.Value.Quantity(
                       value =
                         _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
-                          unit = "kg",
-                        ),
-                    ),
-                ),
+                          unit = "kg"
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     setContent { QuestionnaireQuantityView(questionnaireViewItem) }
 
@@ -332,10 +332,10 @@ class QuantityViewFactoryTest {
                   QuestionnaireResponse.Item.Answer.Value.Quantity(
                     value =
                       _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
-                        value = 22.5.toBigDecimal(),
-                      ),
-                  ),
-              ),
+                        value = 22.5.toBigDecimal()
+                      )
+                  )
+              )
             ),
         ),
         validationResult = Valid,
@@ -463,9 +463,8 @@ class QuantityViewFactoryTest {
           system = Uri(value = "http://unitofmeasure.com"),
           code = Code(value = "cm"),
           display = FhirR4String(value = "centimeter"),
-        ),
-      ) { answers, draft,
-        ->
+        )
+      ) { answers, draft ->
         answerHolder = answers
         draftHolder = draft
       }
@@ -480,16 +479,14 @@ class QuantityViewFactoryTest {
 
       onNodeWithTag(EDIT_TEXT_FIELD_TEST_TAG).assertTextEquals("22")
 
-      with(
-        answerHolder!!.single().value?.asQuantity()?.value,
-      ) {
+      with(answerHolder!!.single().value?.asQuantity()?.value) {
         shouldBe(
           _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
             value = 22.0.toBigDecimal(),
             unit = "centimeter",
             code = "cm",
             system = "http://unitofmeasure.com",
-          ),
+          )
         )
       }
       draftHolder.shouldBeNull()
@@ -516,16 +513,14 @@ class QuantityViewFactoryTest {
 
       waitUntil { !answerHolder.isNullOrEmpty() }
 
-      with(
-        answerHolder!!.single().value?.asQuantity()?.value,
-      ) {
+      with(answerHolder!!.single().value?.asQuantity()?.value) {
         shouldBe(
           _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
             value = 22.0.toBigDecimal(),
             unit = "centimeter",
             code = "cm",
             system = "http://unitofmeasure.com",
-          ),
+          )
         )
       }
       draftHolder.shouldBeNull()
@@ -666,15 +661,15 @@ class QuantityViewFactoryTest {
                     QuestionnaireResponse.Item.Answer.Value.Quantity(
                       value =
                         _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
-                          value = "5".toBigDecimal(),
-                        ),
-                    ),
-                ),
+                          value = "5".toBigDecimal()
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireQuantityView(questionnaireViewItem) }
@@ -696,10 +691,10 @@ class QuantityViewFactoryTest {
                   QuestionnaireResponse.Item.Answer.Value.Quantity(
                     value =
                       _root_ide_package_.dev.ohs.fhir.datacapture.views.factories.quantity(
-                        value = "7".toBigDecimal(),
-                      ),
-                  ),
-              ),
+                        value = "7".toBigDecimal()
+                      )
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -729,7 +724,7 @@ class QuantityViewFactoryTest {
                       code = Code(value = "cm"),
                       system = Uri(value = "http://unitofmeasure.com"),
                       display = FhirR4String(value = "centimeter"),
-                    ),
+                    )
                 ),
             ),
             Extension(
@@ -741,7 +736,7 @@ class QuantityViewFactoryTest {
                       code = Code(value = "[in_i]"),
                       system = Uri(value = "http://unitofmeasure.com"),
                       display = FhirR4String(value = "inch"),
-                    ),
+                    )
                 ),
             ),
           ),

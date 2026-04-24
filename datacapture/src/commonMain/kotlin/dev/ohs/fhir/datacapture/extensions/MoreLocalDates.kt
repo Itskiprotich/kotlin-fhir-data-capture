@@ -47,21 +47,25 @@ internal fun canonicalizeDatePattern(datePattern: String): String {
             hasDay = true
           }
         }
+
         'm' -> {
           if (!hasMonth) {
             append("MM")
             hasMonth = true
           }
         }
+
         'y' -> {
           if (!hasYear) {
             append("yyyy")
             hasYear = true
           }
         }
+
         datePatternSeparator -> {
           append(datePatternSeparator)
         }
+
         else -> {}
       }
     }

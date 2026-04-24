@@ -36,11 +36,6 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.FhirDate
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_ENTRY_FORMAT_URL
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
 import dev.ohs.fhir.datacapture.extensions.FhirR4DateType
@@ -54,6 +49,11 @@ import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.DATE_TEXT_INPUT_FIELD
 import dev.ohs.fhir.datacapture.views.components.ERROR_TEXT_AT_HEADER_TEST_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.FhirDate
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -126,9 +126,9 @@ class DateViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Date(
-                      value = FhirR4DateType(value = null),
-                    ),
-                ),
+                      value = FhirR4DateType(value = null)
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
@@ -140,37 +140,36 @@ class DateViewFactoryTest {
 
   @Test
   @Ignore
-  fun shouldSetDateInput_localeUs() =
-    runComposeUiTest {
-      //    setLocale(Locale.US)
-      //    val questionnaireViewItem =
-      //      QuestionnaireViewItem(
-      //        Questionnaire.Item(
-      //          linkId = FhirR4String(value = "date-item"),
-      //          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
-      //          text = FhirR4String(value = "Question?"),
-      //        ),
-      //        QuestionnaireResponse.Item(
-      //          linkId = FhirR4String(value = "date-item"),
-      //          answer =
-      //            listOf(
-      //              QuestionnaireResponse.Item.Answer(
-      //                value =
-      //                  QuestionnaireResponse.Item.Answer.Value.Date(
-      //                    value = FhirR4DateType(value = FhirDate.fromString("2020-10-19")),
-      //                  ),
-      //              ),
-      //            ),
-      //        ),
-      //        validationResult = NotValidated,
-      //        answersChangedCallback = { _, _, _, _ -> },
-      //      )
-      //
-      //    setContent { QuestionnaireDateView(questionnaireViewItem) }
-      //
-      //    onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree =
-      // true).assertTextEquals("11/19/2020")
-    }
+  fun shouldSetDateInput_localeUs() = runComposeUiTest {
+    //    setLocale(Locale.US)
+    //    val questionnaireViewItem =
+    //      QuestionnaireViewItem(
+    //        Questionnaire.Item(
+    //          linkId = FhirR4String(value = "date-item"),
+    //          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
+    //          text = FhirR4String(value = "Question?"),
+    //        ),
+    //        QuestionnaireResponse.Item(
+    //          linkId = FhirR4String(value = "date-item"),
+    //          answer =
+    //            listOf(
+    //              QuestionnaireResponse.Item.Answer(
+    //                value =
+    //                  QuestionnaireResponse.Item.Answer.Value.Date(
+    //                    value = FhirR4DateType(value = FhirDate.fromString("2020-10-19")),
+    //                  ),
+    //              ),
+    //            ),
+    //        ),
+    //        validationResult = NotValidated,
+    //        answersChangedCallback = { _, _, _, _ -> },
+    //      )
+    //
+    //    setContent { QuestionnaireDateView(questionnaireViewItem) }
+    //
+    //    onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree =
+    // true).assertTextEquals("11/19/2020")
+  }
 
   @Test
   fun showDateFormatLabelInLowerCase() = runComposeUiTest {
@@ -184,7 +183,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "mm/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
@@ -199,61 +198,59 @@ class DateViewFactoryTest {
 
   @Test
   @Ignore
-  fun shouldSetDateInput_localeJp() =
-    runComposeUiTest {
-      //    setLocale(Locale.JAPAN)
-      //      val questionnaireViewItem = QuestionnaireViewItem(
-      //          Questionnaire.Item(
-      //              linkId = FhirR4String(value = "date-item"),
-      //              type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
-      //              text = FhirR4String(value = "Question?")
-      //          ),
-      //          QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item"),
-      //              answer = listOf(
-      //                  QuestionnaireResponse.Item.Answer(
-      //                      value = QuestionnaireResponse.Item.Answer.Value.Date(value =
-      // FhirR4DateType(value =
-      // FhirDate.Date(LocalDate(2020, 10, 19))))
-      //                  )
-      //              )),
-      //          validationResult = NotValidated,
-      //
-      //          answersChangedCallback = { _, _, _, _ -> },
-      //      )
-      //
-      //    setContent { QuestionnaireDateView(questionnaireViewItem) }
-      //    onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree = true)
-      //      .assertTextEquals("2020/11/19")
-    }
+  fun shouldSetDateInput_localeJp() = runComposeUiTest {
+    //    setLocale(Locale.JAPAN)
+    //      val questionnaireViewItem = QuestionnaireViewItem(
+    //          Questionnaire.Item(
+    //              linkId = FhirR4String(value = "date-item"),
+    //              type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
+    //              text = FhirR4String(value = "Question?")
+    //          ),
+    //          QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item"),
+    //              answer = listOf(
+    //                  QuestionnaireResponse.Item.Answer(
+    //                      value = QuestionnaireResponse.Item.Answer.Value.Date(value =
+    // FhirR4DateType(value =
+    // FhirDate.Date(LocalDate(2020, 10, 19))))
+    //                  )
+    //              )),
+    //          validationResult = NotValidated,
+    //
+    //          answersChangedCallback = { _, _, _, _ -> },
+    //      )
+    //
+    //    setContent { QuestionnaireDateView(questionnaireViewItem) }
+    //    onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree = true)
+    //      .assertTextEquals("2020/11/19")
+  }
 
   @Test
   @Ignore
-  fun shouldSetDateInput_localeEn() =
-    runComposeUiTest {
-      //    setLocale(Locale.ENGLISH)
-      //      val questionnaireViewItem = QuestionnaireViewItem(
-      //          Questionnaire.Item(
-      //              linkId = FhirR4String(value = "date-item"),
-      //              type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
-      //              text = FhirR4String(value = "Question?")
-      //          ),
-      //          QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item"),
-      //                            answer = listOf(
-      //                  QuestionnaireResponse.Item.Answer(
-      //                      value = QuestionnaireResponse.Item.Answer.Value.Date(value =
-      // FhirR4DateType(value =
-      // FhirDate.Date(LocalDate(2020, 10, 19))))
-      //                  )
-      //              )),
-      //          validationResult = NotValidated,
-      //          answersChangedCallback = { _, _, _, _ -> },
-      //      )
-      //
-      //      setContent { QuestionnaireDateView(questionnaireViewItem) }
-      //
-      //    onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree = true)
-      //      .assertTextEquals("11/19/2020")
-    }
+  fun shouldSetDateInput_localeEn() = runComposeUiTest {
+    //    setLocale(Locale.ENGLISH)
+    //      val questionnaireViewItem = QuestionnaireViewItem(
+    //          Questionnaire.Item(
+    //              linkId = FhirR4String(value = "date-item"),
+    //              type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
+    //              text = FhirR4String(value = "Question?")
+    //          ),
+    //          QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item"),
+    //                            answer = listOf(
+    //                  QuestionnaireResponse.Item.Answer(
+    //                      value = QuestionnaireResponse.Item.Answer.Value.Date(value =
+    // FhirR4DateType(value =
+    // FhirDate.Date(LocalDate(2020, 10, 19))))
+    //                  )
+    //              )),
+    //          validationResult = NotValidated,
+    //          answersChangedCallback = { _, _, _, _ -> },
+    //      )
+    //
+    //      setContent { QuestionnaireDateView(questionnaireViewItem) }
+    //
+    //    onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree = true)
+    //      .assertTextEquals("11/19/2020")
+  }
 
   @Test
   fun shouldSetDateInput() = runComposeUiTest {
@@ -268,7 +265,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "dd/MM/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -278,9 +275,9 @@ class DateViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19))),
-                  ),
-              ),
+                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19)))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -294,57 +291,55 @@ class DateViewFactoryTest {
 
   @Test
   @Ignore
-  fun parseDateTextInputInUsLocale() =
-    runComposeUiTest {
-      //    setLocale(Locale.US)
-      //    var answers: List<QuestionnaireResponse.Item.Answer>? = null
-      //    val item =
-      //      QuestionnaireViewItem(
-      //        Questionnaire.Item(
-      //          linkId = FhirR4String(value = "date-item"),
-      //          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
-      //        ),
-      //        QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
-      //        validationResult = NotValidated,
-      //        answersChangedCallback = { _, _, result, _ -> answers = result },
-      //      )
-      //
-      //    setContent { QuestionnaireDateView(item) }
-      //    onNodeWithTag(DATE_TEXT_INPUT_FIELD).performTextInput("11/19/2020")
-      //    waitUntil { answers != null }
-      //
-      //    val answer = (answers!!.single().value?.asDate()?.value?.value as? FhirDate.Date)?.date
-      //
-      //      answer?.day.shouldBe(19)
-      //      answer?.month.shouldBe(10)
-      //      answer?.year.shouldBe(2020)
-    }
+  fun parseDateTextInputInUsLocale() = runComposeUiTest {
+    //    setLocale(Locale.US)
+    //    var answers: List<QuestionnaireResponse.Item.Answer>? = null
+    //    val item =
+    //      QuestionnaireViewItem(
+    //        Questionnaire.Item(
+    //          linkId = FhirR4String(value = "date-item"),
+    //          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
+    //        ),
+    //        QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
+    //        validationResult = NotValidated,
+    //        answersChangedCallback = { _, _, result, _ -> answers = result },
+    //      )
+    //
+    //    setContent { QuestionnaireDateView(item) }
+    //    onNodeWithTag(DATE_TEXT_INPUT_FIELD).performTextInput("11/19/2020")
+    //    waitUntil { answers != null }
+    //
+    //    val answer = (answers!!.single().value?.asDate()?.value?.value as? FhirDate.Date)?.date
+    //
+    //      answer?.day.shouldBe(19)
+    //      answer?.month.shouldBe(10)
+    //      answer?.year.shouldBe(2020)
+  }
 
   @Test
   @Ignore
-  fun parseDateTextInputInJapanLocale() =
-    runComposeUiTest {
-      //    setLocale(Locale.JAPAN)
-      //    var answers: List<QuestionnaireResponse.Item.Answer>? = null
-      //    val item =
-      //      QuestionnaireViewItem(
-      //        Questionnaire.Item(
-      //          linkId = FhirR4String(value = "date-item"),
-      //          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
-      //        ),
-      //        QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
-      //        validationResult = NotValidated,
-      //        answersChangedCallback = { _, _, result, _ -> answers = result },
-      //      )
-      //      setContent { QuestionnaireDateView(item) }
-      //    onNodeWithTag(DATE_TEXT_INPUT_FIELD).performTextInput("2020/11/19")
-      //    waitUntil { answers != null }
-      //    val answer = (answers!!.single().value?.asDate()?.value?.value as? FhirDate.Date)?.date
-      //
-      //      answer?.day.shouldBe(19)
-      //      answer?.month.shouldBe(10)
-      //      answer?.year.shouldBe(2020)
-    }
+  fun parseDateTextInputInJapanLocale() = runComposeUiTest {
+    //    setLocale(Locale.JAPAN)
+    //    var answers: List<QuestionnaireResponse.Item.Answer>? = null
+    //    val item =
+    //      QuestionnaireViewItem(
+    //        Questionnaire.Item(
+    //          linkId = FhirR4String(value = "date-item"),
+    //          type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
+    //        ),
+    //        QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
+    //        validationResult = NotValidated,
+    //        answersChangedCallback = { _, _, result, _ -> answers = result },
+    //      )
+    //      setContent { QuestionnaireDateView(item) }
+    //    onNodeWithTag(DATE_TEXT_INPUT_FIELD).performTextInput("2020/11/19")
+    //    waitUntil { answers != null }
+    //    val answer = (answers!!.single().value?.asDate()?.value?.value as? FhirDate.Date)?.date
+    //
+    //      answer?.day.shouldBe(19)
+    //      answer?.month.shouldBe(10)
+    //      answer?.year.shouldBe(2020)
+  }
 
   @Test
   fun parseDateTextInput() = runComposeUiTest {
@@ -359,7 +354,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
@@ -392,7 +387,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -402,9 +397,9 @@ class DateViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19))),
-                  ),
-              ),
+                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19)))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -413,9 +408,7 @@ class DateViewFactoryTest {
     setContent { QuestionnaireDateView(questionnaireItem) }
     onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree = true).assertTextEquals("11/19/2020")
     val dateTextInput = "11/19"
-    onNodeWithTag(DATE_TEXT_INPUT_FIELD).performSemanticsAction(
-      SemanticsActions.SetText,
-    ) {
+    onNodeWithTag(DATE_TEXT_INPUT_FIELD).performSemanticsAction(SemanticsActions.SetText) {
       it(dateTextInput.toAnnotatedString())
     }
     waitUntil { answers != null }
@@ -434,7 +427,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -444,9 +437,9 @@ class DateViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19))),
-                  ),
-              ),
+                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19)))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -454,9 +447,7 @@ class DateViewFactoryTest {
       )
     setContent { QuestionnaireDateView(questionnaireItem) }
     onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree = true).assertTextEquals("11/19/2020")
-    onNodeWithTag(DATE_TEXT_INPUT_FIELD).performSemanticsAction(
-      SemanticsActions.SetText,
-    ) {
+    onNodeWithTag(DATE_TEXT_INPUT_FIELD).performSemanticsAction(SemanticsActions.SetText) {
       it("11/19".toAnnotatedString())
     }
     onNodeWithTag(DATE_TEXT_INPUT_FIELD, useUnmergedTree = true).assertTextEquals("11/19")
@@ -476,7 +467,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -486,9 +477,9 @@ class DateViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 10, 19))),
-                  ),
-              ),
+                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 10, 19)))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -507,8 +498,8 @@ class DateViewFactoryTest {
       QuestionnaireResponse.Item.Answer(
         value =
           QuestionnaireResponse.Item.Answer.Value.Date(
-            value = FhirR4DateType(value = FhirDate.Date(LocalDate(2026, 1, 1))),
-          ),
+            value = FhirR4DateType(value = FhirDate.Date(LocalDate(2026, 1, 1)))
+          )
       )
     var partialValue: String? = "02/07"
     val questionnaireItem =
@@ -521,7 +512,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -531,9 +522,9 @@ class DateViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19))),
-                  ),
-              ),
+                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19)))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -560,7 +551,7 @@ class DateViewFactoryTest {
                 Extension(
                   url = EXTENSION_ENTRY_FORMAT_URL,
                   value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(
@@ -570,14 +561,14 @@ class DateViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Date(
-                      value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19))),
-                    ),
-                ),
+                      value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19)))
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
 
     setContent { QuestionnaireDateView(questionnaireItem) }
@@ -593,7 +584,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
@@ -618,14 +609,14 @@ class DateViewFactoryTest {
                 Extension(
                   url = EXTENSION_ENTRY_FORMAT_URL,
                   value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           draftAnswer = "02/07",
-        ),
+        )
       )
 
     setContent { QuestionnaireDateView(questionnaireItem) }
@@ -641,7 +632,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(
@@ -651,9 +642,9 @@ class DateViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19))),
-                  ),
-              ),
+                    value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19)))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -677,14 +668,14 @@ class DateViewFactoryTest {
                 url = "http://hl7.org/fhir/StructureDefinition/minValue",
                 value =
                   Extension.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.fromString("2020-01-01")),
+                    value = FhirR4DateType(value = FhirDate.fromString("2020-01-01"))
                   ),
               ),
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/maxValue",
                 value =
                   Extension.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.fromString("2025-01-01")),
+                    value = FhirR4DateType(value = FhirDate.fromString("2025-01-01"))
                   ),
               ),
             ),
@@ -696,9 +687,9 @@ class DateViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.fromString("2026-01-01")),
-                  ),
-              ),
+                    value = FhirR4DateType(value = FhirDate.fromString("2026-01-01"))
+                  )
+              )
             ),
         ),
         validationResult = Invalid(listOf("Maximum value allowed is:2025-01-01")),
@@ -712,7 +703,7 @@ class DateViewFactoryTest {
         SemanticsMatcher.expectValue(
           SemanticsProperties.Error,
           "Maximum value allowed is:2025-01-01",
-        ),
+        )
       )
   }
 
@@ -728,7 +719,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
@@ -744,7 +735,7 @@ class DateViewFactoryTest {
         SemanticsMatcher.expectValue(
           SemanticsProperties.Error,
           "Date format needs to be mm/dd/yyyy (e.g. 01/31/2023)",
-        ),
+        )
       )
   }
 
@@ -761,14 +752,14 @@ class DateViewFactoryTest {
                 url = "http://hl7.org/fhir/StructureDefinition/minValue",
                 value =
                   Extension.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.fromString("2020-01-01")),
+                    value = FhirR4DateType(value = FhirDate.fromString("2020-01-01"))
                   ),
               ),
               Extension(
                 url = "http://hl7.org/fhir/StructureDefinition/maxValue",
                 value =
                   Extension.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.fromString("2025-01-01")),
+                    value = FhirR4DateType(value = FhirDate.fromString("2025-01-01"))
                   ),
               ),
             ),
@@ -780,9 +771,9 @@ class DateViewFactoryTest {
               QuestionnaireResponse.Item.Answer(
                 value =
                   QuestionnaireResponse.Item.Answer.Value.Date(
-                    value = FhirR4DateType(value = FhirDate.fromString("2023-01-01")),
-                  ),
-              ),
+                    value = FhirR4DateType(value = FhirDate.fromString("2023-01-01"))
+                  )
+              )
             ),
         ),
         validationResult = NotValidated,
@@ -848,7 +839,7 @@ class DateViewFactoryTest {
                   Extension(
                     url = EXTENSION_ENTRY_FORMAT_URL,
                     value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-                  ),
+                  )
                 ),
             ),
             QuestionnaireResponse.Item(
@@ -858,14 +849,14 @@ class DateViewFactoryTest {
                   QuestionnaireResponse.Item.Answer(
                     value =
                       QuestionnaireResponse.Item.Answer.Value.Date(
-                        value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19))),
-                      ),
-                  ),
+                        value = FhirR4DateType(value = FhirDate.Date(LocalDate(2020, 11, 19)))
+                      )
+                  )
                 ),
             ),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
         )
 
       setContent { QuestionnaireDateView(questionnaireViewItem) }
@@ -882,7 +873,7 @@ class DateViewFactoryTest {
                 Extension(
                   url = EXTENSION_ENTRY_FORMAT_URL,
                   value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(
@@ -892,9 +883,9 @@ class DateViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Date(
-                      value = FhirR4DateType(value = FhirDate.Date(LocalDate(2021, 11, 19))),
-                    ),
-                ),
+                      value = FhirR4DateType(value = FhirDate.Date(LocalDate(2021, 11, 19)))
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
@@ -914,7 +905,7 @@ class DateViewFactoryTest {
                 Extension(
                   url = EXTENSION_ENTRY_FORMAT_URL,
                   value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
@@ -937,7 +928,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "yyyy-MM-dd")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
@@ -986,7 +977,7 @@ class DateViewFactoryTest {
                 Extension(
                   url = EXTENSION_ENTRY_FORMAT_URL,
                   value = Extension.Value.String(value = FhirR4String(value = "yyyyMMdd")),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
@@ -1010,7 +1001,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "yyyy MMMM dd")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
@@ -1048,23 +1039,22 @@ class DateViewFactoryTest {
 
   @Test
   @Ignore
-  fun shouldSetLocalDateInputFormatWhenNoEntryFormatExtensionInQuestionnaire() =
-    runComposeUiTest {
-      //    setLocale(Locale.US)
-      //      val questionnaireViewItem = QuestionnaireViewItem(
-      //          Questionnaire.Item(
-      //              linkId = FhirR4String(value = "date-item"),
-      //              type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
-      //          ),
-      //          QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
-      //          validationResult = NotValidated,
-      //          answersChangedCallback = { _, _, _, _ -> },
-      //      )
-      //
-      //      setContent { QuestionnaireDateView(questionnaireViewItem) }
-      //    onNodeWithTag(DATE_TEXT_INPUT_FIELD)
-      //      .assertTextEquals("mm/dd/yyyy", includeEditableText = false)
-    }
+  fun shouldSetLocalDateInputFormatWhenNoEntryFormatExtensionInQuestionnaire() = runComposeUiTest {
+    //    setLocale(Locale.US)
+    //      val questionnaireViewItem = QuestionnaireViewItem(
+    //          Questionnaire.Item(
+    //              linkId = FhirR4String(value = "date-item"),
+    //              type = Enumeration(value = Questionnaire.QuestionnaireItemType.Date),
+    //          ),
+    //          QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),
+    //          validationResult = NotValidated,
+    //          answersChangedCallback = { _, _, _, _ -> },
+    //      )
+    //
+    //      setContent { QuestionnaireDateView(questionnaireViewItem) }
+    //    onNodeWithTag(DATE_TEXT_INPUT_FIELD)
+    //      .assertTextEquals("mm/dd/yyyy", includeEditableText = false)
+  }
 
   @Test
   fun clearUiTextClearsQuestionnaireResponseAnswerAndDraftAnswer() = runComposeUiTest {
@@ -1081,7 +1071,7 @@ class DateViewFactoryTest {
               Extension(
                 url = EXTENSION_ENTRY_FORMAT_URL,
                 value = Extension.Value.String(value = FhirR4String(value = "MM/dd/yyyy")),
-              ),
+              )
             ),
         ),
         QuestionnaireResponse.Item(linkId = FhirR4String(value = "date-item")),

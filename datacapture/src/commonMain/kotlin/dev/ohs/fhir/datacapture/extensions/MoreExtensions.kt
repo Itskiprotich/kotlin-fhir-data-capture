@@ -16,13 +16,13 @@
 
 package dev.ohs.fhir.datacapture.extensions
 
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import dev.ohs.fhir.model.r4.Element
 import dev.ohs.fhir.model.r4.Expression
 import dev.ohs.fhir.model.r4.Extension
 import dev.ohs.fhir.model.r4.FhirDate
 import dev.ohs.fhir.model.r4.FhirDateTime
 import dev.ohs.fhir.model.r4.Quantity
-import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import kotlinx.datetime.LocalTime
 
 internal const val EXTENSION_CQF_CALCULATED_VALUE_URL: String =
@@ -31,9 +31,11 @@ internal const val EXTENSION_CQF_CALCULATED_VALUE_URL: String =
 fun Extension.readStringExtension(uri: String): String? {
   val ext = extension.single { it.url == uri }
   return ext.value?.asUri()?.value?.value
-    ?: ext.value?.asCanonical()?.value?.value ?: ext.value?.asCode()?.value?.value
-      ?: ext.value?.asInteger()?.value?.value?.toString() ?: ext.value?.asMarkdown()?.value?.value
-      ?: ext.value?.asString()?.value?.value
+    ?: ext.value?.asCanonical()?.value?.value
+    ?: ext.value?.asCode()?.value?.value
+    ?: ext.value?.asInteger()?.value?.value?.toString()
+    ?: ext.value?.asMarkdown()?.value?.value
+    ?: ext.value?.asString()?.value?.value
 }
 
 internal val Extension.Value.elementValue: Element
@@ -113,53 +115,31 @@ internal val Extension.Value.cqfCalculatedValueExpression
       ?.value
 
 internal suspend fun Extension.Value.populateCqfCalculatedValue(
-  evaluator: suspend (Expression) -> Any?,
+  evaluator: suspend (Expression) -> Any?
 ): Extension.Value {
   val result = cqfCalculatedValueExpression?.let { evaluator.invoke(it) }
 
   return result?.let {
     when (this) {
       is Extension.Value.Date -> {
-        this.copy(
-          value =
-            value.copy(
-              value = FhirDate.fromString(result.toString()),
-            ),
-        )
+        this.copy(value = value.copy(value = FhirDate.fromString(result.toString())))
       }
+
       is Extension.Value.DateTime ->
-        this.copy(
-          value =
-            value.copy(
-              value = FhirDateTime.fromString(result.toString()),
-            ),
-        )
-      is Extension.Value.Decimal ->
-        this.copy(
-          value =
-            value.copy(
-              value = result as BigDecimal,
-            ),
-        )
-      is Extension.Value.PositiveInt ->
-        this.copy(
-          value =
-            value.copy(
-              value = result as Int,
-            ),
-        )
+        this.copy(value = value.copy(value = FhirDateTime.fromString(result.toString())))
+
+      is Extension.Value.Decimal -> this.copy(value = value.copy(value = result as BigDecimal))
+
+      is Extension.Value.PositiveInt -> this.copy(value = value.copy(value = result as Int))
+
       is Extension.Value.Quantity -> this.copy(value = result as Quantity)
+
       is Extension.Value.Integer -> this.copy(value = FhirR4Integer(value = result as Int))
+
       is Extension.Value.Time ->
-        this.copy(
-          value =
-            value.copy(
-              value = result as LocalTime,
-              extension = emptyList(),
-            ),
-        )
+        this.copy(value = value.copy(value = result as LocalTime, extension = emptyList()))
+
       else -> this
     }
-  }
-    ?: this
+  } ?: this
 }

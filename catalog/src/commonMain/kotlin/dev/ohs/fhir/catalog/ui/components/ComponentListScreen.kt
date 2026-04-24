@@ -43,9 +43,7 @@ fun ComponentListScreen(
   onComponentClick:
     (dev.ohs.fhir.catalog.ui.components.ComponentListViewModel.Component, String) -> Unit,
 ) {
-  Scaffold(
-    topBar = { CatalogTopAppBar() },
-  ) { padding ->
+  Scaffold(topBar = { CatalogTopAppBar() }) { padding ->
     LazyVerticalGrid(
       columns = GridCells.Fixed(2),
       modifier = Modifier.fillMaxSize().padding(padding),
@@ -64,6 +62,7 @@ fun ComponentListScreen(
               )
             }
           }
+
           is dev.ohs.fhir.catalog.ui.components.ComponentListViewModel.ViewItem.ComponentItem -> {
             item {
               val title = stringResource(item.component.text)

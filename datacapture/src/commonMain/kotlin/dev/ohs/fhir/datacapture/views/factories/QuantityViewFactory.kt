@@ -34,10 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import dev.ohs.fhir.model.r4.Coding
-import dev.ohs.fhir.model.r4.Decimal
-import dev.ohs.fhir.model.r4.Quantity
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import dev.ohs.fhir.datacapture.extensions.hasCode
 import dev.ohs.fhir.datacapture.extensions.hasDisplay
@@ -56,6 +52,10 @@ import dev.ohs.fhir.datacapture.views.components.EditTextFieldState
 import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.components.MediaItem
 import dev.ohs.fhir.datacapture.views.components.getRequiredOrOptionalText
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.Decimal
+import dev.ohs.fhir.model.r4.Quantity
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -118,7 +118,7 @@ internal object QuantityViewFactory : QuestionnaireItemViewFactory {
           .padding(
             horizontal = QuestionnaireTheme.dimensions.itemMarginHorizontal,
             vertical = QuestionnaireTheme.dimensions.itemMarginVertical,
-          ),
+          )
     ) {
       Header(questionnaireViewItem)
       questionnaireViewItem.questionnaireItem.itemMedia?.let { MediaItem(it) }
@@ -142,10 +142,7 @@ internal object QuantityViewFactory : QuestionnaireItemViewFactory {
     }
   }
 
-  private suspend fun handleInput(
-    questionnaireViewItem: QuestionnaireViewItem,
-    input: UiQuantity,
-  ) {
+  private suspend fun handleInput(questionnaireViewItem: QuestionnaireViewItem, input: UiQuantity) {
     var decimal: BigDecimal? = null
     var unit: Coding? = null
 
@@ -172,12 +169,15 @@ internal object QuantityViewFactory : QuestionnaireItemViewFactory {
       decimal == null && unit == null -> {
         questionnaireViewItem.clearAnswer()
       }
+
       decimal == null -> {
         questionnaireViewItem.setDraftAnswer(unit)
       }
+
       unit == null -> {
         questionnaireViewItem.setDraftAnswer(decimal)
       }
+
       else -> {
         questionnaireViewItem.setAnswer(
           QuestionnaireResponse.Item.Answer(
@@ -188,9 +188,9 @@ internal object QuantityViewFactory : QuestionnaireItemViewFactory {
                   unit = unit.display,
                   code = unit.code,
                   system = unit.system,
-                ),
-              ),
-          ),
+                )
+              )
+          )
         )
       }
     }
@@ -206,12 +206,12 @@ internal object QuantityViewFactory : QuestionnaireItemViewFactory {
       ?.value
       ?.toStringExpanded()
       ?: questionnaireViewItem.draftAnswer?.let { if (it is BigDecimal) it.toString() else "" }
-        ?: ""
+      ?: ""
 
   private fun unitTextCoding(questionnaireViewItem: QuestionnaireViewItem) =
     questionnaireViewItem.answers.singleOrNull()?.value?.asQuantity()?.value?.toCoding()
       ?: questionnaireViewItem.draftAnswer?.let { it as? Coding }
-        ?: questionnaireViewItem.questionnaireItem.initial
+      ?: questionnaireViewItem.questionnaireItem.initial
         .firstOrNull()
         ?.value
         ?.asQuantity()
@@ -220,12 +220,7 @@ internal object QuantityViewFactory : QuestionnaireItemViewFactory {
 
   private fun Coding.toDropDownAnswerOption() =
     takeIf { it.hasCode() || it.hasDisplay() }
-      ?.let {
-        DropDownAnswerOption(
-          elementValue = it,
-          displayString = it.display?.value ?: "",
-        )
-      }
+      ?.let { DropDownAnswerOption(elementValue = it, displayString = it.display?.value ?: "") }
 
   private fun DropDownAnswerOption.findCoding(options: List<Coding>) =
     options.find { elementValue == it }

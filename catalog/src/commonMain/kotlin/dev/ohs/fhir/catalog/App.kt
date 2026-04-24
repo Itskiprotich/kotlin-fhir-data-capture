@@ -98,9 +98,9 @@ fun App() {
 
       val items =
         listOf(
-          _root_ide_package_.dev.ohs.fhir.catalog.Screen.Components,
-          _root_ide_package_.dev.ohs.fhir.catalog.Screen.Layouts,
-          _root_ide_package_.dev.ohs.fhir.catalog.Screen.Behaviors
+          Screen.Components,
+          Screen.Layouts,
+          Screen.Behaviors,
         )
 
       Scaffold(
@@ -124,41 +124,41 @@ fun App() {
               }
             }
           }
-        },
+        }
       ) { innerPadding ->
         NavHost(
           navController = navController,
-          startDestination = _root_ide_package_.dev.ohs.fhir.catalog.Screen.Components.route,
+          startDestination = Screen.Components.route,
           modifier = Modifier.padding(innerPadding),
         ) {
-          composable(_root_ide_package_.dev.ohs.fhir.catalog.Screen.Components.route) {
+          composable(Screen.Components.route) {
             ComponentListScreen(
               viewModel = componentViewModel,
               onComponentClick = { component, title ->
                 val validationPart =
                   component.questionnaireFileWithValidation?.let { "?validationFile=$it" } ?: ""
                 navController.navigate(
-                  "questionnaire/${component.questionnaireFile}/$title/false/false/false$validationPart",
+                  "questionnaire/${component.questionnaireFile}/$title/false/false/false$validationPart"
                 )
               },
             )
           }
-          composable(_root_ide_package_.dev.ohs.fhir.catalog.Screen.Layouts.route) {
+          composable(Screen.Layouts.route) {
             LayoutListScreen(
               viewModel = layoutViewModel,
               onLayoutClick = { layout, title ->
                 navController.navigate(
-                  "questionnaire/${layout.questionnaireFileName}/$title/${layout.showReviewPage}/${layout.showReviewPageFirst}/${layout.isReadOnly}",
+                  "questionnaire/${layout.questionnaireFileName}/$title/${layout.showReviewPage}/${layout.showReviewPageFirst}/${layout.isReadOnly}"
                 )
               },
             )
           }
-          composable(_root_ide_package_.dev.ohs.fhir.catalog.Screen.Behaviors.route) {
+          composable(Screen.Behaviors.route) {
             BehaviorListScreen(
               viewModel = behaviorViewModel,
               onBehaviorClick = { behavior, title ->
                 navController.navigate(
-                  "questionnaire/${behavior.questionnaireFileName}/$title/false/false/false",
+                  "questionnaire/${behavior.questionnaireFileName}/$title/false/false/false"
                 )
               },
             )

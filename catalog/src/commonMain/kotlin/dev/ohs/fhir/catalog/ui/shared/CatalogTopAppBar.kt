@@ -41,9 +41,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CatalogTopAppBar(
-  onOpenQuestionnaireAction: () -> Unit = {},
-) {
+fun CatalogTopAppBar(onOpenQuestionnaireAction: () -> Unit = {}) {
   var showMenu by remember { mutableStateOf(false) }
 
   CenterAlignedTopAppBar(
@@ -70,7 +68,10 @@ fun CatalogTopAppBar(
     actions = {
       Box {
         IconButton(onClick = { showMenu = !showMenu }) {
-          Icon(painter = painterResource(Res.drawable.more_vert_filled_24dp), contentDescription = null)
+          Icon(
+            painter = painterResource(Res.drawable.more_vert_filled_24dp),
+            contentDescription = null,
+          )
         }
         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
           DropdownMenuItem(

@@ -33,14 +33,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.text.AnnotatedString
-import dev.ohs.fhir.model.r4.Code
-import dev.ohs.fhir.model.r4.CodeableConcept
-import dev.ohs.fhir.model.r4.Coding
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Uri
 import dev.ohs.fhir.datacapture.extensions.DisplayItemControlType
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_DIALOG_URL_ANDROID_FHIR
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_ITEM_CONTROL_SYSTEM
@@ -59,6 +51,14 @@ import dev.ohs.fhir.datacapture.views.components.OPTION_CHOICE_LIST_TAG
 import dev.ohs.fhir.datacapture.views.components.OPTION_CHOICE_TAG
 import dev.ohs.fhir.datacapture.views.components.OTHER_OPTION_TEXT_FIELD_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
+import dev.ohs.fhir.model.r4.Code
+import dev.ohs.fhir.model.r4.CodeableConcept
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Uri
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainInOrder
 import kotlin.test.Test
@@ -118,24 +118,24 @@ class DialogSelectViewFactoryTest {
                 Questionnaire.Item.AnswerOption(
                   value =
                     Questionnaire.Item.AnswerOption.Value.Coding(
-                      value = Coding(display = FhirR4String(value = option)),
-                    ),
+                      value = Coding(display = FhirR4String(value = option))
+                    )
                 )
               } +
                 listOf(
                   Questionnaire.Item.AnswerOption(
                     value =
                       Questionnaire.Item.AnswerOption.Value.Coding(
-                        value = Coding(display = FhirR4String(value = "Coding Exclusive")),
+                        value = Coding(display = FhirR4String(value = "Coding Exclusive"))
                       ),
                     extension =
                       listOf(
                         Extension(
                           url = EXTENSION_OPTION_EXCLUSIVE_URL,
                           value = Extension.Value.Boolean(value = FhirR4Boolean(value = true)),
-                        ),
+                        )
                       ),
-                  ),
+                  )
                 ),
           ),
           responseOptions(),
@@ -177,24 +177,24 @@ class DialogSelectViewFactoryTest {
                 Questionnaire.Item.AnswerOption(
                   value =
                     Questionnaire.Item.AnswerOption.Value.Coding(
-                      value = Coding(display = FhirR4String(value = option)),
-                    ),
+                      value = Coding(display = FhirR4String(value = option))
+                    )
                 )
               } +
                 listOf(
                   Questionnaire.Item.AnswerOption(
                     value =
                       Questionnaire.Item.AnswerOption.Value.Coding(
-                        value = Coding(display = FhirR4String(value = "Coding Exclusive")),
+                        value = Coding(display = FhirR4String(value = "Coding Exclusive"))
                       ),
                     extension =
                       listOf(
                         Extension(
                           url = EXTENSION_OPTION_EXCLUSIVE_URL,
                           value = Extension.Value.Boolean(value = FhirR4Boolean(value = true)),
-                        ),
+                        )
                       ),
-                  ),
+                  )
                 ),
           ),
           responseOptions(),
@@ -236,35 +236,35 @@ class DialogSelectViewFactoryTest {
                 Questionnaire.Item.AnswerOption(
                   value =
                     Questionnaire.Item.AnswerOption.Value.Coding(
-                      value = Coding(display = FhirR4String(value = option)),
-                    ),
+                      value = Coding(display = FhirR4String(value = option))
+                    )
                 )
               } +
                 listOf(
                   Questionnaire.Item.AnswerOption(
                     value =
                       Questionnaire.Item.AnswerOption.Value.Coding(
-                        value = Coding(display = FhirR4String(value = "Coding Exclusive 1")),
+                        value = Coding(display = FhirR4String(value = "Coding Exclusive 1"))
                       ),
                     extension =
                       listOf(
                         Extension(
                           url = EXTENSION_OPTION_EXCLUSIVE_URL,
                           value = Extension.Value.Boolean(value = FhirR4Boolean(value = true)),
-                        ),
+                        )
                       ),
                   ),
                   Questionnaire.Item.AnswerOption(
                     value =
                       Questionnaire.Item.AnswerOption.Value.Coding(
-                        value = Coding(display = FhirR4String(value = "Coding Exclusive 2")),
+                        value = Coding(display = FhirR4String(value = "Coding Exclusive 2"))
                       ),
                     extension =
                       listOf(
                         Extension(
                           url = EXTENSION_OPTION_EXCLUSIVE_URL,
                           value = Extension.Value.Boolean(value = FhirR4Boolean(value = true)),
-                        ),
+                        )
                       ),
                   ),
                 ),
@@ -309,35 +309,35 @@ class DialogSelectViewFactoryTest {
                 Questionnaire.Item.AnswerOption(
                   value =
                     Questionnaire.Item.AnswerOption.Value.Coding(
-                      value = Coding(display = FhirR4String(value = option)),
-                    ),
+                      value = Coding(display = FhirR4String(value = option))
+                    )
                 )
               } +
                 listOf(
                   Questionnaire.Item.AnswerOption(
                     value =
                       Questionnaire.Item.AnswerOption.Value.Coding(
-                        value = Coding(display = FhirR4String(value = "Coding Exclusive 1")),
+                        value = Coding(display = FhirR4String(value = "Coding Exclusive 1"))
                       ),
                     extension =
                       listOf(
                         Extension(
                           url = EXTENSION_OPTION_EXCLUSIVE_URL,
                           value = Extension.Value.Boolean(value = FhirR4Boolean(value = true)),
-                        ),
+                        )
                       ),
                   ),
                   Questionnaire.Item.AnswerOption(
                     value =
                       Questionnaire.Item.AnswerOption.Value.Coding(
-                        value = Coding(display = FhirR4String(value = "Coding Exclusive 2")),
+                        value = Coding(display = FhirR4String(value = "Coding Exclusive 2"))
                       ),
                     extension =
                       listOf(
                         Extension(
                           url = EXTENSION_OPTION_EXCLUSIVE_URL,
                           value = Extension.Value.Boolean(value = FhirR4Boolean(value = true)),
-                        ),
+                        )
                       ),
                   ),
                 ),
@@ -499,11 +499,11 @@ class DialogSelectViewFactoryTest {
                           Coding(
                             system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                             code = Code(value = DisplayItemControlType.FLYOVER.extensionCode),
-                          ),
-                        ),
-                    ),
+                          )
+                        )
+                    )
                 ),
-            ),
+            )
           ),
       )
 
@@ -519,8 +519,8 @@ class DialogSelectViewFactoryTest {
               Questionnaire.Item.AnswerOption(
                 value =
                   Questionnaire.Item.AnswerOption.Value.Coding(
-                    value = Coding(display = FhirR4String(value = option)),
-                  ),
+                    value = Coding(display = FhirR4String(value = option))
+                  )
               )
             },
           item = listOf(hintItem),
@@ -579,8 +579,8 @@ class DialogSelectViewFactoryTest {
               Questionnaire.Item.AnswerOption(
                 value =
                   Questionnaire.Item.AnswerOption.Value.Coding(
-                    value = Coding(display = FhirR4String(value = option)),
-                  ),
+                    value = Coding(display = FhirR4String(value = option))
+                  )
               )
             },
       )
@@ -629,8 +629,8 @@ class DialogSelectViewFactoryTest {
               Questionnaire.Item.AnswerOption(
                 value =
                   Questionnaire.Item.AnswerOption.Value.Coding(
-                    value = Coding(display = FhirR4String(value = option)),
-                  ),
+                    value = Coding(display = FhirR4String(value = option))
+                  )
               )
             },
       )
@@ -680,8 +680,8 @@ class DialogSelectViewFactoryTest {
               Questionnaire.Item.AnswerOption(
                 value =
                   Questionnaire.Item.AnswerOption.Value.Coding(
-                    value = Coding(display = FhirR4String(value = option)),
-                  ),
+                    value = Coding(display = FhirR4String(value = option))
+                  )
               )
             },
       )
@@ -735,24 +735,24 @@ class DialogSelectViewFactoryTest {
               Questionnaire.Item.AnswerOption(
                 value =
                   Questionnaire.Item.AnswerOption.Value.Coding(
-                    value = Coding(display = FhirR4String(value = option)),
-                  ),
+                    value = Coding(display = FhirR4String(value = option))
+                  )
               )
             } +
             listOf(
               Questionnaire.Item.AnswerOption(
                 value =
                   Questionnaire.Item.AnswerOption.Value.Coding(
-                    value = Coding(display = FhirR4String(value = "Coding Exclusive")),
+                    value = Coding(display = FhirR4String(value = "Coding Exclusive"))
                   ),
                 extension =
                   listOf(
                     Extension(
                       url = EXTENSION_OPTION_EXCLUSIVE_URL,
                       value = Extension.Value.Boolean(value = FhirR4Boolean(value = true)),
-                    ),
+                    )
                   ),
-              ),
+              )
             ),
       )
 
@@ -804,24 +804,24 @@ class DialogSelectViewFactoryTest {
                 Questionnaire.Item.AnswerOption(
                   value =
                     Questionnaire.Item.AnswerOption.Value.Coding(
-                      value = Coding(display = FhirR4String(value = option)),
-                    ),
+                      value = Coding(display = FhirR4String(value = option))
+                    )
                 )
               } +
               listOf(
                 Questionnaire.Item.AnswerOption(
                   value =
                     Questionnaire.Item.AnswerOption.Value.Coding(
-                      value = Coding(display = FhirR4String(value = "Coding Exclusive")),
+                      value = Coding(display = FhirR4String(value = "Coding Exclusive"))
                     ),
                   extension =
                     listOf(
                       Extension(
                         url = EXTENSION_OPTION_EXCLUSIVE_URL,
                         value = Extension.Value.Boolean(value = FhirR4Boolean(value = true)),
-                      ),
+                      )
                     ),
-                ),
+                )
               ),
         )
 
@@ -867,8 +867,8 @@ class DialogSelectViewFactoryTest {
             Questionnaire.Item.AnswerOption(
               value =
                 Questionnaire.Item.AnswerOption.Value.Coding(
-                  value = Coding(display = FhirR4String(value = option)),
-                ),
+                  value = Coding(display = FhirR4String(value = option))
+                )
             )
           },
       )
@@ -876,9 +876,7 @@ class DialogSelectViewFactoryTest {
     val questionnaireViewItem =
       QuestionnaireViewItem(
         questionnaireItem,
-        QuestionnaireResponse.Item(
-          linkId = FhirR4String(value = "dialog-select-item"),
-        ),
+        QuestionnaireResponse.Item(linkId = FhirR4String(value = "dialog-select-item")),
         validationResult = NotValidated,
         answersChangedCallback = { _, _, _, _ -> },
       )
@@ -899,13 +897,11 @@ class DialogSelectViewFactoryTest {
             text = FhirR4String(value = "Question?"),
             required = FhirR4Boolean(value = true),
           ),
-          QuestionnaireResponse.Item(
-            linkId = FhirR4String(value = "dialog-select-item"),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "dialog-select-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = true),
-        ),
+        )
       )
     }
 
@@ -924,13 +920,11 @@ class DialogSelectViewFactoryTest {
             text = FhirR4String(value = "Question?"),
             required = FhirR4Boolean(value = true),
           ),
-          QuestionnaireResponse.Item(
-            linkId = FhirR4String(value = "dialog-select-item"),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "dialog-select-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = false),
-        ),
+        )
       )
     }
 
@@ -949,13 +943,11 @@ class DialogSelectViewFactoryTest {
             required = FhirR4Boolean(value = true),
             text = FhirR4String(value = "Question?"),
           ),
-          QuestionnaireResponse.Item(
-            linkId = FhirR4String(value = "dialog-select-item"),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "dialog-select-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = true),
-        ),
+        )
       )
     }
 
@@ -975,13 +967,11 @@ class DialogSelectViewFactoryTest {
             required = FhirR4Boolean(value = true),
             text = FhirR4String(value = "Question?"),
           ),
-          QuestionnaireResponse.Item(
-            linkId = FhirR4String(value = "dialog-select-item"),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "dialog-select-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = false),
-        ),
+        )
       )
     }
 
@@ -999,13 +989,11 @@ class DialogSelectViewFactoryTest {
             type = Enumeration(value = Questionnaire.QuestionnaireItemType.Choice),
             extension = listOf(Extension(url = EXTENSION_DIALOG_URL_ANDROID_FHIR)),
           ),
-          QuestionnaireResponse.Item(
-            linkId = FhirR4String(value = "dialog-select-item"),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "dialog-select-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = true),
-        ),
+        )
       )
     }
 
@@ -1023,13 +1011,11 @@ class DialogSelectViewFactoryTest {
             type = Enumeration(value = Questionnaire.QuestionnaireItemType.Choice),
             extension = listOf(Extension(url = EXTENSION_DIALOG_URL_ANDROID_FHIR)),
           ),
-          QuestionnaireResponse.Item(
-            linkId = FhirR4String(value = "dialog-select-item"),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "dialog-select-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = false),
-        ),
+        )
       )
     }
 
@@ -1052,8 +1038,8 @@ class DialogSelectViewFactoryTest {
               Questionnaire.Item.AnswerOption(
                 value =
                   Questionnaire.Item.AnswerOption.Value.Coding(
-                    value = Coding(display = FhirR4String(value = option)),
-                  ),
+                    value = Coding(display = FhirR4String(value = option))
+                  )
               )
             },
         ),
@@ -1064,11 +1050,7 @@ class DialogSelectViewFactoryTest {
 
     setContent { QuestionnaireDialogSelect(questionnaireViewItem) }
     onNodeWithTag(MULTI_SELECT_TEXT_FIELD_TAG)
-      .assert(
-        SemanticsMatcher.keyNotDefined(
-          SemanticsProperties.Error,
-        ),
-      )
+      .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Error))
   }
 
   @Test
@@ -1086,8 +1068,8 @@ class DialogSelectViewFactoryTest {
               Questionnaire.Item.AnswerOption(
                 value =
                   Questionnaire.Item.AnswerOption.Value.Coding(
-                    value = Coding(display = FhirR4String(value = option)),
-                  ),
+                    value = Coding(display = FhirR4String(value = option))
+                  )
               )
             },
         ),
@@ -1105,10 +1087,7 @@ class DialogSelectViewFactoryTest {
 
     onNodeWithTag(MULTI_SELECT_TEXT_FIELD_TAG)
       .assert(
-        SemanticsMatcher.expectValue(
-          SemanticsProperties.EditableText,
-          AnnotatedString("Coding 2"),
-        ),
+        SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString("Coding 2"))
       )
       .assertIsDisplayed()
 
@@ -1118,19 +1097,14 @@ class DialogSelectViewFactoryTest {
     onNodeWithText("Save").performClick()
 
     onNodeWithTag(MULTI_SELECT_TEXT_FIELD_TAG)
-      .assert(
-        SemanticsMatcher.expectValue(
-          SemanticsProperties.EditableText,
-          AnnotatedString(""),
-        ),
-      )
+      .assert(SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString("")))
       .assertIsDisplayed()
     onNodeWithTag(MULTI_SELECT_TEXT_FIELD_TAG)
       .assert(
         SemanticsMatcher.expectValue(
           SemanticsProperties.Error,
           "Missing answer for required field.",
-        ),
+        )
       )
   }
 
@@ -1143,7 +1117,7 @@ class DialogSelectViewFactoryTest {
           responseOptions(),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -1156,13 +1130,10 @@ class DialogSelectViewFactoryTest {
       QuestionnaireDialogSelect(
         QuestionnaireViewItem(
           answerOptions(false, "Coding 1", "Coding 2", "Coding 3"),
-          responseOptions(
-            "Coding 1",
-            "Coding 3",
-          ),
+          responseOptions("Coding 1", "Coding 3"),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -1180,12 +1151,10 @@ class DialogSelectViewFactoryTest {
             extension = listOf(Extension(url = EXTENSION_DIALOG_URL_ANDROID_FHIR)),
             required = FhirR4Boolean(value = true),
           ),
-          QuestionnaireResponse.Item(
-            linkId = FhirR4String(value = "dialog-select-item"),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "dialog-select-item")),
           validationResult = Invalid(listOf("Missing answer for required field.")),
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -1194,7 +1163,7 @@ class DialogSelectViewFactoryTest {
         SemanticsMatcher.expectValue(
           SemanticsProperties.Error,
           "Missing answer for required field.",
-        ),
+        )
       )
   }
 
@@ -1212,9 +1181,9 @@ class DialogSelectViewFactoryTest {
                 Questionnaire.Item.AnswerOption(
                   value =
                     Questionnaire.Item.AnswerOption.Value.Coding(
-                      value = Coding(display = FhirR4String(value = "display")),
-                    ),
-                ),
+                      value = Coding(display = FhirR4String(value = "display"))
+                    )
+                )
               ),
             required = FhirR4Boolean(value = true),
           ),
@@ -1225,23 +1194,19 @@ class DialogSelectViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Coding(
-                      value = Coding(display = FhirR4String(value = "display")),
-                    ),
-                ),
+                      value = Coding(display = FhirR4String(value = "display"))
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
     onNodeWithTag(MULTI_SELECT_TEXT_FIELD_TAG)
-      .assert(
-        SemanticsMatcher.keyNotDefined(
-          SemanticsProperties.Error,
-        ),
-      )
+      .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Error))
   }
 
   @Test
@@ -1255,12 +1220,10 @@ class DialogSelectViewFactoryTest {
             extension = listOf(Extension(url = EXTENSION_DIALOG_URL_ANDROID_FHIR)),
             readOnly = FhirR4Boolean(value = true),
           ),
-          QuestionnaireResponse.Item(
-            linkId = FhirR4String(value = "dialog-select-item"),
-          ),
+          QuestionnaireResponse.Item(linkId = FhirR4String(value = "dialog-select-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -1280,9 +1243,9 @@ class DialogSelectViewFactoryTest {
                     code = Code(value = ItemControlTypes.OPEN_CHOICE.extensionCode),
                     system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                     display = FhirR4String(value = "Open Choice"),
-                  ),
-                ),
-            ),
+                  )
+                )
+            )
         ),
     )
 
@@ -1297,8 +1260,8 @@ class DialogSelectViewFactoryTest {
           Questionnaire.Item.AnswerOption(
             value =
               Questionnaire.Item.AnswerOption.Value.Coding(
-                value = Coding(display = FhirR4String(value = option)),
-              ),
+                value = Coding(display = FhirR4String(value = option))
+              )
           )
         },
     )
@@ -1311,8 +1274,8 @@ class DialogSelectViewFactoryTest {
           QuestionnaireResponse.Item.Answer(
             value =
               QuestionnaireResponse.Item.Answer.Value.Coding(
-                value = Coding(display = FhirR4String(value = it)),
-              ),
+                value = Coding(display = FhirR4String(value = it))
+              )
           )
         },
     )

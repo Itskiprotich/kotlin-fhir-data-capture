@@ -16,13 +16,13 @@
 
 package dev.ohs.fhir.datacapture.validation
 
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.datacapture.extensions.compareTo
 import dev.ohs.fhir.datacapture.extensions.elementDeepValue
 import dev.ohs.fhir.datacapture.extensions.elementValue
 import dev.ohs.fhir.datacapture.generated.resources.Res
 import dev.ohs.fhir.datacapture.generated.resources.max_value_validation_error_msg
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import org.jetbrains.compose.resources.getString
 
 internal const val MAX_VALUE_EXTENSION_URL = "http://hl7.org/fhir/StructureDefinition/maxValue"
@@ -31,8 +31,7 @@ internal const val MAX_VALUE_EXTENSION_URL = "http://hl7.org/fhir/StructureDefin
 internal object MaxValueValidator :
   AnswerExtensionConstraintValidator(
     url = MAX_VALUE_EXTENSION_URL,
-    predicate = { constraintValue: Extension.Value, answer: QuestionnaireResponse.Item.Answer,
-      ->
+    predicate = { constraintValue: Extension.Value, answer: QuestionnaireResponse.Item.Answer ->
       answer.elementValue!! > constraintValue.elementValue
     },
     messageGenerator = { constraintValue: Extension.Value ->

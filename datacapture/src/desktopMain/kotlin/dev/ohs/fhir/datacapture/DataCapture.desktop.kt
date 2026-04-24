@@ -17,7 +17,5 @@
 package dev.ohs.fhir.datacapture
 
 actual object DataCapture {
-  actual fun getConfiguration(): DataCaptureConfig {
-    return DataCaptureConfig()
-  }
+  actual fun getConfiguration(): DataCaptureConfig = DataCaptureConfig()
 }

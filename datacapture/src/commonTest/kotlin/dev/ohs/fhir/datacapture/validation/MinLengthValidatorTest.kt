@@ -33,9 +33,7 @@ class MinLengthValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .build()
     val answer =
@@ -43,7 +41,7 @@ class MinLengthValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.String(
-              value = dev.ohs.fhir.model.r4.String(value = "some answer"),
+              value = dev.ohs.fhir.model.r4.String(value = "some answer")
             )
         }
         .build()
@@ -59,9 +57,7 @@ class MinLengthValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply {
           extension =
@@ -69,7 +65,7 @@ class MinLengthValidatorTest {
               Extension.Builder(url = MIN_LENGTH_EXTENSION_URL).apply {
                 value =
                   Extension.Value.Integer(value = Integer.Builder().apply { value = 5 }.build())
-              },
+              }
             )
         }
         .build()
@@ -78,7 +74,7 @@ class MinLengthValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.String(
-              value = dev.ohs.fhir.model.r4.String(value = "longer than 5"),
+              value = dev.ohs.fhir.model.r4.String(value = "longer than 5")
             )
         }
         .build()
@@ -94,9 +90,7 @@ class MinLengthValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply {
           extension =
@@ -104,7 +98,7 @@ class MinLengthValidatorTest {
               Extension.Builder(url = MIN_LENGTH_EXTENSION_URL).apply {
                 value =
                   Extension.Value.Integer(value = Integer.Builder().apply { value = 5 }.build())
-              },
+              }
             )
         }
         .build()
@@ -113,7 +107,7 @@ class MinLengthValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.String(
-              value = dev.ohs.fhir.model.r4.String(value = "12345"),
+              value = dev.ohs.fhir.model.r4.String(value = "12345")
             )
         }
         .build()
@@ -129,9 +123,7 @@ class MinLengthValidatorTest {
       Questionnaire.Item.Builder(
           linkId = dev.ohs.fhir.model.r4.String.Builder().apply { value = "link-id" },
           type =
-            dev.ohs.fhir.model.r4.Enumeration(
-              value = Questionnaire.QuestionnaireItemType.String,
-            ),
+            dev.ohs.fhir.model.r4.Enumeration(value = Questionnaire.QuestionnaireItemType.String),
         )
         .apply {
           extension =
@@ -139,7 +131,7 @@ class MinLengthValidatorTest {
               Extension.Builder(url = MIN_LENGTH_EXTENSION_URL).apply {
                 value =
                   Extension.Value.Integer(value = Integer.Builder().apply { value = 5 }.build())
-              },
+              }
             )
         }
         .build()
@@ -148,7 +140,7 @@ class MinLengthValidatorTest {
         .apply {
           value =
             QuestionnaireResponse.Item.Answer.Value.String(
-              value = dev.ohs.fhir.model.r4.String(value = "123"),
+              value = dev.ohs.fhir.model.r4.String(value = "123")
             )
         }
         .build()

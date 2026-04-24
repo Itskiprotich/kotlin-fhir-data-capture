@@ -34,17 +34,13 @@ internal class JsMediaHandler(
   override val maxSupportedFileSizeBytes: BigDecimal,
   override val supportedMimeTypes: Array<String>,
 ) : MediaHandler {
-  override suspend fun capturePhoto(): MediaCaptureResult {
-    return MediaCaptureResult.Error("Error: Camera not supported")
-  }
+  override suspend fun capturePhoto(): MediaCaptureResult =
+    MediaCaptureResult.Error("Error: Camera not supported")
 
   override suspend fun selectFile(inputMimeTypes: Array<String>): MediaCaptureResult {
     val pickedFile =
       FileKit.openFilePicker(
-        type =
-          FileKitType.File(
-            inputMimeTypes.toSet().takeIf { it.isNotEmpty() },
-          ),
+        type = FileKitType.File(inputMimeTypes.toSet().takeIf { it.isNotEmpty() })
       )
 
     return pickedFile?.let {
@@ -53,8 +49,7 @@ internal class JsMediaHandler(
         mimeType = it.mimeType()?.toString() ?: "application/octet-stream",
         titleName = it.name,
       )
-    }
-      ?: throw CancellationException()
+    } ?: throw CancellationException()
   }
 
   override fun isCameraSupported(): Boolean = false
@@ -64,8 +59,7 @@ internal class JsMediaHandler(
 internal actual fun rememberMediaHandler(
   maxSupportedFileSizeBytes: BigDecimal,
   supportedMimeTypes: Array<String>,
-): MediaHandler {
-  return remember(maxSupportedFileSizeBytes, supportedMimeTypes) {
+): MediaHandler =
+  remember(maxSupportedFileSizeBytes, supportedMimeTypes) {
     JsMediaHandler(maxSupportedFileSizeBytes, supportedMimeTypes)
   }
-}

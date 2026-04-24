@@ -17,12 +17,6 @@
 package dev.ohs.fhir.datacapture.fhirpath
 
 import co.touchlab.kermit.Logger
-import dev.ohs.fhir.model.r4.Bundle
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Expression
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Resource
 import dev.ohs.fhir.datacapture.XFhirQueryResolver
 import dev.ohs.fhir.datacapture.extensions.calculatedExpression
 import dev.ohs.fhir.datacapture.extensions.findVariableExpression
@@ -31,6 +25,12 @@ import dev.ohs.fhir.datacapture.extensions.isFhirPath
 import dev.ohs.fhir.datacapture.extensions.isReferencedBy
 import dev.ohs.fhir.datacapture.extensions.isXFhirQuery
 import dev.ohs.fhir.datacapture.extensions.variableExpressions
+import dev.ohs.fhir.model.r4.Bundle
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Expression
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Resource
 import kotlin.let
 
 /**
@@ -184,8 +184,8 @@ internal class ExpressionEvaluator(
   suspend fun evaluateAllAffectedCalculatedExpressions(
     questionnaireItem: Questionnaire.Item,
     questionnaireResponseItem: QuestionnaireResponse.Item?,
-  ): List<ItemToAnswersPair> {
-    return questionnaire.item
+  ): List<ItemToAnswersPair> =
+    questionnaire.item
       .flattened()
       .filter { item ->
         // Condition 1. item is calculable
@@ -206,7 +206,6 @@ internal class ExpressionEvaluator(
           )
         item to updatedAnswer
       }
-  }
 
   /**
    * Returns the evaluated value of [calculatedExpression] from the given [questionnaireItem]. A
@@ -244,16 +243,11 @@ internal class ExpressionEvaluator(
     require(
       questionnaireItem.variableExpressions.any {
         it.name == expression.name && it.expression == expression.expression
-      },
+      }
     ) {
       "The expression should come from the same questionnaire item"
     }
-    val variablesMap =
-      extractItemDependentVariables(
-        expression,
-        questionnaireItem,
-        null,
-      )
+    val variablesMap = extractItemDependentVariables(expression, questionnaireItem, null)
     return evaluateVariable(expression, variablesMap)
   }
 
@@ -268,8 +262,8 @@ internal class ExpressionEvaluator(
     expression: Expression,
     questionnaireItem: Questionnaire.Item,
     questionnaireResponseItem: QuestionnaireResponse.Item?,
-  ): MutableMap<String, Any?> {
-    return buildMap {
+  ): MutableMap<String, Any?> =
+    buildMap {
         put(questionnaireFhirPathSupplement, questionnaire)
         put(questionnaireItemFhirPathSupplement, questionnaireItem)
         put("resource", questionnaireResponse)
@@ -279,16 +273,11 @@ internal class ExpressionEvaluator(
           .filterNot { variable -> reservedItemVariables.contains(variable) }
           .forEach { variableName ->
             if (this[variableName] == null) {
-              findAndEvaluateVariable(
-                variableName,
-                questionnaireItem,
-                this,
-              )
+              findAndEvaluateVariable(variableName, questionnaireItem, this)
             }
           }
       }
       .toMutableMap()
-  }
 
   /**
    * Evaluates variable expression defined at questionnaire level and returns the evaluated result.
@@ -314,18 +303,12 @@ internal class ExpressionEvaluator(
         questionnaire.findVariableExpression(variableName)?.let { expression ->
           if (expression.name?.value != null && variablesMap[expression.name!!.value] == null) {
             variablesMap[expression.name!!.value!!] =
-              evaluateQuestionnaireVariableExpression(
-                expression,
-                variablesMap,
-              )
+              evaluateQuestionnaireVariableExpression(expression, variablesMap)
           }
         }
       }
 
-    return evaluateVariable(
-      expression,
-      variablesMap,
-    )
+    return evaluateVariable(expression, variablesMap)
   }
 
   /**
@@ -347,13 +330,11 @@ internal class ExpressionEvaluator(
         ?.toMutableMap()
         .takeIf { !it.isNullOrEmpty() }
         ?.also { it[questionnaireFhirPathSupplement] = questionnaire }
-        ?.let { evaluateXFhirEnhancement(expression, it) }
-        ?: emptyList()
+        ?.let { evaluateXFhirEnhancement(expression, it) } ?: emptyList()
 
     return (variablesEvaluatedPairs + fhirPathsEvaluatedPairs).fold(expression.expression?.value) {
       acc: String?,
-      pair: Pair<String, Any>,
-      ->
+      pair: Pair<String, Any> ->
       acc?.replace(pair.first, pair.second as String)
     }
   }
@@ -370,8 +351,8 @@ internal class ExpressionEvaluator(
   private fun evaluateXFhirEnhancement(
     expression: Expression,
     launchContextMap: Map<String, Resource>,
-  ): List<Pair<String, String>> {
-    return xFhirQueryEnhancementRegex
+  ): List<Pair<String, String>> =
+    xFhirQueryEnhancementRegex
       .findAll(expression.expression?.value.toString())
       .map { it.groupValues }
       .map { (fhirPathWithParentheses, fhirPath) ->
@@ -391,13 +372,12 @@ internal class ExpressionEvaluator(
           Logger.w(
             "$fhirPath evaluated to null. The expression is either invalid, or the " +
               "expression returned no, or more than one resource. The expression will be " +
-              "replaced with a blank string.",
+              "replaced with a blank string."
           )
         }
         fhirPathWithParentheses to evaluatedResult
       }
       .toList()
-  }
 
   private fun findDependentVariables(expression: Expression) =
     variableRegex
@@ -422,23 +402,14 @@ internal class ExpressionEvaluator(
     // First, check the questionnaire item itself
     val evaluatedValue =
       questionnaireItem.findVariableExpression(variableName)?.let { expression ->
-        evaluateQuestionnaireItemVariableExpression(
-          expression,
-          questionnaireItem,
-        )
+        evaluateQuestionnaireItemVariableExpression(expression, questionnaireItem)
       } // Secondly, check the ancestors of the questionnaire item
-        ?: findVariableInAncestors(variableName, questionnaireItem)?.let {
+      ?: findVariableInAncestors(variableName, questionnaireItem)?.let {
           (questionnaireItem, expression) ->
-          evaluateQuestionnaireItemVariableExpression(
-            expression,
-            questionnaireItem,
-          )
+          evaluateQuestionnaireItemVariableExpression(expression, questionnaireItem)
         } // Finally, check the variables defined on the questionnaire itself
-          ?: questionnaire.findVariableExpression(variableName)?.let { expression ->
-          evaluateQuestionnaireVariableExpression(
-            expression,
-            variablesMap,
-          )
+        ?: questionnaire.findVariableExpression(variableName)?.let { expression ->
+          evaluateQuestionnaireVariableExpression(expression, variablesMap)
         }
 
     evaluatedValue?.also { variablesMap[variableName] = it }
@@ -512,7 +483,7 @@ internal class ExpressionEvaluator(
           .firstOrNull()
       } else {
         throw UnsupportedOperationException(
-          "${expression.language} not supported for variable-expression yet",
+          "${expression.language} not supported for variable-expression yet"
         )
       }
     } catch (exception: Exception) {

@@ -21,7 +21,4 @@ import androidx.compose.runtime.remember
 import dev.jordond.compass.geolocation.Geolocator
 import dev.jordond.compass.geolocation.browser
 
-@Composable
-internal actual fun rememberGeolocator(): Geolocator {
-  return remember { Geolocator.browser() }
-}
+@Composable internal actual fun rememberGeolocator(): Geolocator = remember { Geolocator.browser() }

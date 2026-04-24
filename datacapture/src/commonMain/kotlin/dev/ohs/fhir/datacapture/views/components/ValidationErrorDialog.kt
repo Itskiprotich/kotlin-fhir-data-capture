@@ -53,7 +53,7 @@ fun ValidationErrorDialog(
         Spacer(modifier = Modifier.padding(4.dp))
         invalidFields.forEach { field ->
           Text(
-            stringResource(Res.string.questionnaire_validation_error_item_text_with_bullet, field),
+            stringResource(Res.string.questionnaire_validation_error_item_text_with_bullet, field)
           )
         }
       }

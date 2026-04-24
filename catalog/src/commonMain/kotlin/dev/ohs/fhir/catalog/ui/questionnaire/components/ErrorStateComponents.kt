@@ -51,18 +51,18 @@ import org.jetbrains.compose.resources.stringResource
 
 /** Action button that toggles error state via a bottom sheet. */
 @Composable
-fun ErrorStateToggleAction(
-  isErrorState: Boolean,
-  onToggle: (Boolean) -> Unit,
-) {
+fun ErrorStateToggleAction(isErrorState: Boolean, onToggle: (Boolean) -> Unit) {
   var showBottomSheet by remember { mutableStateOf(false) }
 
   IconButton(onClick = { showBottomSheet = true }) {
-    Icon(painter = painterResource(Res.drawable.settings_outlined_24dp), contentDescription = "Options")
+    Icon(
+      painter = painterResource(Res.drawable.settings_outlined_24dp),
+      contentDescription = "Options",
+    )
   }
 
   if (showBottomSheet) {
-    _root_ide_package_.dev.ohs.fhir.catalog.ui.questionnaire.components.ErrorStateBottomSheet(
+    ErrorStateBottomSheet(
       isErrorState = isErrorState,
       onDismiss = { showBottomSheet = false },
       onToggle = { onToggle(!isErrorState) },
@@ -96,7 +96,7 @@ private fun ErrorStateBottomSheet(
                 Modifier.border(1.dp, Color.LightGray, MaterialTheme.shapes.small)
               } else {
                 Modifier
-              },
+              }
             ),
         colors =
           CardDefaults.cardColors(
@@ -105,17 +105,14 @@ private fun ErrorStateBottomSheet(
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
               } else {
                 Color.Transparent
-              },
+              }
           ),
       ) {
         Row(
           modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(16.dp),
           verticalAlignment = Alignment.CenterVertically,
         ) {
-          Checkbox(
-            checked = isErrorState,
-            onCheckedChange = { onToggle() },
-          )
+          Checkbox(checked = isErrorState, onCheckedChange = { onToggle() })
           Spacer(modifier = Modifier.width(16.dp))
           Text(
             text = stringResource(Res.string.show_error_state),

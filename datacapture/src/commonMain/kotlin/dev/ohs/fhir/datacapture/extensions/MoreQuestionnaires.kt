@@ -81,13 +81,13 @@ private fun validateLaunchContextExtension(launchExtension: Extension) {
   val nameCoding =
     launchExtension.takeIf { it.url == "name" }?.value?.asCoding()
       ?: error(
-        "The extension:name is missing or is not of type Coding in $EXTENSION_SDC_QUESTIONNAIRE_LAUNCH_CONTEXT",
+        "The extension:name is missing or is not of type Coding in $EXTENSION_SDC_QUESTIONNAIRE_LAUNCH_CONTEXT"
       )
 
   val typeCodeType =
     launchExtension.takeIf { it.url == "type" }?.value?.asCode()
       ?: error(
-        "The extension:type is missing or is not of type CodeType in $EXTENSION_SDC_QUESTIONNAIRE_LAUNCH_CONTEXT",
+        "The extension:type is missing or is not of type CodeType in $EXTENSION_SDC_QUESTIONNAIRE_LAUNCH_CONTEXT"
       )
 
   val isValidResourceType =
@@ -95,15 +95,14 @@ private fun validateLaunchContextExtension(launchExtension: Extension) {
       typeCodeType.value.value?.let {
         ResourceType.fromCode(it)
         true
-      }
-        ?: false
+      } ?: false
     } catch (exception: IllegalArgumentException) {
       false
     }
 
   if (CODE_SYSTEM_LAUNCH_CONTEXT != nameCoding.value.system?.value || !isValidResourceType) {
     error(
-      "The extension:name and/or extension:type do not follow the format specified in $EXTENSION_SDC_QUESTIONNAIRE_LAUNCH_CONTEXT",
+      "The extension:name and/or extension:type do not follow the format specified in $EXTENSION_SDC_QUESTIONNAIRE_LAUNCH_CONTEXT"
     )
   }
 }
@@ -165,8 +164,7 @@ val Questionnaire.entryMode: EntryMode?
 enum class EntryMode(val value: String) {
   PRIOR_EDIT("prior-edit"),
   RANDOM("random"),
-  SEQUENTIAL("sequential"),
-  ;
+  SEQUENTIAL("sequential");
 
   companion object {
     fun from(type: String?): EntryMode? = entries.find { it.value == type }
@@ -189,8 +187,7 @@ internal suspend fun Questionnaire.forEachItemPair(
   questionnaireResponse: QuestionnaireResponse,
   forEach:
     suspend (
-      questionnaireItem: Questionnaire.Item,
-      questionnaireResponseItem: QuestionnaireResponse.Item,
+      questionnaireItem: Questionnaire.Item, questionnaireResponseItem: QuestionnaireResponse.Item,
     ) -> Unit,
 ) {
   forEachItemPair(item, questionnaireResponse.item, forEach)
@@ -201,8 +198,7 @@ private suspend fun forEachItemPair(
   questionnaireResponseItems: List<QuestionnaireResponse.Item>,
   forEach:
     suspend (
-      questionnaireItem: Questionnaire.Item,
-      questionnaireResponseItem: QuestionnaireResponse.Item,
+      questionnaireItem: Questionnaire.Item, questionnaireResponseItem: QuestionnaireResponse.Item,
     ) -> Unit,
 ) {
   require(questionnaireItems.size == questionnaireResponseItems.size)

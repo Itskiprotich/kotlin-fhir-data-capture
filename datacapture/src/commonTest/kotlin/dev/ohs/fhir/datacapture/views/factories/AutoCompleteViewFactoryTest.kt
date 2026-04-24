@@ -33,15 +33,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runComposeUiTest
-import dev.ohs.fhir.model.r4.Canonical
-import dev.ohs.fhir.model.r4.Code
-import dev.ohs.fhir.model.r4.CodeableConcept
-import dev.ohs.fhir.model.r4.Coding
-import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Extension
-import dev.ohs.fhir.model.r4.Questionnaire
-import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.Uri
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_ITEM_CONTROL_SYSTEM
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_ITEM_CONTROL_URL
 import dev.ohs.fhir.datacapture.extensions.FhirR4Boolean
@@ -59,6 +50,15 @@ import dev.ohs.fhir.datacapture.views.components.MULTI_AUTO_COMPLETE_INPUT_CHIP_
 import dev.ohs.fhir.datacapture.views.components.MULTI_AUTO_COMPLETE_TEXT_FIELD_TAG
 import dev.ohs.fhir.datacapture.views.components.QUESTION_HEADER_TAG
 import dev.ohs.fhir.datacapture.views.components.REQUIRED_OPTIONAL_HEADER_TEXT_TAG
+import dev.ohs.fhir.model.r4.Canonical
+import dev.ohs.fhir.model.r4.Code
+import dev.ohs.fhir.model.r4.CodeableConcept
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Extension
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.fhir.model.r4.Uri
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlin.test.Test
 
@@ -90,11 +90,11 @@ class AutoCompleteViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "autocomplete"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           text = FhirR4String(value = "Question"),
         ),
@@ -127,11 +127,11 @@ class AutoCompleteViewFactoryTest {
                           Coding(
                             system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                             code = Code(value = "autocomplete"),
-                          ),
-                        ),
-                    ),
+                          )
+                        )
+                    )
                 ),
-            ),
+            )
           ),
         repeats = FhirR4Boolean(value = false),
         answerOption =
@@ -143,8 +143,8 @@ class AutoCompleteViewFactoryTest {
                     Coding(
                       code = Code(value = "test1-code"),
                       display = FhirR4String(value = "Test1 Code"),
-                    ),
-                ),
+                    )
+                )
             ),
             Questionnaire.Item.AnswerOption(
               value =
@@ -153,8 +153,8 @@ class AutoCompleteViewFactoryTest {
                     Coding(
                       code = Code(value = "test2-code"),
                       display = FhirR4String(value = "Test2 Code"),
-                    ),
-                ),
+                    )
+                )
             ),
           ),
       )
@@ -174,14 +174,14 @@ class AutoCompleteViewFactoryTest {
                         Coding(
                           code = Code(value = "test1-code"),
                           display = FhirR4String(value = "Test1 Code"),
-                        ),
-                    ),
-                ),
+                        )
+                    )
+                )
               ),
           ),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -199,8 +199,8 @@ class AutoCompleteViewFactoryTest {
                 Coding(
                   code = Code(value = "test1-code"),
                   display = FhirR4String(value = "Test1 Code"),
-                ),
-            ),
+                )
+            )
         ),
         Questionnaire.Item.AnswerOption(
           value =
@@ -209,8 +209,8 @@ class AutoCompleteViewFactoryTest {
                 Coding(
                   code = Code(value = "test2-code"),
                   display = FhirR4String(value = "Test2 Code"),
-                ),
-            ),
+                )
+            )
         ),
       )
 
@@ -239,11 +239,11 @@ class AutoCompleteViewFactoryTest {
                           Coding(
                             system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                             code = Code(value = "autocomplete"),
-                          ),
-                        ),
-                    ),
+                          )
+                        )
+                    )
                 ),
-            ),
+            )
           ),
         repeats = FhirR4Boolean(value = true),
         answerValueSet = Canonical(value = "http://answwer-value-set-url"),
@@ -264,8 +264,8 @@ class AutoCompleteViewFactoryTest {
                         Coding(
                           code = Code(value = "test1-code"),
                           display = FhirR4String(value = "Test1 Code"),
-                        ),
-                    ),
+                        )
+                    )
                 ),
                 QuestionnaireResponse.Item.Answer(
                   value =
@@ -274,8 +274,8 @@ class AutoCompleteViewFactoryTest {
                         Coding(
                           code = Code(value = "test2-code"),
                           display = FhirR4String(value = "Test2 Code"),
-                        ),
-                    ),
+                        )
+                    )
                 ),
               ),
           ),
@@ -283,7 +283,7 @@ class AutoCompleteViewFactoryTest {
             fakeAnswerValueSetResolver.invoke(questionnaireItem.answerValueSet?.value!!),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -303,8 +303,8 @@ class AutoCompleteViewFactoryTest {
                     code = Code(value = "test1-code"),
                     display = FhirR4String(value = "Test Code"),
                     id = "test1-code",
-                  ),
-              ),
+                  )
+              )
           ),
           Questionnaire.Item.AnswerOption(
             value =
@@ -315,8 +315,8 @@ class AutoCompleteViewFactoryTest {
                     version = FhirR4String(value = "1.0"),
                     code = Code(value = "test2-code"),
                     display = FhirR4String(value = "Test Code"),
-                  ),
-              ),
+                  )
+              )
           ),
         )
 
@@ -344,11 +344,11 @@ class AutoCompleteViewFactoryTest {
                             Coding(
                               system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                               code = Code(value = "autocomplete"),
-                            ),
-                          ),
-                      ),
+                            )
+                          )
+                      )
                   ),
-              ),
+              )
             ),
           repeats = FhirR4Boolean(value = true),
           answerValueSet = Canonical(value = "http://answwer-value-set-url"),
@@ -370,8 +370,8 @@ class AutoCompleteViewFactoryTest {
                             code = Code(value = "test1-code"),
                             display = FhirR4String(value = "Test Code"),
                             id = "test1-code",
-                          ),
-                      ),
+                          )
+                      )
                   ),
                   QuestionnaireResponse.Item.Answer(
                     value =
@@ -382,8 +382,8 @@ class AutoCompleteViewFactoryTest {
                             version = FhirR4String(value = "1.0"),
                             code = Code(value = "test2-code"),
                             display = FhirR4String(value = "Test Code"),
-                          ),
-                      ),
+                          )
+                      )
                   ),
                 ),
             ),
@@ -391,7 +391,7 @@ class AutoCompleteViewFactoryTest {
               fakeAnswerValueSetResolver.invoke(questionnaireItem.answerValueSet?.value!!),
             validationResult = NotValidated,
             answersChangedCallback = { _, _, _, _ -> },
-          ),
+          )
         )
       }
 
@@ -409,8 +409,8 @@ class AutoCompleteViewFactoryTest {
                 Coding(
                   code = Code(value = "test1-code"),
                   display = FhirR4String(value = "Test1 Code"),
-                ),
-            ),
+                )
+            )
         ),
         Questionnaire.Item.AnswerOption(
           value =
@@ -419,8 +419,8 @@ class AutoCompleteViewFactoryTest {
                 Coding(
                   code = Code(value = "test2-code"),
                   display = FhirR4String(value = "Test2 Code"),
-                ),
-            ),
+                )
+            )
         ),
       )
 
@@ -448,11 +448,11 @@ class AutoCompleteViewFactoryTest {
                           Coding(
                             system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                             code = Code(value = "autocomplete"),
-                          ),
-                        ),
-                    ),
+                          )
+                        )
+                    )
                 ),
-            ),
+            )
           ),
         repeats = FhirR4Boolean(value = false),
         answerValueSet = Canonical(value = "#ContainedValueSet"),
@@ -473,16 +473,16 @@ class AutoCompleteViewFactoryTest {
                         Coding(
                           code = Code(value = "test1-code"),
                           display = FhirR4String(value = "Test1 Code"),
-                        ),
-                    ),
-                ),
+                        )
+                    )
+                )
               ),
           ),
           enabledAnswerOptions =
             fakeAnswerValueSetResolver.invoke(questionnaireItem.answerValueSet?.value!!),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -496,10 +496,10 @@ class AutoCompleteViewFactoryTest {
         Questionnaire.Item.AnswerOption(
           value =
             Questionnaire.Item.AnswerOption.Value.Coding(
-              value = Coding(code = Code(value = "test1-code")),
+              value = Coding(code = Code(value = "test1-code"))
             ),
           initialSelected = FhirR4Boolean(value = true),
-        ),
+        )
       )
 
     setContent {
@@ -521,11 +521,11 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(
@@ -538,7 +538,7 @@ class AutoCompleteViewFactoryTest {
           enabledAnswerOptions = answers,
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -580,7 +580,7 @@ class AutoCompleteViewFactoryTest {
     onNode(
         hasTestTag(DROP_DOWN_ANSWER_MENU_ITEM_TAG) and
           hasTextExactly("Coding 3") and
-          hasAnyAncestor(isPopup()),
+          hasAnyAncestor(isPopup())
       )
       .assertIsDisplayed()
       .performClick()
@@ -628,18 +628,18 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
             required = FhirR4Boolean(value = true),
           ),
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "autocomplete-item")),
           validationResult = Invalid(listOf("Missing answer for required field.")),
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -648,7 +648,7 @@ class AutoCompleteViewFactoryTest {
         SemanticsMatcher.expectValue(
           SemanticsProperties.Error,
           "Missing answer for required field.",
-        ),
+        )
       )
   }
 
@@ -673,20 +673,20 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
             answerOption =
               listOf(
                 Questionnaire.Item.AnswerOption(
                   value =
                     Questionnaire.Item.AnswerOption.Value.Coding(
-                      value = Coding(display = FhirR4String(value = "display")),
-                    ),
-                ),
+                      value = Coding(display = FhirR4String(value = "display"))
+                    )
+                )
               ),
             required = FhirR4Boolean(value = true),
           ),
@@ -697,23 +697,19 @@ class AutoCompleteViewFactoryTest {
                 QuestionnaireResponse.Item.Answer(
                   value =
                     QuestionnaireResponse.Item.Answer.Value.Coding(
-                      value = Coding(display = FhirR4String(value = "display")),
-                    ),
-                ),
+                      value = Coding(display = FhirR4String(value = "display"))
+                    )
+                )
               ),
           ),
           validationResult = Valid,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
     onNodeWithTag(MULTI_AUTO_COMPLETE_TEXT_FIELD_TAG)
-      .assert(
-        SemanticsMatcher.keyNotDefined(
-          SemanticsProperties.Error,
-        ),
-      )
+      .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Error))
   }
 
   @Test
@@ -737,17 +733,17 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
           ),
           QuestionnaireResponse.Item(linkId = FhirR4String(value = "autocomplete-item")),
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
-        ),
+        )
       )
     }
 
@@ -775,11 +771,11 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
             text = FhirR4String(value = "Question"),
             required = FhirR4Boolean(value = true),
@@ -788,7 +784,7 @@ class AutoCompleteViewFactoryTest {
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = true),
-        ),
+        )
       )
     }
 
@@ -816,11 +812,11 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
             text = FhirR4String(value = "Question"),
             required = FhirR4Boolean(value = true),
@@ -829,7 +825,7 @@ class AutoCompleteViewFactoryTest {
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showAsterisk = false),
-        ),
+        )
       )
     }
 
@@ -857,11 +853,11 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
             required = FhirR4Boolean(value = true),
           ),
@@ -869,7 +865,7 @@ class AutoCompleteViewFactoryTest {
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = true),
-        ),
+        )
       )
     }
 
@@ -899,11 +895,11 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
             required = FhirR4Boolean(value = true),
           ),
@@ -911,7 +907,7 @@ class AutoCompleteViewFactoryTest {
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showRequiredText = false),
-        ),
+        )
       )
     }
 
@@ -939,11 +935,11 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
             text = FhirR4String(value = "Question"),
           ),
@@ -951,7 +947,7 @@ class AutoCompleteViewFactoryTest {
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = true),
-        ),
+        )
       )
     }
 
@@ -981,11 +977,11 @@ class AutoCompleteViewFactoryTest {
                               Coding(
                                 system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                                 code = Code(value = "autocomplete"),
-                              ),
-                            ),
-                        ),
+                              )
+                            )
+                        )
                     ),
-                ),
+                )
               ),
             text = FhirR4String(value = "Question"),
           ),
@@ -993,7 +989,7 @@ class AutoCompleteViewFactoryTest {
           validationResult = NotValidated,
           answersChangedCallback = { _, _, _, _ -> },
           questionViewTextConfiguration = QuestionTextConfiguration(showOptionalText = false),
-        ),
+        )
       )
     }
 
@@ -1017,11 +1013,11 @@ class AutoCompleteViewFactoryTest {
                         Coding(
                           system = Uri(value = EXTENSION_ITEM_CONTROL_SYSTEM),
                           code = Code(value = "autocomplete"),
-                        ),
-                      ),
-                  ),
+                        )
+                      )
+                  )
               ),
-          ),
+          )
         ),
       answerOption =
         options.map { option ->
@@ -1032,8 +1028,8 @@ class AutoCompleteViewFactoryTest {
                   Coding(
                     code = Code(value = option.replace(" ", "_")),
                     display = FhirR4String(value = option),
-                  ),
-              ),
+                  )
+              )
           )
         },
       repeats = FhirR4Boolean(value = repeats),
@@ -1051,8 +1047,8 @@ class AutoCompleteViewFactoryTest {
                   Coding(
                     code = Code(value = option.replace(" ", "_")),
                     display = FhirR4String(value = option),
-                  ),
-              ),
+                  )
+              )
           )
         },
     )

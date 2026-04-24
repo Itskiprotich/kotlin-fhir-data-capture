@@ -60,9 +60,9 @@ internal class IosMediaHandler(
             titleName = it.name,
             mimeType = it.mimeType()?.toString() ?: "application/octet-stream",
           )
-        }
-          ?: throw CancellationException()
+        } ?: throw CancellationException()
       }
+
       AVAuthorizationStatusNotDetermined -> {
         suspendCancellableCoroutine { continuation ->
           AVCaptureDevice.requestAccessForMediaType(AVMediaTypeVideo) { isGranted ->
@@ -72,8 +72,10 @@ internal class IosMediaHandler(
         throw CancellationException() // cancel camera picker request to reset and allow user to
         // pick again
       }
+
       AVAuthorizationStatusDenied ->
         MediaCaptureResult.Error("Error: Camera permission not granted")
+
       else -> {
         Logger.e("unknown camera permission status $currentAuthorizedStatus")
         MediaCaptureResult.Error("Error: Camera permission not granted")
@@ -90,9 +92,7 @@ internal class IosMediaHandler(
         val extensions =
           inputMimeTypes.mapNotNull { getExtensionFromMimeType(it) } +
             inputMimeTypes.flatMap { getExtensionsForWildcardMimeType(it) }
-        FileKitType.File(
-          extensions.toSet().takeIf { it.isNotEmpty() },
-        )
+        FileKitType.File(extensions.toSet().takeIf { it.isNotEmpty() })
       }
     val pickedFile = FileKit.openFilePicker(type = fileKitType)
 
@@ -102,24 +102,22 @@ internal class IosMediaHandler(
         mimeType = it.mimeType()?.toString() ?: "application/octet-stream",
         titleName = it.name,
       )
-    }
-      ?: throw CancellationException()
+    } ?: throw CancellationException()
   }
 
   override fun isCameraSupported(): Boolean =
     UIImagePickerController.isSourceTypeAvailable(
-      UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera,
+      UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
     )
 
-  private fun getExtensionsForWildcardMimeType(mimeType: String): List<String> {
-    return when (mimeType.lowercase()) {
+  private fun getExtensionsForWildcardMimeType(mimeType: String): List<String> =
+    when (mimeType.lowercase()) {
       "image/*" -> listOf("jpg", "jpeg", "png", "gif", "bmp")
       "text/*" -> listOf("txt", "md")
       "video/*" -> listOf("mp4", "avi", "mov", "wmv")
       "audio/*" -> listOf("mp3", "wav", "flac", "aac", "m4a")
       else -> emptyList()
     }
-  }
 
   private fun getExtensionFromMimeType(mimeType: String): String? {
     val type = UTType.typeWithMIMEType(mimeType)
@@ -131,8 +129,7 @@ internal class IosMediaHandler(
 internal actual fun rememberMediaHandler(
   maxSupportedFileSizeBytes: BigDecimal,
   supportedMimeTypes: Array<String>,
-): MediaHandler {
-  return remember(maxSupportedFileSizeBytes, supportedMimeTypes) {
+): MediaHandler =
+  remember(maxSupportedFileSizeBytes, supportedMimeTypes) {
     IosMediaHandler(maxSupportedFileSizeBytes, supportedMimeTypes)
   }
-}

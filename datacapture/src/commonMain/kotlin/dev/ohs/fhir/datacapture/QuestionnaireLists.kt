@@ -38,7 +38,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.datacapture.extensions.displayString
 import dev.ohs.fhir.datacapture.extensions.elementValue
 import dev.ohs.fhir.datacapture.extensions.getLocalizedInstructionsAnnotatedString
@@ -75,8 +74,9 @@ import dev.ohs.fhir.datacapture.views.factories.QuestionnaireItemViewFactory
 import dev.ohs.fhir.datacapture.views.factories.RadioGroupViewFactory
 import dev.ohs.fhir.datacapture.views.factories.SliderViewFactory
 import dev.ohs.fhir.datacapture.views.factories.TimeViewFactory
-import org.jetbrains.compose.resources.painterResource
+import dev.ohs.fhir.model.r4.Questionnaire
 import kotlin.uuid.ExperimentalUuidApi
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 // Choice questions are rendered as dialogs if they have at least this many options
@@ -120,11 +120,15 @@ internal fun QuestionnaireEditList(
       items = items,
       key = { item ->
         when (item) {
-          is QuestionnaireAdapterItem.Question -> item.id
-              ?: throw IllegalStateException("Missing id for the Question: $item")
+          is QuestionnaireAdapterItem.Question ->
+            item.id ?: throw IllegalStateException("Missing id for the Question: $item")
+
           is QuestionnaireAdapterItem.RepeatedGroupHeader -> item.id
+
           is QuestionnaireAdapterItem.Navigation -> "navigation"
-          is QuestionnaireAdapterItem.RepeatedGroupAddButton -> item.id
+
+          is QuestionnaireAdapterItem.RepeatedGroupAddButton ->
+            item.id
               ?: throw IllegalStateException("Missing id for the RepeatedGroupAddButton: $item")
         }
       },
@@ -141,12 +145,15 @@ internal fun QuestionnaireEditList(
             )
           questionnaireItemViewHolderDelegate.Content(adapterItem.item)
         }
+
         is QuestionnaireAdapterItem.Navigation -> {
           QuestionnaireBottomNavigation(adapterItem.questionnaireNavigationUIState)
         }
+
         is QuestionnaireAdapterItem.RepeatedGroupHeader -> {
           RepeatedGroupHeaderItem(adapterItem)
         }
+
         is QuestionnaireAdapterItem.RepeatedGroupAddButton -> {
           RepeatedGroupAddButtonItem(adapterItem.item)
         }
@@ -162,8 +169,9 @@ internal fun QuestionnaireReviewList(items: List<QuestionnaireReviewItem>) {
       items = items,
       key = { item ->
         when (item) {
-          is QuestionnaireAdapterItem.Question -> item.id
-              ?: throw IllegalStateException("Missing id for the Question: $item")
+          is QuestionnaireAdapterItem.Question ->
+            item.id ?: throw IllegalStateException("Missing id for the Question: $item")
+
           is QuestionnaireAdapterItem.Navigation -> "navigation"
         }
       },
@@ -176,6 +184,7 @@ internal fun QuestionnaireReviewList(items: List<QuestionnaireReviewItem>) {
             modifier = Modifier.fillMaxWidth(),
           )
         }
+
         is QuestionnaireAdapterItem.Navigation -> {
           QuestionnaireBottomNavigation(
             pageNavigationUIState = item.questionnaireNavigationUIState,
@@ -192,9 +201,7 @@ private fun QuestionnaireReviewItem(
   questionnaireViewItem: QuestionnaireViewItem,
   modifier: Modifier = Modifier,
 ) {
-  Column(
-    modifier = modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-  ) {
+  Column(modifier = modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
     // Header section with prefix, question, and hint
     val prefixText =
       remember(questionnaireViewItem.questionnaireItem.prefix) {
@@ -257,9 +264,10 @@ private fun QuestionnaireReviewItem(
     // Answer section (only for non-group, non-display items)
     when (questionnaireViewItem.questionnaireItem.type.value) {
       Questionnaire.QuestionnaireItemType.Group,
-      Questionnaire.QuestionnaireItemType.Display, -> {
+      Questionnaire.QuestionnaireItemType.Display -> {
         // No answer display for groups and display items
       }
+
       else -> {
         val notAnsweredTextString = stringResource(Res.string.not_answered)
         val answerText =
@@ -333,8 +341,8 @@ fun getQuestionnaireItemViewFactory(
   questionnaireItem: Questionnaire.Item,
   questionnaireViewHolderType: QuestionnaireViewHolderType,
   questionnaireItemViewHolderMatchers: List<QuestionnaireItemViewFactoryMatcher>,
-): QuestionnaireItemViewFactory {
-  return questionnaireItemViewHolderMatchers.find { it.matches(questionnaireItem) }?.factory
+): QuestionnaireItemViewFactory =
+  questionnaireItemViewHolderMatchers.find { it.matches(questionnaireItem) }?.factory
     ?: when (questionnaireViewHolderType) {
       QuestionnaireViewHolderType.EDIT_TEXT_SINGLE_LINE -> EditTextSingleLineViewFactory
       QuestionnaireViewHolderType.EDIT_TEXT_MULTI_LINE -> EditTextMultiLineViewFactory
@@ -356,7 +364,6 @@ fun getQuestionnaireItemViewFactory(
       QuestionnaireViewHolderType.GROUP -> GroupViewFactory
       QuestionnaireViewHolderType.ATTACHMENT -> AttachmentViewFactory
     }
-}
 
 /**
  * Returns the [QuestionnaireViewHolderType] that will be used to render the
@@ -366,7 +373,7 @@ fun getQuestionnaireItemViewFactory(
  * extension (http://hl7.org/fhir/R4/extension-questionnaire-itemcontrol.html).
  */
 private fun getItemViewTypeForQuestion(
-  questionnaireViewItem: QuestionnaireViewItem,
+  questionnaireViewItem: QuestionnaireViewItem
 ): QuestionnaireViewHolderType {
   val questionnaireItem = questionnaireViewItem.questionnaireItem
 
@@ -376,25 +383,38 @@ private fun getItemViewTypeForQuestion(
 
   return when (val type = questionnaireItem.type.value) {
     Questionnaire.QuestionnaireItemType.Group -> QuestionnaireViewHolderType.GROUP
+
     Questionnaire.QuestionnaireItemType.Boolean -> QuestionnaireViewHolderType.BOOLEAN_TYPE_PICKER
+
     Questionnaire.QuestionnaireItemType.Date -> QuestionnaireViewHolderType.DATE_PICKER
+
     Questionnaire.QuestionnaireItemType.Time -> QuestionnaireViewHolderType.TIME_PICKER
+
     Questionnaire.QuestionnaireItemType.DateTime -> QuestionnaireViewHolderType.DATE_TIME_PICKER
+
     Questionnaire.QuestionnaireItemType.String -> getStringViewHolderType(questionnaireViewItem)
+
     Questionnaire.QuestionnaireItemType.Text -> QuestionnaireViewHolderType.EDIT_TEXT_MULTI_LINE
+
     Questionnaire.QuestionnaireItemType.Integer -> getIntegerViewHolderType(questionnaireViewItem)
+
     Questionnaire.QuestionnaireItemType.Decimal -> QuestionnaireViewHolderType.EDIT_TEXT_DECIMAL
+
     Questionnaire.QuestionnaireItemType.Choice,
-    Questionnaire.QuestionnaireItemType.Reference, -> getChoiceViewHolderType(questionnaireViewItem)
+    Questionnaire.QuestionnaireItemType.Reference -> getChoiceViewHolderType(questionnaireViewItem)
+
     Questionnaire.QuestionnaireItemType.Display -> QuestionnaireViewHolderType.DISPLAY
+
     Questionnaire.QuestionnaireItemType.Quantity -> QuestionnaireViewHolderType.QUANTITY
+
     Questionnaire.QuestionnaireItemType.Attachment -> QuestionnaireViewHolderType.ATTACHMENT
+
     else -> throw NotImplementedError("Question type $type not supported.")
   }
 }
 
 private fun getChoiceViewHolderType(
-  questionnaireViewItem: QuestionnaireViewItem,
+  questionnaireViewItem: QuestionnaireViewItem
 ): QuestionnaireViewHolderType {
   val questionnaireItem = questionnaireViewItem.questionnaireItem
 
@@ -403,8 +423,8 @@ private fun getChoiceViewHolderType(
     questionnaireItem.shouldUseDialog -> QuestionnaireViewHolderType.DIALOG_SELECT
     else -> questionnaireItem.itemControl?.viewHolderType
   }
-  // Otherwise, choose a sensible UI element automatically
-  ?: run {
+    // Otherwise, choose a sensible UI element automatically
+    ?: run {
       val numOptions = questionnaireViewItem.enabledAnswerOptions.size
       when {
         // Always use a dialog for questions with a large number of options
@@ -425,7 +445,7 @@ private fun getChoiceViewHolderType(
 }
 
 private fun getIntegerViewHolderType(
-  questionnaireViewItem: QuestionnaireViewItem,
+  questionnaireViewItem: QuestionnaireViewItem
 ): QuestionnaireViewHolderType {
   val questionnaireItem = questionnaireViewItem.questionnaireItem
   // Use the view type that the client wants if they specified an itemControl
@@ -434,7 +454,7 @@ private fun getIntegerViewHolderType(
 }
 
 private fun getStringViewHolderType(
-  questionnaireViewItem: QuestionnaireViewItem,
+  questionnaireViewItem: QuestionnaireViewItem
 ): QuestionnaireViewHolderType {
   val questionnaireItem = questionnaireViewItem.questionnaireItem
   // Use the view type that the client wants if they specified an itemControl

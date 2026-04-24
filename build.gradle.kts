@@ -13,7 +13,12 @@ plugins {
 
 spotless {
   val ktLintVersion = libs.versions.kt.lint.get()
-  val ktLintOptions = mapOf("indent_size" to "2", "continuation_indent_size" to "2")
+  val ktLintOptions =
+    mapOf(
+      "indent_size" to "2",
+      "continuation_indent_size" to "2",
+      "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
+    )
 
   ratchetFrom = "origin/main"
   kotlin {
@@ -23,7 +28,7 @@ spotless {
     ktfmt().googleStyle()
     licenseHeaderFile(
       "${project.rootProject.projectDir}/license-header.txt",
-      "^(package|//startfile)",
+      "^(package|//startfile)|import|class|object|sealed|open|interface|abstract",
     )
   }
   kotlinGradle {
@@ -32,14 +37,14 @@ spotless {
     ktfmt().googleStyle()
   }
 
-//  flexmark {
-//      target("**/*.md")
-//      flexmark()
-//    }
+  //  flexmark {
+  //      target("**/*.md")
+  //      flexmark()
+  //    }
 }
 
 subprojects {
-//  configureLicensee()
+  //  configureLicensee()
 
   tasks.withType(Test::class.java).configureEach {
     maxParallelForks = 1

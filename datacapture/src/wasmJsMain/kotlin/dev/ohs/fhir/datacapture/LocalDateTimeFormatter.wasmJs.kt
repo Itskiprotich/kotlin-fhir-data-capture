@@ -35,10 +35,7 @@ import kotlinx.datetime.todayIn
 
 @OptIn(FormatStringsInDatetimeFormats::class)
 object WasmJsLocalDateTimeFormatter : LocalDateTimeFormatter {
-  override fun parseStringToLocalDate(
-    str: String,
-    pattern: String,
-  ): LocalDate {
+  override fun parseStringToLocalDate(str: String, pattern: String): LocalDate {
     val dateFormat = LocalDate.Format { byUnicodePattern(pattern) }
     val localDate = LocalDate.parse(str, dateFormat)
 
@@ -73,14 +70,12 @@ object WasmJsLocalDateTimeFormatter : LocalDateTimeFormatter {
       time
         .atDate(Clock.System.todayIn(TimeZone.currentSystemDefault()))
         .toInstant(TimeZone.currentSystemDefault())
-        .toLocalDateTime(
-          TimeZone.currentSystemDefault(),
-        )
+        .toLocalDateTime(TimeZone.currentSystemDefault())
     return dateTime.time.format(LocalTime.Formats.ISO)
   }
 }
 
 @Composable
-actual fun getLocalDateTimeFormatter(): LocalDateTimeFormatter {
-  return remember { WasmJsLocalDateTimeFormatter }
+actual fun getLocalDateTimeFormatter(): LocalDateTimeFormatter = remember {
+  WasmJsLocalDateTimeFormatter
 }
