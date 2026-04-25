@@ -28,5 +28,8 @@ class CatalogApplication : Application(), DataCaptureConfig.Provider {
   }
 
   override fun getDataCaptureConfig(): DataCaptureConfig =
-    DataCaptureConfig(xFhirQueryResolver = { emptyList() })
+    DataCaptureConfig(xFhirQueryResolver = {
+      // TODO: Implement actual xFhirQueryResolver backed with data from db
+      emptyList()
+    })
 }

@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 plugins {
   alias(libs.plugins.kotlin.multiplatform)
   alias(libs.plugins.android.kotlin.multiplatform.library)
+  alias(libs.plugins.cashapp.licensee)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.compose.hotreload)
   alias(libs.plugins.compose.multiplatform)
@@ -130,11 +131,24 @@ kotlin {
       }
     }
 
-    val desktopMain by getting {
+    @Suppress("unused") val desktopMain by getting {
       dependencies {
         implementation(compose.desktop.currentOs)
         implementation(libs.kotlinx.coroutines.swing)
       }
     }
   }
+}
+
+licensee {
+    allow("Apache-2.0")
+    allow("BSD-2-Clause")
+    allow("BSD-3-Clause")
+    allow("MIT")
+
+  listOf(
+    //FileKit
+    "https://github.com/vinceglb/FileKit/blob/main/LICENSE",
+    "https://github.com/hypfvieh/dbus-java/blob/master/LICENSE"
+  ).forEach { allowUrl(it) }
 }

@@ -2,6 +2,7 @@ plugins {
   alias(libs.plugins.android.application) apply false
   alias(libs.plugins.android.kotlin.multiplatform.library) apply false
   alias(libs.plugins.androidx.navigation.safeargs) apply false
+  alias(libs.plugins.cashapp.licensee) apply false
   alias(libs.plugins.compose.compiler) apply false
   alias(libs.plugins.compose.hotreload) apply false
   alias(libs.plugins.compose.multiplatform) apply false
@@ -36,16 +37,9 @@ spotless {
     ktlint(ktLintVersion).editorConfigOverride(ktLintOptions)
     ktfmt().googleStyle()
   }
-
-  //  flexmark {
-  //      target("**/*.md")
-  //      flexmark()
-  //    }
 }
 
 subprojects {
-  //  configureLicensee()
-
   tasks.withType(Test::class.java).configureEach {
     maxParallelForks = 1
     if (project.providers.environmentVariable("GITHUB_ACTIONS").isPresent) {

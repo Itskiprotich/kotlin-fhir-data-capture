@@ -50,8 +50,6 @@ kotlin {
 
   jvm("desktop")
 
-  val isWasmEnabled = project.findProperty("catalog.wasm.enabled") == "true"
-//  if (isWasmEnabled) {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
       browser {
@@ -65,7 +63,6 @@ kotlin {
       }
       binaries.executable()
     }
-//  }
 
   listOf(
       iosX64(),
@@ -89,8 +86,6 @@ kotlin {
         implementation(libs.material)
         implementation(libs.moko.permissions.camera)
         implementation(libs.moko.permissions.compose)
-        // TODO restore after these libraries are migrated to Kotlin Multiplatform
-        //      implementation(project(":engine"))
       }
     }
     commonMain.dependencies {
