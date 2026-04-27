@@ -41,10 +41,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.savedstate.read
-import kotlin_fhir_data_capture.catalog.generated.resources.Res
-import kotlin_fhir_data_capture.catalog.generated.resources.ic_behaviors
-import kotlin_fhir_data_capture.catalog.generated.resources.ic_components
-import kotlin_fhir_data_capture.catalog.generated.resources.ic_layouts
 import dev.ohs.fhir.catalog.ui.behaviors.BehaviorListScreen
 import dev.ohs.fhir.catalog.ui.behaviors.BehaviorListViewModel
 import dev.ohs.fhir.catalog.ui.components.ComponentListScreen
@@ -55,6 +51,10 @@ import dev.ohs.fhir.catalog.ui.questionnaire.QuestionnaireResponseScreen
 import dev.ohs.fhir.catalog.ui.questionnaire.QuestionnaireScreen
 import dev.ohs.fhir.catalog.ui.questionnaire.QuestionnaireViewModel
 import dev.ohs.fhir.catalog.ui.theme.AppTheme
+import kotlin_fhir_data_capture.catalog.generated.resources.Res
+import kotlin_fhir_data_capture.catalog.generated.resources.ic_behaviors
+import kotlin_fhir_data_capture.catalog.generated.resources.ic_components
+import kotlin_fhir_data_capture.catalog.generated.resources.ic_layouts
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.compose.resources.painterResource
 
@@ -96,12 +96,7 @@ fun App() {
       val navBackStackEntry by navController.currentBackStackEntryAsState()
       val currentDestination = navBackStackEntry?.destination
 
-      val items =
-        listOf(
-          Screen.Components,
-          Screen.Layouts,
-          Screen.Behaviors,
-        )
+      val items = listOf(Screen.Components, Screen.Layouts, Screen.Behaviors)
 
       Scaffold(
         bottomBar = {

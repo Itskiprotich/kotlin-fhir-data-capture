@@ -17,74 +17,84 @@
 package dev.ohs.fhir.catalog.ui.questionnaire
 
 import androidx.lifecycle.ViewModel
-import kotlin_fhir_data_capture.catalog.generated.resources.Res
 import dev.ohs.fhir.datacapture.validation.Invalid
 import dev.ohs.fhir.datacapture.validation.QuestionnaireResponseValidator
 import dev.ohs.fhir.model.r4.FhirR4Json
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import kotlin_fhir_data_capture.catalog.generated.resources.Res
 
 class QuestionnaireViewModel : ViewModel() {
-  private val fhirJson = FhirR4Json()
+    private val fhirJson = FhirR4Json()
 
-  fun getQuestionnaireResponseJson(response: QuestionnaireResponse): String =
-    fhirJson.encodeToString(response)
+    fun getQuestionnaireResponseJson(response: QuestionnaireResponse): String =
+        fhirJson.encodeToString(response)
 
-  suspend fun getQuestionnaire(fileName: String) = Res.readBytes("files/$fileName").decodeToString()
+    fun parseQuestionnaireResponseJson(json: String): QuestionnaireResponse =
+        fhirJson.decodeFromString(json) as QuestionnaireResponse
 
-  /** Validates questionnaire response and returns list of invalid field names. */
-  suspend fun validateAndGetErrors(
-    questionnaireJson: String,
-    response: QuestionnaireResponse,
-    launchContextMap: Map<String, String>? = null,
-  ): List<String> {
-    val questionnaire = fhirJson.decodeFromString(questionnaireJson) as Questionnaire
-    val parentMap = buildQuestionnaireItemParentMap(questionnaire)
-    val launchContextResources = launchContextMap?.mapValues { fhirJson.decodeFromString(it.value) }
+    suspend fun getQuestionnaire(fileName: String) =
+        Res.readBytes("files/$fileName").decodeToString()
 
-    val validationResults =
-      QuestionnaireResponseValidator.validateQuestionnaireResponse(
-        questionnaire,
-        response,
-        parentMap,
-        launchContextResources,
-      )
+    suspend fun getQuestionnaireResource(fileName: String): Questionnaire {
+        val json = Res.readBytes("files/$fileName").decodeToString()
+        return fhirJson.decodeFromString(json) as Questionnaire
+    }
 
-    return buildList {
-      validationResults.forEach { (linkId, results) ->
-        val hasError = results.any { it is Invalid }
-        if (hasError) {
-          // Find the questionnaire item with this linkId to get its text
-          findItemText(questionnaire.item, linkId)?.let { add(it) }
+    /** Validates questionnaire response and returns list of invalid field names. */
+    suspend fun validateAndGetErrors(
+        questionnaireJson: String,
+        response: QuestionnaireResponse,
+        launchContextMap: Map<String, String>? = null,
+    ): List<String> {
+        val questionnaire = fhirJson.decodeFromString(questionnaireJson) as Questionnaire
+        val parentMap = buildQuestionnaireItemParentMap(questionnaire)
+        val launchContextResources =
+            launchContextMap?.mapValues { fhirJson.decodeFromString(it.value) }
+
+        val validationResults =
+            QuestionnaireResponseValidator.validateQuestionnaireResponse(
+                questionnaire,
+                response,
+                parentMap,
+                launchContextResources,
+            )
+
+        return buildList {
+            validationResults.forEach { (linkId, results) ->
+                val hasError = results.any { it is Invalid }
+                if (hasError) {
+                    // Find the questionnaire item with this linkId to get its text
+                    findItemText(questionnaire.item, linkId)?.let { add(it) }
+                }
+            }
         }
-      }
     }
-  }
 
-  private fun buildQuestionnaireItemParentMap(
-    questionnaire: Questionnaire
-  ): Map<Questionnaire.Item, Questionnaire.Item> {
-    val map = mutableMapOf<Questionnaire.Item, Questionnaire.Item>()
-    fun traverse(item: Questionnaire.Item) {
-      for (child in item.item) {
-        map[child] = item
-        traverse(child)
-      }
+    private fun buildQuestionnaireItemParentMap(
+        questionnaire: Questionnaire
+    ): Map<Questionnaire.Item, Questionnaire.Item> {
+        val map = mutableMapOf<Questionnaire.Item, Questionnaire.Item>()
+        fun traverse(item: Questionnaire.Item) {
+            for (child in item.item) {
+                map[child] = item
+                traverse(child)
+            }
+        }
+        for (item in questionnaire.item) {
+            traverse(item)
+        }
+        return map
     }
-    for (item in questionnaire.item) {
-      traverse(item)
-    }
-    return map
-  }
 
-  private fun findItemText(items: List<Questionnaire.Item>, linkId: String): String? {
-    for (item in items) {
-      if (item.linkId.value == linkId) {
-        return item.text?.value
-      }
-      val nested = findItemText(item.item, linkId)
-      if (nested != null) return nested
+    private fun findItemText(items: List<Questionnaire.Item>, linkId: String): String? {
+        for (item in items) {
+            if (item.linkId.value == linkId) {
+                return item.text?.value
+            }
+            val nested = findItemText(item.item, linkId)
+            if (nested != null) return nested
+        }
+        return null
     }
-    return null
-  }
 }

@@ -1,0 +1,647 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "general-patient-intake",
+  "meta": {
+    "lastUpdated": "2026-04-27T00:00:00.000Z",
+    "versionId": "1"
+  },
+  "url": "http://example.org/fhir/Questionnaire/general-patient-intake",
+  "version": "1.0.0",
+  "name": "GeneralPatientIntake",
+  "title": "General Patient Intake",
+  "status": "active",
+  "date": "2026-04-27",
+  "subjectType": [
+    "Patient"
+  ],
+  "extension": [
+    {
+      "url": "http://beda.software/fhir-extensions/fhir-path-mapping-language",
+      "valueString": "[{\"resourceType\":\"Patient\",\"id\":\"{{ uuid() }}\",\"name\":[{\"given\":[\"{{ QR.item.where(linkId='name').item.where(linkId='name.given').answer.valueString }}\"],\"family\":\"{{ QR.item.where(linkId='name').item.where(linkId='name.family').answer.valueString }}\"}],\"birthDate\":\"{{ QR.item.where(linkId='birthDate').answer.valueDate }}\",\"gender\":\"{{ QR.item.where(linkId='gender').answer.valueCoding.code }}\",\"telecom\":[{\"{% if QR.item.where(linkId='telecom').item.where(linkId='telecom.phone').answer.valueString.exists() %}\":{\"system\":\"phone\",\"value\":\"{{ QR.item.where(linkId='telecom').item.where(linkId='telecom.phone').answer.valueString }}\"}},{\"{% if QR.item.where(linkId='telecom').item.where(linkId='telecom.email').answer.valueString.exists() %}\":{\"system\":\"email\",\"value\":\"{{ QR.item.where(linkId='telecom').item.where(linkId='telecom.email').answer.valueString }}\"}}],\"address\":[{\"{% if QR.item.where(linkId='address').item.answer.valueString.exists() %}\":{\"line\":[\"{{ QR.item.where(linkId='address').item.where(linkId='address.line').answer.valueString }}\"],\"city\":\"{{ QR.item.where(linkId='address').item.where(linkId='address.city').answer.valueString }}\",\"postalCode\":\"{{ QR.item.where(linkId='address').item.where(linkId='address.postalCode').answer.valueString }}\",\"country\":\"{{ QR.item.where(linkId='address').item.where(linkId='address.country').answer.valueString }}\"}}],\"identifier\":[{\"{% if QR.item.where(linkId='identifier').answer.valueString.exists() %}\":{\"value\":\"{{ QR.item.where(linkId='identifier').answer.valueString }}\"}}]},{\"resourceType\":\"Bundle\",\"type\":\"collection\",\"entry\":[{\"resource\":{\"resourceType\":\"Observation\",\"status\":\"final\",\"code\":{\"coding\":[{\"system\":\"http://loinc.org\",\"code\":\"85354-9\",\"display\":\"Blood pressure panel\"}]},\"component\":[{\"code\":{\"coding\":[{\"system\":\"http://loinc.org\",\"code\":\"8480-6\",\"display\":\"Systolic BP\"}]},\"valueQuantity\":{\"value\":\"{{ QR.item.where(linkId='obs.bp.systolic').answer.valueInteger }}\",\"unit\":\"mmHg\"}},{\"code\":{\"coding\":[{\"system\":\"http://loinc.org\",\"code\":\"8462-4\",\"display\":\"Diastolic BP\"}]},\"valueQuantity\":{\"value\":\"{{ QR.item.where(linkId='obs.bp.diastolic').answer.valueInteger }}\",\"unit\":\"mmHg\"}}],\"effectiveDateTime\":\"{{ QR.item.where(linkId='obs.effectiveDate').answer.valueDate }}\"}},{\"resource\":{\"resourceType\":\"Observation\",\"status\":\"final\",\"code\":{\"coding\":[{\"system\":\"http://loinc.org\",\"code\":\"8867-4\",\"display\":\"Heart rate\"}]},\"valueQuantity\":{\"value\":\"{{ QR.item.where(linkId='obs.heartRate').answer.valueInteger }}\",\"unit\":\"bpm\"},\"effectiveDateTime\":\"{{ QR.item.where(linkId='obs.effectiveDate').answer.valueDate }}\"}},{\"resource\":{\"resourceType\":\"Observation\",\"status\":\"final\",\"code\":{\"coding\":[{\"system\":\"http://loinc.org\",\"code\":\"8310-5\",\"display\":\"Body temperature\"}]},\"valueQuantity\":{\"value\":\"{{ QR.item.where(linkId='obs.temp').answer.valueDecimal }}\",\"unit\":\"Cel\"}}},{\"resource\":{\"resourceType\":\"Observation\",\"status\":\"final\",\"code\":{\"coding\":[{\"system\":\"http://loinc.org\",\"code\":\"2708-6\",\"display\":\"Oxygen saturation\"}]},\"valueQuantity\":{\"value\":\"{{ QR.item.where(linkId='obs.spo2').answer.valueDecimal }}\",\"unit\":\"%\"}}},{\"resource\":{\"resourceType\":\"Observation\",\"status\":\"final\",\"code\":{\"coding\":[{\"system\":\"http://loinc.org\",\"code\":\"29463-7\",\"display\":\"Body weight\"}]},\"valueQuantity\":{\"value\":\"{{ QR.item.where(linkId='obs.weight').answer.valueDecimal }}\",\"unit\":\"kg\"}}},{\"resource\":{\"resourceType\":\"Observation\",\"status\":\"final\",\"code\":{\"coding\":[{\"system\":\"http://loinc.org\",\"code\":\"8302-2\",\"display\":\"Body height\"}]},\"valueQuantity\":{\"value\":\"{{ QR.item.where(linkId='obs.height').answer.valueDecimal }}\",\"unit\":\"cm\"}}}]},{\"resourceType\":\"Condition\",\"clinicalStatus\":{\"coding\":[{\"system\":\"http://terminology.hl7.org/CodeSystem/condition-clinical\",\"code\":\"{{ QR.item.where(linkId='condition.clinicalStatus').answer.valueCoding.code }}\"}]},\"verificationStatus\":{\"coding\":[{\"system\":\"http://terminology.hl7.org/CodeSystem/condition-ver-status\",\"code\":\"{{ QR.item.where(linkId='condition.verificationStatus').answer.valueCoding.code }}\"}]},\"severity\":{\"coding\":[{\"system\":\"http://snomed.info/sct\",\"display\":\"{{ QR.item.where(linkId='condition.severity').answer.valueCoding.display }}\"}]},\"code\":{\"coding\":[{\"system\":\"http://hl7.org/fhir/sid/icd-10\",\"code\":\"{{ QR.item.where(linkId='condition.code.code').answer.valueString }}\",\"display\":\"{{ QR.item.where(linkId='condition.code.display').answer.valueString }}\"}],\"text\":\"{{ QR.item.where(linkId='condition.code.display').answer.valueString }}\"},\"onsetDateTime\":\"{{ QR.item.where(linkId='condition.onsetDate').answer.valueDate }}\",\"note\":[{\"{% if QR.item.where(linkId='condition.note').answer.valueString.exists() %}\":{\"text\":\"{{ QR.item.where(linkId='condition.note').answer.valueString }}\"}}]},{\"resourceType\":\"Specimen\",\"accessionIdentifier\":{\"{% if QR.item.where(linkId='specimen.accession').answer.valueString.exists() %}\":{\"value\":\"{{ QR.item.where(linkId='specimen.accession').answer.valueString }}\"}},\"type\":{\"coding\":[{\"display\":\"{{ QR.item.where(linkId='specimen.type').answer.valueCoding.display }}\"}],\"text\":\"{{ QR.item.where(linkId='specimen.type').answer.valueCoding.display }}\"},\"collection\":{\"collectedDateTime\":\"{{ QR.item.where(linkId='specimen.collectedDate').answer.valueDateTime }}\",\"method\":{\"coding\":[{\"display\":\"{{ QR.item.where(linkId='specimen.method').answer.valueCoding.display }}\"}]},\"bodySite\":{\"coding\":[{\"display\":\"{{ QR.item.where(linkId='specimen.bodySite').answer.valueString }}\"}]},\"quantity\":{\"{% if QR.item.where(linkId='specimen.quantity').answer.valueDecimal.exists() %}\":{\"value\":\"{{ QR.item.where(linkId='specimen.quantity').answer.valueDecimal }}\",\"unit\":\"mL\"}}},\"container\":[{\"{% if QR.item.where(linkId='specimen.container').answer.valueString.exists() %}\":{\"description\":\"{{ QR.item.where(linkId='specimen.container').answer.valueString }}\"}}}]},{\"resourceType\":\"RelatedPerson\",\"active\":\"{{ QR.item.where(linkId='related.active').answer.valueBoolean }}\",\"relationship\":[{\"coding\":[{\"system\":\"http://terminology.hl7.org/CodeSystem/v3-RoleCode\",\"code\":\"{{ QR.item.where(linkId='related.relationship').answer.valueCoding.code }}\",\"display\":\"{{ QR.item.where(linkId='related.relationship').answer.valueCoding.display }}\"}]}],\"name\":[{\"given\":[\"{{ QR.item.where(linkId='related.name.given').answer.valueString }}\"],\"family\":\"{{ QR.item.where(linkId='related.name.family').answer.valueString }}\"}],\"gender\":\"{{ QR.item.where(linkId='related.gender').answer.valueCoding.code }}\",\"birthDate\":\"{{ QR.item.where(linkId='related.birthDate').answer.valueDate }}\",\"telecom\":[{\"{% if QR.item.where(linkId='related.phone').answer.valueString.exists() %}\":{\"system\":\"phone\",\"value\":\"{{ QR.item.where(linkId='related.phone').answer.valueString }}\"}},{\"{% if QR.item.where(linkId='related.email').answer.valueString.exists() %}\":{\"system\":\"email\",\"value\":\"{{ QR.item.where(linkId='related.email').answer.valueString }}\"}}]}]"
+    }
+  ],
+  "item": [
+    {
+      "linkId": "patient",
+      "text": "Patient",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page"
+              }
+            ],
+            "text": "Page"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "name",
+          "text": "Name",
+          "type": "group",
+          "required": true,
+          "item": [
+            {
+              "linkId": "name.given",
+              "text": "Given Name",
+              "type": "string",
+              "required": true
+            },
+            {
+              "linkId": "name.family",
+              "text": "Family Name",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "linkId": "birthDate",
+          "text": "Date of Birth",
+          "type": "date",
+          "required": true
+        },
+        {
+          "linkId": "gender",
+          "text": "Administrative Gender",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "male",
+                "display": "Male"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "female",
+                "display": "Female"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "telecom",
+          "text": "Contact",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "telecom.phone",
+              "text": "Phone Number",
+              "type": "string"
+            },
+            {
+              "linkId": "telecom.email",
+              "text": "Email Address",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "linkId": "address",
+          "text": "Address",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "address.line",
+              "text": "Street Address",
+              "type": "string"
+            },
+            {
+              "linkId": "address.city",
+              "text": "City",
+              "type": "string"
+            },
+            {
+              "linkId": "address.postalCode",
+              "text": "Postal Code",
+              "type": "string"
+            },
+            {
+              "linkId": "address.country",
+              "text": "Country",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "linkId": "identifier",
+          "text": "National ID",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "linkId": "observations",
+      "text": "Observations",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page"
+              }
+            ],
+            "text": "Page"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "obs.vitals",
+          "text": "Vital Signs",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "obs.bp.systolic",
+              "text": "Systolic Blood Pressure (mmHg)",
+              "type": "integer"
+            },
+            {
+              "linkId": "obs.bp.diastolic",
+              "text": "Diastolic Blood Pressure (mmHg)",
+              "type": "integer"
+            },
+            {
+              "linkId": "obs.heartRate",
+              "text": "Heart Rate (bpm)",
+              "type": "integer"
+            },
+            {
+              "linkId": "obs.temp",
+              "text": "Body Temperature (°C)",
+              "type": "decimal"
+            },
+            {
+              "linkId": "obs.spo2",
+              "text": "Oxygen Saturation SpO2 (%)",
+              "type": "decimal"
+            }
+          ]
+        },
+        {
+          "linkId": "obs.anthropometrics",
+          "text": "Anthropometrics",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "obs.weight",
+              "text": "Body Weight (kg)",
+              "type": "decimal"
+            },
+            {
+              "linkId": "obs.height",
+              "text": "Body Height (cm)",
+              "type": "decimal"
+            }
+          ]
+        },
+        {
+          "linkId": "obs.effectiveDate",
+          "text": "Observation Date",
+          "type": "date",
+          "required": true
+        }
+      ]
+    },
+    {
+      "linkId": "condition",
+      "text": "Condition",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page"
+              }
+            ],
+            "text": "Page"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "condition.code.display",
+          "text": "Condition Name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "linkId": "condition.code.code",
+          "text": "ICD-10 Code",
+          "type": "string"
+        },
+        {
+          "linkId": "condition.clinicalStatus",
+          "text": "Clinical Status",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "active",
+                "display": "Active"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "recurrence",
+                "display": "Recurrence"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "relapse",
+                "display": "Relapse"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "inactive",
+                "display": "Inactive"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "remission",
+                "display": "Remission"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "resolved",
+                "display": "Resolved"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "condition.verificationStatus",
+          "text": "Verification Status",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                "code": "confirmed",
+                "display": "Confirmed"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                "code": "provisional",
+                "display": "Provisional"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                "code": "differential",
+                "display": "Differential"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                "code": "refuted",
+                "display": "Refuted"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "condition.severity",
+          "text": "Severity",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://snomed.info/sct",
+                "code": "255604002",
+                "display": "Mild"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://snomed.info/sct",
+                "code": "6736007",
+                "display": "Moderate"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://snomed.info/sct",
+                "code": "24484000",
+                "display": "Severe"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "condition.onsetDate",
+          "text": "Onset Date",
+          "type": "date"
+        },
+        {
+          "linkId": "condition.note",
+          "text": "Clinical Notes",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "linkId": "specimen",
+      "text": "Specimen",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page"
+              }
+            ],
+            "text": "Page"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "specimen.type",
+          "text": "Specimen Type",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "blood",
+                "display": "Whole blood"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "serum",
+                "display": "Serum"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "plasma",
+                "display": "Plasma"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "urine",
+                "display": "Urine"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "csf",
+                "display": "Cerebrospinal fluid"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "swab",
+                "display": "Swab"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "tissue",
+                "display": "Tissue"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "specimen.method",
+          "text": "Collection Method",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "venipuncture",
+                "display": "Venipuncture"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "fingerstick",
+                "display": "Fingerstick"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "catheter",
+                "display": "Catheter"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "swab",
+                "display": "Swab"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "biopsy",
+                "display": "Biopsy"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "specimen.collectedDate",
+          "text": "Collection Date/Time",
+          "type": "dateTime"
+        },
+        {
+          "linkId": "specimen.accession",
+          "text": "Accession Number",
+          "type": "string"
+        },
+        {
+          "linkId": "specimen.quantity",
+          "text": "Volume (mL)",
+          "type": "decimal"
+        },
+        {
+          "linkId": "specimen.container",
+          "text": "Container Type",
+          "type": "string"
+        },
+        {
+          "linkId": "specimen.bodySite",
+          "text": "Body Site",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "linkId": "relatedPerson",
+      "text": "Related Person",
+      "type": "group",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "page",
+                "display": "Page"
+              }
+            ],
+            "text": "Page"
+          }
+        }
+      ],
+      "item": [
+        {
+          "linkId": "related.name",
+          "text": "Name",
+          "type": "group",
+          "item": [
+            {
+              "linkId": "related.name.given",
+              "text": "Given Name",
+              "type": "string"
+            },
+            {
+              "linkId": "related.name.family",
+              "text": "Family Name",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "linkId": "related.relationship",
+          "text": "Relationship to Patient",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "MTH",
+                "display": "Mother"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "FTH",
+                "display": "Father"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SPS",
+                "display": "Spouse"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "SIB",
+                "display": "Sibling"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "CHILD",
+                "display": "Child"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "GUARD",
+                "display": "Guardian"
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                "code": "FRND",
+                "display": "Friend"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "related.gender",
+          "text": "Gender",
+          "type": "choice",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "male",
+                "display": "Male"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "female",
+                "display": "Female"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "related.birthDate",
+          "text": "Date of Birth",
+          "type": "date"
+        },
+        {
+          "linkId": "related.phone",
+          "text": "Phone Number",
+          "type": "string"
+        },
+        {
+          "linkId": "related.email",
+          "text": "Email Address",
+          "type": "string"
+        },
+        {
+          "linkId": "related.active",
+          "text": "Active",
+          "type": "boolean",
+          "initial": [
+            {
+              "valueBoolean": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

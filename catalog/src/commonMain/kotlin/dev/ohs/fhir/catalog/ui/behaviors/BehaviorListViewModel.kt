@@ -31,6 +31,7 @@ import kotlin_fhir_data_capture.catalog.generated.resources.ic_context
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_dynamic_text_behavior
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_rule
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_skiplogic_behavior
+import kotlin_fhir_data_capture.catalog.generated.resources.template_based_extraction
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 
@@ -77,6 +78,11 @@ class BehaviorListViewModel : ViewModel() {
       "behavior_questionnaire_constraint.json",
       Res.drawable.ic_rule,
       Res.string.behavior_name_questionnaire_constraint,
+    ),
+    TEMPLATE_BASED_EXTRACTION(
+      "template_based_extraction.json",
+      Res.drawable.ic_rule,
+      Res.string.template_based_extraction,
     ),
   }
 }

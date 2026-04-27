@@ -49,10 +49,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import dev.ohs.fhir.datacapture.extensions.toLocalDate
+import dev.ohs.fhir.datacapture.getLocalDateTimeFormatter
 import kotlin_fhir_data_capture.datacapture.generated.resources.Res
 import kotlin_fhir_data_capture.datacapture.generated.resources.gm_calendar_today_24
 import kotlin_fhir_data_capture.datacapture.generated.resources.select_date
-import dev.ohs.fhir.datacapture.getLocalDateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

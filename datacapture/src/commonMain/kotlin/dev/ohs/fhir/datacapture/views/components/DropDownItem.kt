@@ -48,11 +48,11 @@ import dev.ohs.fhir.datacapture.extensions.displayString
 import dev.ohs.fhir.datacapture.extensions.elementValue
 import dev.ohs.fhir.datacapture.extensions.itemAnswerOptionImage
 import dev.ohs.fhir.datacapture.extensions.toAnnotatedString
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.ic_clear
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import dev.ohs.fhir.model.r4.Element
 import dev.ohs.fhir.model.r4.Questionnaire
+import kotlin_fhir_data_capture.datacapture.generated.resources.Res
+import kotlin_fhir_data_capture.datacapture.generated.resources.ic_clear
 import org.jetbrains.compose.resources.painterResource
 
 internal const val CLEAR_TEXT_ICON_BUTTON_TAG = "clear_field_text"

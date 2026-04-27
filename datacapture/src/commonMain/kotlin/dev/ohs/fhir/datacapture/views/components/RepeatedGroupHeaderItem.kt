@@ -35,11 +35,11 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import dev.ohs.fhir.datacapture.QuestionnaireAdapterItem
+import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import kotlin_fhir_data_capture.datacapture.generated.resources.Res
 import kotlin_fhir_data_capture.datacapture.generated.resources.delete
 import kotlin_fhir_data_capture.datacapture.generated.resources.delete_24px
 import kotlin_fhir_data_capture.datacapture.generated.resources.repeated_group_title
-import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource

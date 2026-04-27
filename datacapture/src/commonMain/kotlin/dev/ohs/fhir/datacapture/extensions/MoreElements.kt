@@ -18,9 +18,6 @@ package dev.ohs.fhir.datacapture.extensions
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.no
-import kotlin_fhir_data_capture.datacapture.generated.resources.yes
 import dev.ohs.fhir.datacapture.getLocalDateTimeFormatter
 import dev.ohs.fhir.model.r4.Attachment
 import dev.ohs.fhir.model.r4.Coding
@@ -34,6 +31,9 @@ import dev.ohs.fhir.model.r4.FhirDateTime
 import dev.ohs.fhir.model.r4.Quantity
 import dev.ohs.fhir.model.r4.Reference
 import dev.ohs.fhir.model.r4.Time
+import kotlin_fhir_data_capture.datacapture.generated.resources.Res
+import kotlin_fhir_data_capture.datacapture.generated.resources.no
+import kotlin_fhir_data_capture.datacapture.generated.resources.yes
 import org.jetbrains.compose.resources.stringResource
 
 internal const val EXTENSION_CQF_EXPRESSION_URL: String =

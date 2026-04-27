@@ -228,6 +228,4 @@ data class QuestionnaireViewItem(
 
 internal fun QuestionnaireViewItem.isAnswerOptionSelected(
   answerOption: Questionnaire.Item.AnswerOption
-): Boolean {
-  return answers.any { it.elementValue == answerOption.elementValue }
-}
+): Boolean = answers.any { it.elementValue == answerOption.elementValue }

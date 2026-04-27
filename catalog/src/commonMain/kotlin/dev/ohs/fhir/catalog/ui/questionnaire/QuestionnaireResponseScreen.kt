@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -36,74 +38,139 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.ohs.fhir.datacapture.extraction.TemplateBundleExtractor
+import dev.ohs.fhir.model.r4.FhirR4Json
 import kotlin_fhir_data_capture.catalog.generated.resources.Res
 import kotlin_fhir_data_capture.catalog.generated.resources.arrow_back_filled_24dp
 import kotlin_fhir_data_capture.catalog.generated.resources.close
+import kotlin_fhir_data_capture.catalog.generated.resources.copy_response
+import kotlin_fhir_data_capture.catalog.generated.resources.more_options
+import kotlin_fhir_data_capture.catalog.generated.resources.more_vert_filled_24dp
 import kotlin_fhir_data_capture.catalog.generated.resources.questionnaire_response_subtitle
 import kotlin_fhir_data_capture.catalog.generated.resources.questionnaire_response_title
 import kotlin_fhir_data_capture.catalog.generated.resources.questionnaire_submitted
+import kotlin_fhir_data_capture.catalog.generated.resources.share_response
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuestionnaireResponseScreen(responseJson: String, onBackClick: () -> Unit) {
-  Scaffold(
-    topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(Res.string.questionnaire_response_title),
-            modifier = Modifier.fillMaxWidth(),
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = onBackClick) {
-            Icon(
-              painter = painterResource(Res.drawable.arrow_back_filled_24dp),
-              contentDescription = "Back",
+    val scope: CoroutineScope = rememberCoroutineScope()
+    val templateBundleExtractor by lazy { TemplateBundleExtractor() }
+    val fhirJson = FhirR4Json()
+    fun onExtractResources() {
+        val viewModel = QuestionnaireViewModel()
+        scope.launch {
+            val template = viewModel.getQuestionnaire("extraction_template_resources.json")
+
+            val bundle =
+                templateBundleExtractor.extract(
+                    questionnaireResponse = viewModel.parseQuestionnaireResponseJson(responseJson),
+                    questionnaire = viewModel.getQuestionnaireResource("template_based_extraction.json"),
+                    templateJsons = listOf(template),
+                )
+            println("bundle size:::: ${bundle.entry.size}")
+            bundle.entry.forEach { entry ->
+                println(entry.resource?.let { "Resource:::: ${fhirJson.encodeToString(it)}" })
+            }
+
+        }
+
+
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        stringResource(Res.string.questionnaire_response_title),
+                        Modifier.fillMaxWidth()
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            painter = painterResource(Res.drawable.arrow_back_filled_24dp),
+                            contentDescription = "Back",
+                        )
+                    }
+                },
+                actions = {
+                    var expanded by remember { mutableStateOf(false) }
+
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(
+                            painter = painterResource(Res.drawable.more_vert_filled_24dp),
+                            contentDescription = stringResource(Res.string.more_options),
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.copy_response)) },
+                            onClick = {
+                                expanded = false
+                                onExtractResources()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(Res.drawable.more_vert_filled_24dp),
+                                    contentDescription = null,
+                                )
+                            },
+                        )
+                    }
+                }
             )
-          }
-        },
-      )
+        }
+    ) { padding ->
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top,
+        ) {
+            Text(
+                text = stringResource(Res.string.questionnaire_submitted),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            Text(
+                text = stringResource(Res.string.questionnaire_response_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
+            HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+            Text(
+                text = responseJson,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = onBackClick,
+                modifier = Modifier.width(132.dp).align(Alignment.CenterHorizontally),
+            ) {
+                Text(stringResource(Res.string.close))
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
     }
-  ) { padding ->
-    Column(
-      modifier =
-        Modifier.fillMaxSize()
-          .padding(padding)
-          .padding(horizontal = 24.dp)
-          .verticalScroll(rememberScrollState()),
-      horizontalAlignment = Alignment.Start,
-      verticalArrangement = Arrangement.Top,
-    ) {
-      Text(
-        text = stringResource(Res.string.questionnaire_submitted),
-        style = MaterialTheme.typography.headlineMedium,
-        modifier = Modifier.padding(bottom = 8.dp),
-      )
-      Text(
-        text = stringResource(Res.string.questionnaire_response_subtitle),
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(bottom = 16.dp),
-      )
-      HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-      Text(
-        text = responseJson,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurface,
-      )
-      Spacer(modifier = Modifier.height(24.dp))
-      Button(
-        onClick = onBackClick,
-        modifier = Modifier.width(132.dp).align(Alignment.CenterHorizontally),
-      ) {
-        Text(stringResource(Res.string.close))
-      }
-      Spacer(modifier = Modifier.height(24.dp))
-    }
-  }
 }

@@ -31,13 +31,11 @@ private val DarkColorScheme =
     secondary = SecondaryBlue80,
     onSecondary = OnSecondaryBlue20,
     secondaryContainer = SecondaryContainerBlue30,
-    onSecondaryContainer =
-      OnSecondaryContainerBlue90,
+    onSecondaryContainer = OnSecondaryContainerBlue90,
     tertiary = TertiaryGreen80,
     onTertiary = OnTertiaryGreen20,
     tertiaryContainer = TertiaryContainerGreen30,
-    onTertiaryContainer =
-      OnTertiaryContainerGreen90,
+    onTertiaryContainer = OnTertiaryContainerGreen90,
     error = ErrorRed80,
     errorContainer = ErrorContainerRed20,
     onError = OnErrorRed30,
@@ -46,10 +44,8 @@ private val DarkColorScheme =
     onBackground = OnBackgroundNeutral90,
     surface = SurfaceNeutral10,
     onSurface = OnSurfaceNeutral90,
-    surfaceVariant =
-      SurfaceVariantNeutralVariant30,
-    onSurfaceVariant =
-      OnSurfaceVariantNeutralVariant80,
+    surfaceVariant = SurfaceVariantNeutralVariant30,
+    onSurfaceVariant = OnSurfaceVariantNeutralVariant80,
     outline = OutlineNeutralVariant60,
   )
 
@@ -62,13 +58,11 @@ private val LightColorScheme =
     secondary = SecondaryBlue40,
     onSecondary = OnSecondaryBlue100,
     secondaryContainer = SecondaryContainerBlue90,
-    onSecondaryContainer =
-      OnSecondaryContainerBlue10,
+    onSecondaryContainer = OnSecondaryContainerBlue10,
     tertiary = TertiaryGreen40,
     onTertiary = OnTertiaryGreen100,
     tertiaryContainer = TertiaryContainerGreen90,
-    onTertiaryContainer =
-      OnTertiaryContainerGreen10,
+    onTertiaryContainer = OnTertiaryContainerGreen10,
     error = ErrorRed40,
     errorContainer = ErrorContainerRed100,
     onError = OnErrorRed90,
@@ -77,10 +71,8 @@ private val LightColorScheme =
     onBackground = OnBackgroundNeutral10,
     surface = SurfaceNeutral100,
     onSurface = OnSurfaceNeutral10,
-    surfaceVariant =
-      SurfaceVariantNeutralVariant90,
-    onSurfaceVariant =
-      OnSurfaceVariantNeutralVariant30,
+    surfaceVariant = SurfaceVariantNeutralVariant90,
+    onSurfaceVariant = OnSurfaceVariantNeutralVariant30,
     outline = OutlineNeutralVariant50,
   )
 
