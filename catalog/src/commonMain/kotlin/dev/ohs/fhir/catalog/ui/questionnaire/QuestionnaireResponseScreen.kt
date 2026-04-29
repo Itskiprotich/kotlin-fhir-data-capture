@@ -52,6 +52,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import dev.ohs.fhir.datacapture.extraction.TemplateBundleExtractor
 import dev.ohs.fhir.model.r4.FhirR4Json
+import dev.ohs.fhir.model.r4b.FhirR4bJson
 import kotlin_fhir_data_capture.catalog.generated.resources.Res
 import kotlin_fhir_data_capture.catalog.generated.resources.arrow_back_filled_24dp
 import kotlin_fhir_data_capture.catalog.generated.resources.close
@@ -71,30 +72,30 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun QuestionnaireResponseScreen(responseJson: String, onBackClick: () -> Unit) {
     val scope: CoroutineScope = rememberCoroutineScope()
+    val clipboard = LocalClipboardManager.current
+
     val templateBundleExtractor by lazy { TemplateBundleExtractor() }
     val fhirJson = FhirR4Json()
     fun onExtractResources() {
         val viewModel = QuestionnaireViewModel()
         scope.launch {
-            val template = viewModel.getQuestionnaire("extraction_template_resources.json")
+//            val template = viewModel.getQuestionnaire("extraction_template_resources.json")
 
             val bundle =
                 templateBundleExtractor.extract(
                     questionnaireResponse = viewModel.parseQuestionnaireResponseJson(responseJson),
-                    questionnaire = viewModel.getQuestionnaireResource("template_based_extraction.json"),
-                    templateJsons = listOf(template),
+                    questionnaire = viewModel.getQuestionnaireResource("contained_template.json"),
                 )
             println("bundle size:::: ${bundle.entry.size}")
             bundle.entry.forEach { entry ->
                 println(entry.resource?.let { "Resource:::: ${fhirJson.encodeToString(it)}" })
             }
-
+            clipboard.setText(AnnotatedString(fhirJson.encodeToString(bundle)))
         }
 
 
     }
 
-    val clipboard = LocalClipboardManager.current
 
 
     Scaffold(
@@ -115,33 +116,6 @@ fun QuestionnaireResponseScreen(responseJson: String, onBackClick: () -> Unit) {
                     }
                 },
                 actions = {
-                    var expanded by remember { mutableStateOf(false) }
-
-                    IconButton(onClick = { expanded = true }) {
-                        Icon(
-                            painter = painterResource(Res.drawable.more_vert_filled_24dp),
-                            contentDescription = stringResource(Res.string.more_options),
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(Res.string.copy_response)) },
-                            onClick = {
-                                expanded = false
-                                onExtractResources()
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(Res.drawable.more_vert_filled_24dp),
-                                    contentDescription = null,
-                                )
-                            },
-                        )
-                    }
                 }
             )
         }
@@ -173,7 +147,7 @@ fun QuestionnaireResponseScreen(responseJson: String, onBackClick: () -> Unit) {
                 modifier = Modifier.clickable {
                     scope.launch {
                         clipboard.setText(AnnotatedString(responseJson))
-
+                        onExtractResources()
                     }
                 }
             )

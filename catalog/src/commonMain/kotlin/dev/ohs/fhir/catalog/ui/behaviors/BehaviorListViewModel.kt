@@ -37,52 +37,52 @@ import org.jetbrains.compose.resources.StringResource
 
 class BehaviorListViewModel : ViewModel() {
 
-  fun getBehaviorList(): List<Behavior> = Behavior.entries
+    fun getBehaviorList(): List<Behavior> = Behavior.entries
 
-  enum class Behavior(
-    val questionnaireFileName: String,
-    val icon: DrawableResource,
-    val text: StringResource,
-  ) {
-    CALCULATED_EXPRESSION(
-      "behavior_calculated_expression.json",
-      Res.drawable.ic_calculations_behavior,
-      Res.string.behavior_name_calculated_expression,
-    ),
-    ANSWER_EXPRESSION(
-      "behavior_answer_expression.json",
-      Res.drawable.ic_answers_behavior,
-      Res.string.behavior_name_answer_expression,
-    ),
-    CONTEXT_VARIABLES(
-      "behavior_context_variables.json",
-      Res.drawable.ic_context,
-      Res.string.behavior_name_context_variables,
-    ),
-    SKIP_LOGIC(
-      "behavior_skip_logic.json",
-      Res.drawable.ic_skiplogic_behavior,
-      Res.string.behavior_name_skip_logic,
-    ),
-    SKIP_LOGIC_WITH_EXPRESSION(
-      "behavior_skip_logic_with_expression.json",
-      Res.drawable.ic_skiplogic_behavior,
-      Res.string.behavior_name_skip_logic_with_expression,
-    ),
-    DYNAMIC_QUESTION_TEXT(
-      "behavior_dynamic_question_text.json",
-      Res.drawable.ic_dynamic_text_behavior,
-      Res.string.behavior_name_dynamic_question_text,
-    ),
-    QUESTIONNAIRE_CONSTRAINT(
-      "behavior_questionnaire_constraint.json",
-      Res.drawable.ic_rule,
-      Res.string.behavior_name_questionnaire_constraint,
-    ),
-    TEMPLATE_BASED_EXTRACTION(
-      "template_based_extraction.json",
-      Res.drawable.ic_rule,
-      Res.string.template_based_extraction,
-    ),
-  }
+    enum class Behavior(
+        val questionnaireFileName: String,
+        val icon: DrawableResource,
+        val text: StringResource,
+    ) {
+        CALCULATED_EXPRESSION(
+            "behavior_calculated_expression.json",
+            Res.drawable.ic_calculations_behavior,
+            Res.string.behavior_name_calculated_expression,
+        ),
+        ANSWER_EXPRESSION(
+            "behavior_answer_expression.json",
+            Res.drawable.ic_answers_behavior,
+            Res.string.behavior_name_answer_expression,
+        ),
+        CONTEXT_VARIABLES(
+            "behavior_context_variables.json",
+            Res.drawable.ic_context,
+            Res.string.behavior_name_context_variables,
+        ),
+        SKIP_LOGIC(
+            "behavior_skip_logic.json",
+            Res.drawable.ic_skiplogic_behavior,
+            Res.string.behavior_name_skip_logic,
+        ),
+        SKIP_LOGIC_WITH_EXPRESSION(
+            "behavior_skip_logic_with_expression.json",
+            Res.drawable.ic_skiplogic_behavior,
+            Res.string.behavior_name_skip_logic_with_expression,
+        ),
+        DYNAMIC_QUESTION_TEXT(
+            "behavior_dynamic_question_text.json",
+            Res.drawable.ic_dynamic_text_behavior,
+            Res.string.behavior_name_dynamic_question_text,
+        ),
+        QUESTIONNAIRE_CONSTRAINT(
+            "behavior_questionnaire_constraint.json",
+            Res.drawable.ic_rule,
+            Res.string.behavior_name_questionnaire_constraint,
+        ),
+        TEMPLATE_BASED_EXTRACTION(
+            "contained_template.json",
+            Res.drawable.ic_rule,
+            Res.string.template_based_extraction,
+        ),
+    }
 }

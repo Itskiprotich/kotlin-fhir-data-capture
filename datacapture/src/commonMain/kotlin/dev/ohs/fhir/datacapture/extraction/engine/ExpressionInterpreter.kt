@@ -186,7 +186,8 @@ internal class ExpressionInterpreter(private val options: FpOptions, private val
       return evaluateNode(if (condition) function.arguments[1] else function.arguments[2], frame)
     }
 
-    val targetValues = function.target?.let { evaluateNode(it, frame) } ?: emptyList()
+    val targetValues =
+      function.target?.let { evaluateNode(it, frame) } ?: normalizeToCollection(frame.resource)
     return when (function.name) {
       "where" -> {
         val predicate =
@@ -258,6 +259,22 @@ internal class ExpressionInterpreter(private val options: FpOptions, private val
             val stringValue = value as? String ?: return@forEach
             addAll(stringValue.split(delimiter))
           }
+        }
+      }
+
+      "join" -> {
+        val delimiter =
+          evaluateNode(
+              function.arguments.singleOrNull()
+                ?: error("join wrong arity: got ${function.arguments.size}"),
+              frame,
+            )
+            .firstOrNull()
+            ?.toString() ?: return emptyList()
+        if (targetValues.isEmpty()) {
+          emptyList()
+        } else {
+          listOf(targetValues.joinToString(delimiter) { value -> value?.toString().orEmpty() })
         }
       }
 
