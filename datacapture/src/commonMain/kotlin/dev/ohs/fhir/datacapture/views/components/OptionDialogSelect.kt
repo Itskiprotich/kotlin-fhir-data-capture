@@ -54,6 +54,11 @@ import dev.ohs.fhir.datacapture.extensions.elementValue
 import dev.ohs.fhir.datacapture.extensions.itemAnswerOptionImage
 import dev.ohs.fhir.datacapture.extensions.optionExclusive
 import dev.ohs.fhir.datacapture.extensions.toAnnotatedString
+import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
+import dev.ohs.fhir.model.r4.Questionnaire
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.fetchAndIncrement
 import kotlin_fhir_data_capture.datacapture.generated.resources.Res
 import kotlin_fhir_data_capture.datacapture.generated.resources.cancel
 import kotlin_fhir_data_capture.datacapture.generated.resources.delete
@@ -62,11 +67,6 @@ import kotlin_fhir_data_capture.datacapture.generated.resources.open_choice_othe
 import kotlin_fhir_data_capture.datacapture.generated.resources.open_choice_other_add_another
 import kotlin_fhir_data_capture.datacapture.generated.resources.open_choice_other_hint
 import kotlin_fhir_data_capture.datacapture.generated.resources.save
-import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
-import dev.ohs.fhir.model.r4.Questionnaire
-import kotlin.concurrent.atomics.AtomicInt
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
-import kotlin.concurrent.atomics.fetchAndIncrement
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 

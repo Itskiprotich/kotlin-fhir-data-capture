@@ -16,8 +16,6 @@
 
 package dev.ohs.fhir.datacapture
 
-import dev.ohs.android.fhir.datacapture.DataCaptureConfig
-
 actual object DataCapture {
   actual fun getConfiguration(): DataCaptureConfig = DataCaptureConfig()
 }

@@ -47,6 +47,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.ohs.fhir.catalog.ui.questionnaire.components.ErrorStateToggleAction
+import dev.ohs.fhir.catalog.views.barcode.BarcodeItemViewFactoryMatcher
+import dev.ohs.fhir.catalog.views.locationwidget.LocationDataItemViewFactoryMatcher
+import dev.ohs.fhir.catalog.views.locationwidget.LocationItemViewFactoryMatcher
+import dev.ohs.fhir.datacapture.Questionnaire
+import dev.ohs.fhir.datacapture.QuestionnaireItemViewFactoryMatcher
+import dev.ohs.fhir.datacapture.QuestionnaireItemViewFactoryMatchersProvider
 import kotlin_fhir_data_capture.catalog.generated.resources.Res
 import kotlin_fhir_data_capture.catalog.generated.resources.arrow_back_filled_24dp
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_calculated_expression
@@ -55,13 +62,6 @@ import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_skip_l
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_skip_logic_info
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_info_24
 import kotlin_fhir_data_capture.catalog.generated.resources.loading
-import dev.ohs.fhir.catalog.ui.questionnaire.components.ErrorStateToggleAction
-import dev.ohs.fhir.catalog.views.barcode.BarcodeItemViewFactoryMatcher
-import dev.ohs.fhir.catalog.views.locationwidget.LocationDataItemViewFactoryMatcher
-import dev.ohs.fhir.catalog.views.locationwidget.LocationItemViewFactoryMatcher
-import dev.ohs.fhir.datacapture.Questionnaire
-import dev.ohs.fhir.datacapture.QuestionnaireItemViewFactoryMatcher
-import dev.ohs.fhir.datacapture.QuestionnaireItemViewFactoryMatchersProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource

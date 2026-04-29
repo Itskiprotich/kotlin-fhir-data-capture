@@ -45,9 +45,6 @@ import dev.ohs.fhir.datacapture.extensions.itemControl
 import dev.ohs.fhir.datacapture.extensions.localizedFlyoverAnnotatedString
 import dev.ohs.fhir.datacapture.extensions.localizedPrefixAnnotatedString
 import dev.ohs.fhir.datacapture.extensions.shouldUseDialog
-import kotlin_fhir_data_capture.datacapture.generated.resources.Res
-import kotlin_fhir_data_capture.datacapture.generated.resources.not_answered
-import kotlin_fhir_data_capture.datacapture.generated.resources.warning_filled_24dp
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import dev.ohs.fhir.datacapture.validation.Invalid
 import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
@@ -76,6 +73,9 @@ import dev.ohs.fhir.datacapture.views.factories.SliderViewFactory
 import dev.ohs.fhir.datacapture.views.factories.TimeViewFactory
 import dev.ohs.fhir.model.r4.Questionnaire
 import kotlin.uuid.ExperimentalUuidApi
+import kotlin_fhir_data_capture.datacapture.generated.resources.Res
+import kotlin_fhir_data_capture.datacapture.generated.resources.not_answered
+import kotlin_fhir_data_capture.datacapture.generated.resources.warning_filled_24dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 

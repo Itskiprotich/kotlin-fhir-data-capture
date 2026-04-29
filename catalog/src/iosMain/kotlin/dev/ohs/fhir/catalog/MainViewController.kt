@@ -18,4 +18,4 @@ package dev.ohs.fhir.catalog
 
 import androidx.compose.ui.window.ComposeUIViewController
 
-fun MainViewController() = ComposeUIViewController { App() }
+@Suppress("FunctionName", "unused") fun MainViewController() = ComposeUIViewController { App() }

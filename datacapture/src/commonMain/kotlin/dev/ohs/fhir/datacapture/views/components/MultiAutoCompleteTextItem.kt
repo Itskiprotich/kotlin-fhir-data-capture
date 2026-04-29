@@ -49,9 +49,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import kotlin_fhir_data_capture.datacapture.generated.resources.Res
 import kotlin_fhir_data_capture.datacapture.generated.resources.ic_clear
-import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import org.jetbrains.compose.resources.painterResource
 
 internal const val MULTI_AUTO_COMPLETE_TEXT_FIELD_TAG = "multi_auto_complete_text_field"

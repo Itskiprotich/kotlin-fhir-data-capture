@@ -20,9 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import co.touchlab.kermit.Logger
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import dev.ohs.android.fhir.datacapture.MediaCaptureResult
-import dev.ohs.android.fhir.datacapture.MediaHandler
-import dev.ohs.android.fhir.datacapture.captureResult
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.compressImage
 import io.github.vinceglb.filekit.dialogs.FileKitType

@@ -35,13 +35,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import dev.ohs.fhir.datacapture.QuestionnaireNavigationUIState
 import dev.ohs.fhir.datacapture.QuestionnaireNavigationViewUIState
+import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import kotlin_fhir_data_capture.datacapture.generated.resources.Res
 import kotlin_fhir_data_capture.datacapture.generated.resources.button_pagination_next
 import kotlin_fhir_data_capture.datacapture.generated.resources.button_pagination_previous
 import kotlin_fhir_data_capture.datacapture.generated.resources.button_review
 import kotlin_fhir_data_capture.datacapture.generated.resources.cancel_questionnaire
 import kotlin_fhir_data_capture.datacapture.generated.resources.submit_questionnaire
-import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 import org.jetbrains.compose.resources.stringResource
 
 internal const val QUESTIONNAIRE_PAGE_NAVIGATION_BUTTON_TEST_TAG = "page_navigation_button"

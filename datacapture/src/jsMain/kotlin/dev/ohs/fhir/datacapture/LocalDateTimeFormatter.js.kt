@@ -18,7 +18,6 @@ package dev.ohs.fhir.datacapture
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import dev.ohs.android.fhir.datacapture.LocalDateTimeFormatter
 import dev.ohs.fhir.datacapture.extensions.length
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime

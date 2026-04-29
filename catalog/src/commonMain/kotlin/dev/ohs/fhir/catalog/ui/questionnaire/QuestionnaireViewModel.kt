@@ -17,12 +17,12 @@
 package dev.ohs.fhir.catalog.ui.questionnaire
 
 import androidx.lifecycle.ViewModel
-import kotlin_fhir_data_capture.catalog.generated.resources.Res
 import dev.ohs.fhir.datacapture.validation.Invalid
 import dev.ohs.fhir.datacapture.validation.QuestionnaireResponseValidator
 import dev.ohs.fhir.model.r4.FhirR4Json
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import kotlin_fhir_data_capture.catalog.generated.resources.Res
 
 class QuestionnaireViewModel : ViewModel() {
   private val fhirJson = FhirR4Json()
