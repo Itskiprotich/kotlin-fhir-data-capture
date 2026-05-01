@@ -25,6 +25,8 @@ import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_dynami
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_questionnaire_constraint
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_skip_logic
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_skip_logic_with_expression
+import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_template_extraction
+import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_template_extraction_bundle
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_answers_behavior
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_calculations_behavior
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_context
@@ -72,6 +74,16 @@ class BehaviorListViewModel : ViewModel() {
       "behavior_dynamic_question_text.json",
       Res.drawable.ic_dynamic_text_behavior,
       Res.string.behavior_name_dynamic_question_text,
+    ),
+    TEMPLATE_EXTRACTION(
+      "behavior_template_extraction.json",
+      Res.drawable.ic_context,
+      Res.string.behavior_name_template_extraction,
+    ),
+    TEMPLATE_EXTRACTION_BUNDLE(
+      "behavior_template_extraction_bundle.json",
+      Res.drawable.ic_rule,
+      Res.string.behavior_name_template_extraction_bundle,
     ),
     QUESTIONNAIRE_CONSTRAINT(
       "behavior_questionnaire_constraint.json",

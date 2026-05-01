@@ -58,6 +58,12 @@
         name="behavior_name_dynamic_question_text"
     >Dynamic question text</string>
     <string
+        name="behavior_name_template_extraction"
+    >Template extraction</string>
+    <string
+        name="behavior_name_template_extraction_bundle"
+    >Template extraction bundle</string>
+    <string
         name="behavior_name_questionnaire_constraint"
     >Questionnaire constraint</string>
     <string name="component_name_initial_value">Initial Value</string>

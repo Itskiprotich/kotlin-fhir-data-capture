@@ -17,7 +17,11 @@
 package dev.ohs.fhir.datacapture.fhirpath
 
 import co.touchlab.kermit.Logger
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import dev.ohs.fhir.fhirpath.FhirPathEngine
+import dev.ohs.fhir.fhirpath.types.FhirPathDate
+import dev.ohs.fhir.fhirpath.types.FhirPathDateTime
+import dev.ohs.fhir.fhirpath.types.FhirPathQuantity
 import dev.ohs.fhir.model.r4.Resource
 
 /** Centralized service for FHIRPath evaluation and utility functions. */
@@ -28,17 +32,17 @@ internal object FhirPathService {
    * Evaluates the [expression] on the [resource] with optional [variables].
    *
    * @param expression The FHIRPath expression to evaluate.
-   * @param resource The FHIR resource to evaluate the expression against.
+   * @param input The input value to evaluate the expression against.
    * @param variables Optional map of variables to use during evaluation.
    * @return The list of evaluation results.
    */
   fun evaluate(
     expression: String,
-    resource: Resource,
+    input: Any?,
     variables: Map<String, Any?> = emptyMap(),
   ): List<Any> =
     try {
-      r4FhirPathEngine.evaluateExpression(expression, resource, variables).toList()
+      r4FhirPathEngine.evaluateExpression(expression, input, variables).toList()
     } catch (throwable: Throwable) {
       Logger.e("Error evaluating fhirPath expression $expression", throwable)
       emptyList()
@@ -72,8 +76,46 @@ internal object FhirPathService {
       is dev.ohs.fhir.model.r4.Uri -> value.value ?: ""
       is dev.ohs.fhir.model.r4.Coding -> value.display?.value ?: value.code?.value ?: ""
       is dev.ohs.fhir.model.r4.Quantity -> value.value?.value?.toString() ?: ""
+      is Boolean -> value.toString()
+      is Int -> value.toString()
+      is Long -> value.toString()
+      is Double -> value.toString()
+      is Float -> value.toString()
+      is BigDecimal -> value.toString()
+      is FhirPathDate -> value.toString()
+      is FhirPathDateTime -> convertFhirPathDateTimeToString(value)
+      is FhirPathQuantity -> value.value?.toString() ?: ""
       else -> value.toString()
     }
+
+  private fun convertFhirPathDateTimeToString(value: FhirPathDateTime): String {
+    val year = value.year.toString().padStart(4, '0')
+    val month = value.month?.toString()?.padStart(2, '0')
+    val day = value.day?.toString()?.padStart(2, '0')
+    val hour = value.hour?.toString()?.padStart(2, '0')
+    val minute = value.minute?.toString()?.padStart(2, '0')
+    val second =
+      value.second?.let {
+        val wholeSeconds = it.toInt()
+        if (it == wholeSeconds.toDouble()) {
+          wholeSeconds.toString().padStart(2, '0')
+        } else {
+          it.toString().padStart(2, '0')
+        }
+      }
+
+    val datePortion =
+      when (value.precision) {
+        FhirPathDateTime.Precision.YEAR -> year
+        FhirPathDateTime.Precision.MONTH -> "$year-$month"
+        FhirPathDateTime.Precision.DAY -> "$year-$month-$day"
+        FhirPathDateTime.Precision.HOUR -> "$year-$month-$day" + "T$hour"
+        FhirPathDateTime.Precision.MINUTE -> "$year-$month-$day" + "T$hour:$minute"
+        FhirPathDateTime.Precision.SECOND -> "$year-$month-$day" + "T$hour:$minute:$second"
+      }
+
+    return datePortion + (value.utcOffset?.toString() ?: "")
+  }
 
   /** Extracts the resource type from the given FHIRPath. */
   fun extractResourceTypeFromPath(fhirPath: String): String? {
