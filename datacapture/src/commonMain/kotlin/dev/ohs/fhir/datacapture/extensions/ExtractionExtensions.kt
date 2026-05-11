@@ -46,10 +46,16 @@ internal data class TemplateExtractDefinition(
 )
 
 internal val Questionnaire.templateExtractExtensions: List<TemplateExtractDefinition>
-  get() = extension.filter { it.url == EXTENSION_TEMPLATE_EXTRACT_URL }.mapNotNull { it.asTemplateExtractDefinition() }
+  get() =
+    extension
+      .filter { it.url == EXTENSION_TEMPLATE_EXTRACT_URL }
+      .mapNotNull { it.asTemplateExtractDefinition() }
 
 internal val Questionnaire.Item.templateExtractExtensions: List<TemplateExtractDefinition>
-  get() = extension.filter { it.url == EXTENSION_TEMPLATE_EXTRACT_URL }.mapNotNull { it.asTemplateExtractDefinition() }
+  get() =
+    extension
+      .filter { it.url == EXTENSION_TEMPLATE_EXTRACT_URL }
+      .mapNotNull { it.asTemplateExtractDefinition() }
 
 internal val Questionnaire.templateExtractBundleReference: String?
   get() =
@@ -62,10 +68,16 @@ internal val Questionnaire.templateExtractBundleReference: String?
       ?.value
 
 internal val Questionnaire.allocateIdVariableNames: List<String>
-  get() = extension.filter { it.url == EXTENSION_EXTRACT_ALLOCATE_ID_URL }.mapNotNull { it.stringValue()?.normalizedVariableName() }
+  get() =
+    extension
+      .filter { it.url == EXTENSION_EXTRACT_ALLOCATE_ID_URL }
+      .mapNotNull { it.stringValue()?.normalizedVariableName() }
 
 internal val Questionnaire.Item.allocateIdVariableNames: List<String>
-  get() = extension.filter { it.url == EXTENSION_EXTRACT_ALLOCATE_ID_URL }.mapNotNull { it.stringValue()?.normalizedVariableName() }
+  get() =
+    extension
+      .filter { it.url == EXTENSION_EXTRACT_ALLOCATE_ID_URL }
+      .mapNotNull { it.stringValue()?.normalizedVariableName() }
 
 internal fun Questionnaire.findContainedResource(reference: String): Resource? {
   val containedReference = if (reference.startsWith("#")) reference else "#$reference"
@@ -74,20 +86,16 @@ internal fun Questionnaire.findContainedResource(reference: String): Resource? {
 
 private fun Extension.asTemplateExtractDefinition(): TemplateExtractDefinition? {
   val templateReference =
-    extension
-      .firstOrNull { it.url == "template" }
-      ?.value
-      ?.asReference()
-      ?.value
-      ?.reference
-      ?.value ?: return null
+    extension.firstOrNull { it.url == "template" }?.value?.asReference()?.value?.reference?.value
+      ?: return null
 
   return TemplateExtractDefinition(
     templateReference = templateReference,
     fullUrlExpression = extension.firstOrNull { it.url == "fullUrl" }?.stringValue(),
     resourceIdExpression = extension.firstOrNull { it.url == "resourceId" }?.stringValue(),
     ifNoneMatchExpression = extension.firstOrNull { it.url == "ifNoneMatch" }?.stringValue(),
-    ifModifiedSinceExpression = extension.firstOrNull { it.url == "ifModifiedSince" }?.stringValue(),
+    ifModifiedSinceExpression =
+      extension.firstOrNull { it.url == "ifModifiedSince" }?.stringValue(),
     ifMatchExpression = extension.firstOrNull { it.url == "ifMatch" }?.stringValue(),
     ifNoneExistExpression = extension.firstOrNull { it.url == "ifNoneExist" }?.stringValue(),
   )

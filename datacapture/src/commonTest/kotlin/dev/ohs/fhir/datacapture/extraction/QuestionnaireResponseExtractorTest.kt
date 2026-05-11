@@ -212,7 +212,10 @@ class QuestionnaireResponseExtractorTest {
     assertEquals("Example", patient.name.single().family?.value)
     assertEquals("+254700000001", patient.telecom.single().value?.value)
 
-    assertEquals(listOf("Alice Example", "Bob Example"), relatedPeople.map { it.name.single().text?.value })
+    assertEquals(
+      listOf("Alice Example", "Bob Example"),
+      relatedPeople.map { it.name.single().text?.value },
+    )
     assertTrue(relatedPeople.all { it.patient.reference?.value == patientEntry.fullUrl?.value })
 
     val height = observationsByCode.getValue("8302-2")
@@ -254,9 +257,9 @@ class QuestionnaireResponseExtractorTest {
     val relatedPerson = relatedPersonEntry.resource as RelatedPerson
     val observationEntries = bundle.entry.filter { it.resource is Observation }
     val observationsByCode =
-      observationEntries.map { it.resource as Observation }.associateBy {
-        it.code.coding.single().code?.value
-      }
+      observationEntries
+        .map { it.resource as Observation }
+        .associateBy { it.code.coding.single().code?.value }
 
     assertEquals("urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031", patientEntry.fullUrl?.value)
     assertEquals(Bundle.HTTPVerb.Post, patientEntry.request?.method?.value)
@@ -276,7 +279,10 @@ class QuestionnaireResponseExtractorTest {
 
     assertTrue(json.encodeToString(observationsByCode.getValue("8302-2")).contains("172"))
     assertTrue(json.encodeToString(observationsByCode.getValue("29463-7")).contains("68.4"))
-    assertEquals(false, observationsByCode.getValue("sigmoidoscopy-complication").value?.asBoolean()?.value?.value)
+    assertEquals(
+      false,
+      observationsByCode.getValue("sigmoidoscopy-complication").value?.asBoolean()?.value?.value,
+    )
   }
 
   @Test
@@ -778,7 +784,8 @@ class QuestionnaireResponseExtractorTest {
     questionnaireResponseJson: String,
   ): Bundle {
     val questionnaire = json.decodeFromString(questionnaireJson) as Questionnaire
-    val questionnaireResponse = json.decodeFromString(questionnaireResponseJson) as QuestionnaireResponse
+    val questionnaireResponse =
+      json.decodeFromString(questionnaireResponseJson) as QuestionnaireResponse
     return QuestionnaireResponseExtractor.extract(questionnaire, questionnaireResponse)
   }
 

@@ -70,7 +70,7 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuestionnaireScreen(
-  viewModel: dev.ohs.fhir.catalog.ui.questionnaire.QuestionnaireViewModel,
+  viewModel: QuestionnaireViewModel,
   title: String,
   fileName: String,
   coroutineScope: CoroutineScope,
@@ -79,7 +79,7 @@ fun QuestionnaireScreen(
   showReviewPageFirst: Boolean = false,
   isReadOnly: Boolean = false,
   onBackClick: () -> Unit,
-  navigateToResponse: (String) -> Unit,
+  navigateToResponse: (String, String) -> Unit,
 ) {
   val viewItemMatchersProvider = remember {
     object : QuestionnaireItemViewFactoryMatchersProvider {
@@ -148,7 +148,7 @@ fun QuestionnaireScreen(
                 coroutineScope.launch {
                   val response = getResponse()
                   val responseJson = viewModel.getQuestionnaireResponseJson(response)
-                  navigateToResponse(responseJson)
+                  navigateToResponse(responseJson, json)
                 }
               },
               matchersProvider = viewItemMatchersProvider,

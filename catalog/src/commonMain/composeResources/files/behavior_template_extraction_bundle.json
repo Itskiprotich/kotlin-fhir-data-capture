@@ -556,7 +556,74 @@
           "linkId": "gender",
           "text": "Gender",
           "type": "choice",
-          "answerValueSet": "http://hl7.org/fhir/ValueSet/administrative-gender"
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button",
+                    "display": "Radio Button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "female",
+                "display": "Female",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Mwanamke"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://hl7.org/fhir/administrative-gender",
+                "code": "male",
+                "display": "Male",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Mwanaume"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
         },
         {
           "linkId": "dob",
@@ -590,7 +657,263 @@
           "linkId": "relationship",
           "text": "Relationship",
           "type": "choice",
-          "answerValueSet": "http://hl7.org/fhir/ValueSet/patient-contactrelationship"
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ],
+                "text": "Drop down"
+              }
+            }
+          ],
+          "answerOption": [
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "BP",
+                "display": "Billing Contact Person",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Mhusika wa Malipo"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "C",
+                "display": "Emergency Contact Person (Alternate)",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Msamari Mbadala wa Dharura"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "ECON",
+                "display": "Emergency Contact Person",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Msamari wa Dharura"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "EP",
+                "display": "Emergency Contact Person (Primary)",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Msamari Mkuu wa Dharura"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "F",
+                "display": "Family Member",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Mshiriki wa Familia"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "GP",
+                "display": "General Practitioner",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Daktari Mkuu"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "I",
+                "display": "Insurance Company Contact",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Mhusika wa Bima"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "N",
+                "display": "Next-of-Kin",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Jamaa wa Karibu"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "PR",
+                "display": "Primary Contact Person",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Mhusika Mkuu"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "valueCoding": {
+                "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+                "code": "S",
+                "display": "Secondary Contact Person",
+                "_display": {
+                  "extension": [
+                    {
+                      "extension": [
+                        {
+                          "url": "lang",
+                          "valueCode": "sw"
+                        },
+                        {
+                          "url": "content",
+                          "valueString": "Mhusika wa Pili"
+                        }
+                      ],
+                      "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
         },
         {
           "linkId": "phone",

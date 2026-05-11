@@ -16,6 +16,7 @@
 
 package dev.ohs.fhir.catalog.ui.questionnaire
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -39,18 +40,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.ohs.fhir.datacapture.extraction.QuestionnaireResponseExtractor
+import dev.ohs.fhir.model.r4.FhirR4Json
+import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin_fhir_data_capture.catalog.generated.resources.Res
 import kotlin_fhir_data_capture.catalog.generated.resources.arrow_back_filled_24dp
 import kotlin_fhir_data_capture.catalog.generated.resources.close
 import kotlin_fhir_data_capture.catalog.generated.resources.questionnaire_response_subtitle
 import kotlin_fhir_data_capture.catalog.generated.resources.questionnaire_response_title
 import kotlin_fhir_data_capture.catalog.generated.resources.questionnaire_submitted
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuestionnaireResponseScreen(responseJson: String, onBackClick: () -> Unit) {
+fun QuestionnaireResponseScreen(
+  responseJson: String,
+  questionnaireJson: String,
+  onBackClick: () -> Unit,
+) {
+  val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+  val json = FhirR4Json()
+
   Scaffold(
     topBar = {
       TopAppBar(
@@ -95,6 +111,21 @@ fun QuestionnaireResponseScreen(responseJson: String, onBackClick: () -> Unit) {
         text = responseJson,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurface,
+        modifier =
+          Modifier.clickable {
+            scope.launch {
+              val questionnaire = json.decodeFromString(questionnaireJson) as Questionnaire
+              val questionnaireResponse =
+                json.decodeFromString(responseJson) as QuestionnaireResponse
+              val bundle =
+                QuestionnaireResponseExtractor.extract(questionnaire, questionnaireResponse)
+              println("Testing :::: Response ${json.encodeToString(bundle)}")
+              bundle.entry.forEach { res ->
+                val resource = res.resource?.let { json.encodeToString(it) }
+                println("Testing :::: $resource")
+              }
+            }
+          },
       )
       Spacer(modifier = Modifier.height(24.dp))
       Button(

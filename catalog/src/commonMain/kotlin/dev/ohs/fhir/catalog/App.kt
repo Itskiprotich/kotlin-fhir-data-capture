@@ -92,6 +92,7 @@ fun App() {
       val behaviorViewModel: BehaviorListViewModel = viewModel { BehaviorListViewModel() }
 
       var submittedResponseJson by remember { mutableStateOf<String?>(null) }
+      var questionnaireJson by remember { mutableStateOf<String?>(null) }
 
       val navBackStackEntry by navController.currentBackStackEntryAsState()
       val currentDestination = navBackStackEntry?.destination
@@ -202,8 +203,9 @@ fun App() {
               isReadOnly = readOnly,
               coroutineScope = scope,
               onBackClick = { navController.popBackStack() },
-              navigateToResponse = { responseJson ->
+              navigateToResponse = { responseJson, questionnaire ->
                 submittedResponseJson = responseJson
+                questionnaireJson = questionnaire
                 navController.navigate("questionnaire_response/$title")
               },
             )
@@ -217,6 +219,7 @@ fun App() {
               arguments?.read { if (contains("title")) getString("title") else null } ?: ""
             QuestionnaireResponseScreen(
               responseJson = submittedResponseJson ?: "",
+              questionnaireJson = questionnaireJson ?: "",
               onBackClick = { navController.popBackStack() },
             )
           }
