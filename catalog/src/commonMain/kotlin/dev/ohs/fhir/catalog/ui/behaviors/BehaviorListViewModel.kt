@@ -27,6 +27,10 @@ import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_skip_l
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_skip_logic_with_expression
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_template_extraction
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_template_extraction_bundle
+import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_template_extraction_bundle_resource
+import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_template_extraction_bundle_resource_put
+import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_template_extraction_bundle_resource_repeating
+import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_template_extraction_nested_bundle_resource
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_answers_behavior
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_calculations_behavior
 import kotlin_fhir_data_capture.catalog.generated.resources.ic_context
@@ -84,6 +88,26 @@ class BehaviorListViewModel : ViewModel() {
       "behavior_template_extraction_bundle.json",
       Res.drawable.ic_rule,
       Res.string.behavior_name_template_extraction_bundle,
+    ),
+    TEMPLATE_EXTRACTION_BUNDLE_RESOURCE(
+      "behavior_template_extraction_bundle_resource.json",
+      Res.drawable.ic_rule,
+      Res.string.behavior_name_template_extraction_bundle_resource,
+    ),
+    TEMPLATE_EXTRACTION_BUNDLE_RESOURCE_PUT(
+      "behavior_template_extraction_bundle_resource_put.json",
+      Res.drawable.ic_rule,
+      Res.string.behavior_name_template_extraction_bundle_resource_put,
+    ),
+    TEMPLATE_EXTRACTION_BUNDLE_RESOURCE_REPEATING(
+      "behavior_template_extraction_bundle_resource_repeating.json",
+      Res.drawable.ic_rule,
+      Res.string.behavior_name_template_extraction_bundle_resource_repeating,
+    ),
+    TEMPLATE_EXTRACTION_NESTED_BUNDLE_RESOURCE(
+      "behavior_template_extraction_nested_bundle_resource.json",
+      Res.drawable.ic_rule,
+      Res.string.behavior_name_template_extraction_nested_bundle_resource,
     ),
     QUESTIONNAIRE_CONSTRAINT(
       "behavior_questionnaire_constraint.json",

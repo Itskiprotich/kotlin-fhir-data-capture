@@ -64,6 +64,18 @@
         name="behavior_name_template_extraction_bundle"
     >Template extraction bundle</string>
     <string
+        name="behavior_name_template_extraction_bundle_resource"
+    >Template extraction bundle resource</string>
+    <string
+        name="behavior_name_template_extraction_bundle_resource_put"
+    >Template extraction bundle resource PUT</string>
+    <string
+        name="behavior_name_template_extraction_bundle_resource_repeating"
+    >Template extraction repeated bundle resource</string>
+    <string
+        name="behavior_name_template_extraction_nested_bundle_resource"
+    >Template extraction nested bundle resource</string>
+    <string
         name="behavior_name_questionnaire_constraint"
     >Questionnaire constraint</string>
     <string name="component_name_initial_value">Initial Value</string>

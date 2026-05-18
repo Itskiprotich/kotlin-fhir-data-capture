@@ -1,0 +1,62 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "template-extract-bundle-resource-put",
+  "status": "active",
+  "title": "Template extract Bundle resource with PUT",
+  "description": "Extracts a contained Bundle as a single Bundle resource and assigns a resource id for a PUT request.",
+  "contained": [
+    {
+      "resourceType": "Bundle",
+      "id": "collectionTemplate",
+      "type": "collection",
+      "entry": [
+        {
+          "resource": {
+            "resourceType": "Observation",
+            "status": "final",
+            "code": {
+              "text": "Smoking status"
+            },
+            "_valueBoolean": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "item.where(linkId='smoker').answer.value.first()"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+      "extension": [
+        {
+          "url": "template",
+          "valueReference": {
+            "reference": "#collectionTemplate"
+          }
+        },
+        {
+          "url": "resourceId",
+          "valueString": "item.where(linkId='bundle-id').answer.value.first()"
+        }
+      ]
+    }
+  ],
+  "item": [
+    {
+      "linkId": "bundle-id",
+      "text": "Bundle id",
+      "type": "string"
+    },
+    {
+      "linkId": "smoker",
+      "text": "Smoking status",
+      "type": "boolean"
+    }
+  ]
+}

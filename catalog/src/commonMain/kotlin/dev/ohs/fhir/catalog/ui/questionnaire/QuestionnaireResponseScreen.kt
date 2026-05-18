@@ -39,6 +39,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import dev.ohs.fhir.datacapture.extraction.QuestionnaireResponseExtractor
 import dev.ohs.fhir.model.r4.FhirR4Json
@@ -60,81 +62,89 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuestionnaireResponseScreen(
-  responseJson: String,
-  questionnaireJson: String,
-  onBackClick: () -> Unit,
+    responseJson: String,
+    questionnaireJson: String,
+    onBackClick: () -> Unit,
 ) {
-  val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-  val json = FhirR4Json()
+    val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    val json = FhirR4Json()
+    val clipboardManager = LocalClipboardManager.current
 
-  Scaffold(
-    topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(Res.string.questionnaire_response_title),
-            modifier = Modifier.fillMaxWidth(),
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = onBackClick) {
-            Icon(
-              painter = painterResource(Res.drawable.arrow_back_filled_24dp),
-              contentDescription = "Back",
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(Res.string.questionnaire_response_title),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            painter = painterResource(Res.drawable.arrow_back_filled_24dp),
+                            contentDescription = "Back",
+                        )
+                    }
+                },
             )
-          }
-        },
-      )
-    }
-  ) { padding ->
-    Column(
-      modifier =
-        Modifier.fillMaxSize()
-          .padding(padding)
-          .padding(horizontal = 24.dp)
-          .verticalScroll(rememberScrollState()),
-      horizontalAlignment = Alignment.Start,
-      verticalArrangement = Arrangement.Top,
-    ) {
-      Text(
-        text = stringResource(Res.string.questionnaire_submitted),
-        style = MaterialTheme.typography.headlineMedium,
-        modifier = Modifier.padding(bottom = 8.dp),
-      )
-      Text(
-        text = stringResource(Res.string.questionnaire_response_subtitle),
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(bottom = 16.dp),
-      )
-      HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
-      Text(
-        text = responseJson,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier =
-          Modifier.clickable {
-            scope.launch {
-              val questionnaire = json.decodeFromString(questionnaireJson) as Questionnaire
-              val questionnaireResponse =
-                json.decodeFromString(responseJson) as QuestionnaireResponse
-              val bundle =
-                QuestionnaireResponseExtractor.extract(questionnaire, questionnaireResponse)
-              println("Testing :::: Response ${json.encodeToString(bundle)}")
-              bundle.entry.forEach { res ->
-                val resource = res.resource?.let { json.encodeToString(it) }
-                println("Testing :::: $resource")
-              }
+        }
+    ) { padding ->
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top,
+        ) {
+            Text(
+                text = stringResource(Res.string.questionnaire_submitted),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            Text(
+                text = stringResource(Res.string.questionnaire_response_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
+            HorizontalDivider(modifier = Modifier.padding(bottom = 24.dp))
+            Text(
+                text = responseJson,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier =
+                    Modifier.clickable {
+                        scope.launch {
+                            val questionnaire =
+                                json.decodeFromString(questionnaireJson) as Questionnaire
+                            val questionnaireResponse =
+                                json.decodeFromString(responseJson) as QuestionnaireResponse
+                            val bundle =
+                                QuestionnaireResponseExtractor.extract(
+                                    questionnaire,
+                                    questionnaireResponse
+                                )
+                            val bundleJson = json.encodeToString(bundle)
+                            clipboardManager.setText(AnnotatedString(bundleJson))
+                            println("Testing :::: Response $bundleJson")
+                            bundle.entry.forEach { res ->
+                                val resource = res.resource?.let { json.encodeToString(it) }
+                                println("Testing :::: $resource")
+                            }
+                        }
+                    },
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = onBackClick,
+                modifier = Modifier.width(132.dp).align(Alignment.CenterHorizontally),
+            ) {
+                Text(stringResource(Res.string.close))
             }
-          },
-      )
-      Spacer(modifier = Modifier.height(24.dp))
-      Button(
-        onClick = onBackClick,
-        modifier = Modifier.width(132.dp).align(Alignment.CenterHorizontally),
-      ) {
-        Text(stringResource(Res.string.close))
-      }
-      Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+        }
     }
-  }
 }

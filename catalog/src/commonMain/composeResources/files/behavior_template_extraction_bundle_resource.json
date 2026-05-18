@@ -1,0 +1,53 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "template-extract-bundle-resource",
+  "status": "active",
+  "title": "Template extract Bundle resource",
+  "description": "Extracts a contained Bundle as a single Bundle resource via templateExtract.",
+  "contained": [
+    {
+      "resourceType": "Bundle",
+      "id": "collectionTemplate",
+      "type": "collection",
+      "entry": [
+        {
+          "resource": {
+            "resourceType": "Observation",
+            "status": "final",
+            "code": {
+              "text": "Smoking status"
+            },
+            "_valueBoolean": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "item.where(linkId='smoker').answer.value.first()"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+      "extension": [
+        {
+          "url": "template",
+          "valueReference": {
+            "reference": "#collectionTemplate"
+          }
+        }
+      ]
+    }
+  ],
+  "item": [
+    {
+      "linkId": "smoker",
+      "text": "Smoking status",
+      "type": "boolean"
+    }
+  ]
+}

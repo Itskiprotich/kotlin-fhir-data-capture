@@ -19,6 +19,7 @@ package dev.ohs.fhir.datacapture.extraction
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_TEMPLATE_EXTRACT_VALUE_URL
 import dev.ohs.fhir.model.r4.Bundle
+import dev.ohs.fhir.model.r4.Encounter
 import dev.ohs.fhir.model.r4.FhirR4Json
 import dev.ohs.fhir.model.r4.Observation
 import dev.ohs.fhir.model.r4.Patient
@@ -419,6 +420,487 @@ class QuestionnaireResponseExtractorTest {
 
     assertEquals(patientEntry.fullUrl?.value, observation.subject?.reference?.value)
     assertEquals(false, observation.value?.asBoolean()?.value?.value)
+  }
+
+  @Test
+  fun extract_templateExtractReferencingBundle_extractsBundleResource() = runTest {
+    val bundle =
+      extract(
+        questionnaireJson =
+          """
+          {
+            "resourceType": "Questionnaire",
+            "status": "active",
+            "contained": [
+              {
+                "resourceType": "Bundle",
+                "id": "collectionTemplate",
+                "type": "collection",
+                "entry": [
+                  {
+                    "resource": {
+                      "resourceType": "Observation",
+                      "status": "final",
+                      "code": {
+                        "text": "Smoking status"
+                      },
+                      "_valueBoolean": {
+                        "extension": [
+                          {
+                            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                            "valueString": "item.where(linkId='smoker').answer.value.first()"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+                "extension": [
+                  {
+                    "url": "template",
+                    "valueReference": {
+                      "reference": "#collectionTemplate"
+                    }
+                  }
+                ]
+              }
+            ],
+            "item": [
+              {
+                "linkId": "smoker",
+                "type": "boolean"
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+        questionnaireResponseJson =
+          """
+          {
+            "resourceType": "QuestionnaireResponse",
+            "status": "completed",
+            "item": [
+              {
+                "linkId": "smoker",
+                "answer": [
+                  {
+                    "valueBoolean": false
+                  }
+                ]
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+      )
+
+    val extractedBundle = bundle.resources().filterIsInstance<Bundle>().single()
+    val observation = extractedBundle.entry.single().resource as Observation
+
+    assertEquals(1, bundle.resources().size)
+    assertNull(extractedBundle.id)
+    assertEquals(Bundle.BundleType.Collection, extractedBundle.type.value)
+    assertEquals("Bundle", bundle.entry.first { it.resource is Bundle }.request?.url?.value)
+    assertEquals(false, observation.value?.asBoolean()?.value?.value)
+  }
+
+  @Test
+  fun extract_templateExtractReferencingBundle_withResourceId_usesPutRequest() = runTest {
+    val bundle =
+      extract(
+        questionnaireJson =
+          """
+          {
+            "resourceType": "Questionnaire",
+            "status": "active",
+            "contained": [
+              {
+                "resourceType": "Bundle",
+                "id": "collectionTemplate",
+                "type": "collection",
+                "entry": [
+                  {
+                    "resource": {
+                      "resourceType": "Observation",
+                      "status": "final",
+                      "code": {
+                        "text": "Smoking status"
+                      },
+                      "_valueBoolean": {
+                        "extension": [
+                          {
+                            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                            "valueString": "item.where(linkId='smoker').answer.value.first()"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+                "extension": [
+                  {
+                    "url": "template",
+                    "valueReference": {
+                      "reference": "#collectionTemplate"
+                    }
+                  },
+                  {
+                    "url": "resourceId",
+                    "valueString": "item.where(linkId='bundle-id').answer.value.first()"
+                  }
+                ]
+              }
+            ],
+            "item": [
+              {
+                "linkId": "bundle-id",
+                "type": "string"
+              },
+              {
+                "linkId": "smoker",
+                "type": "boolean"
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+        questionnaireResponseJson =
+          """
+          {
+            "resourceType": "QuestionnaireResponse",
+            "status": "completed",
+            "item": [
+              {
+                "linkId": "bundle-id",
+                "answer": [
+                  {
+                    "valueString": "supplemental-bundle"
+                  }
+                ]
+              },
+              {
+                "linkId": "smoker",
+                "answer": [
+                  {
+                    "valueBoolean": false
+                  }
+                ]
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+      )
+
+    val bundleEntry = bundle.entry.first { it.resource is Bundle }
+    val extractedBundle = bundleEntry.resource as Bundle
+    val observation = extractedBundle.entry.single().resource as Observation
+
+    assertNull(extractedBundle.id)
+    assertEquals(Bundle.HTTPVerb.Put, bundleEntry.request?.method?.value)
+    assertEquals("Bundle/supplemental-bundle", bundleEntry.request?.url?.value)
+    assertEquals(false, observation.value?.asBoolean()?.value?.value)
+  }
+
+  @Test
+  fun extract_repeatingGroupTemplateExtractReferencingBundle_createsOneBundlePerIteration() = runTest {
+    val bundle =
+      extract(
+        questionnaireJson =
+          """
+          {
+            "resourceType": "Questionnaire",
+            "status": "active",
+            "contained": [
+              {
+                "resourceType": "Bundle",
+                "id": "collectionTemplate",
+                "type": "collection",
+                "entry": [
+                  {
+                    "resource": {
+                      "resourceType": "Observation",
+                      "status": "final",
+                      "code": {
+                        "text": "Visit smoking status"
+                      },
+                      "_valueBoolean": {
+                        "extension": [
+                          {
+                            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                            "valueString": "item.where(linkId='smoker').answer.value.first()"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "item": [
+              {
+                "linkId": "visits",
+                "type": "group",
+                "repeats": true,
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+                    "extension": [
+                      {
+                        "url": "template",
+                        "valueReference": {
+                          "reference": "#collectionTemplate"
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "item": [
+                  {
+                    "linkId": "smoker",
+                    "type": "boolean"
+                  }
+                ]
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+        questionnaireResponseJson =
+          """
+          {
+            "resourceType": "QuestionnaireResponse",
+            "status": "completed",
+            "item": [
+              {
+                "linkId": "visits",
+                "item": [
+                  {
+                    "linkId": "smoker",
+                    "answer": [
+                      {
+                        "valueBoolean": false
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "linkId": "visits",
+                "item": [
+                  {
+                    "linkId": "smoker",
+                    "answer": [
+                      {
+                        "valueBoolean": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+      )
+
+    val extractedBundles = bundle.resources().filterIsInstance<Bundle>()
+    val values =
+      extractedBundles.map { extractedBundle ->
+        val observation = extractedBundle.entry.single().resource as Observation
+        observation.value?.asBoolean()?.value?.value
+      }
+
+    assertEquals(2, extractedBundles.size)
+    assertEquals(listOf(false, true), values)
+    assertTrue(bundle.entry.filter { it.resource is Bundle }.all { it.request?.url?.value == "Bundle" })
+  }
+
+  @Test
+  fun extract_templateBundleContainingBundleResource_keepsInnerBundleAsResource() = runTest {
+    val bundle =
+      extract(
+        questionnaireJson =
+          """
+          {
+            "resourceType": "Questionnaire",
+            "status": "active",
+            "contained": [
+              {
+                "resourceType": "Bundle",
+                "id": "transactionTemplate",
+                "type": "transaction",
+                "entry": [
+                  {
+                    "_fullUrl": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%patientRef"
+                        }
+                      ]
+                    },
+                    "resource": {
+                      "resourceType": "Patient",
+                      "_active": {
+                        "extension": [
+                          {
+                            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                            "valueString": "item.where(linkId='patient-active').answer.value.first()"
+                          }
+                        ]
+                      }
+                    },
+                    "request": {
+                      "method": "POST",
+                      "url": "Patient"
+                    }
+                  },
+                  {
+                    "resource": {
+                      "resourceType": "Encounter",
+                      "status": "finished",
+                      "class": {
+                        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                        "code": "AMB",
+                        "display": "ambulatory"
+                      },
+                      "subject": {
+                        "_reference": {
+                          "extension": [
+                            {
+                              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                              "valueString": "%patientRef"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "request": {
+                      "method": "POST",
+                      "url": "Encounter"
+                    }
+                  },
+                  {
+                    "resource": {
+                      "resourceType": "Bundle",
+                      "id": "supplementalTemplate",
+                      "type": "collection",
+                      "entry": [
+                        {
+                          "resource": {
+                            "resourceType": "Observation",
+                            "status": "final",
+                            "code": {
+                              "text": "Smoking status"
+                            },
+                            "subject": {
+                              "_reference": {
+                                "extension": [
+                                  {
+                                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                                    "valueString": "%patientRef"
+                                  }
+                                ]
+                              }
+                            },
+                            "_valueBoolean": {
+                              "extension": [
+                                {
+                                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                                  "valueString": "item.where(linkId='smoker').answer.value.first()"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "request": {
+                      "method": "PUT",
+                      "url": "Bundle/supplemental-bundle"
+                    }
+                  }
+                ]
+              }
+            ],
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extractAllocateId",
+                "valueString": "patientRef"
+              },
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle",
+                "valueReference": {
+                  "reference": "#transactionTemplate"
+                }
+              }
+            ],
+            "item": [
+              {
+                "linkId": "patient-active",
+                "type": "boolean"
+              },
+              {
+                "linkId": "smoker",
+                "type": "boolean"
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+        questionnaireResponseJson =
+          """
+          {
+            "resourceType": "QuestionnaireResponse",
+            "status": "completed",
+            "item": [
+              {
+                "linkId": "patient-active",
+                "answer": [
+                  {
+                    "valueBoolean": true
+                  }
+                ]
+              },
+              {
+                "linkId": "smoker",
+                "answer": [
+                  {
+                    "valueBoolean": false
+                  }
+                ]
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+      )
+
+    val patientEntry = bundle.entry.first { it.resource is Patient }
+    val encounter = bundle.resources().filterIsInstance<Encounter>().single()
+    val innerBundleEntry = bundle.entry.first { it.resource is Bundle }
+    val innerBundle = innerBundleEntry.resource as Bundle
+    val innerObservation = innerBundle.entry.single().resource as Observation
+
+    assertEquals(3, bundle.resources().size)
+    assertNull(innerBundle.id)
+    assertEquals(Bundle.BundleType.Collection, innerBundle.type.value)
+    assertEquals(Bundle.HTTPVerb.Put, innerBundleEntry.request?.method?.value)
+    assertEquals("Bundle/supplemental-bundle", innerBundleEntry.request?.url?.value)
+    assertEquals(patientEntry.fullUrl?.value, encounter.subject?.reference?.value)
+    assertEquals(patientEntry.fullUrl?.value, innerObservation.subject?.reference?.value)
+    assertEquals(false, innerObservation.value?.asBoolean()?.value?.value)
   }
 
   @Test
