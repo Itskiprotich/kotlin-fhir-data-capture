@@ -22,6 +22,7 @@ import dev.ohs.fhir.model.r4.Encounter
 import dev.ohs.fhir.model.r4.FhirR4Json
 import dev.ohs.fhir.model.r4.Observation
 import dev.ohs.fhir.model.r4.Patient
+import dev.ohs.fhir.model.r4.Practitioner
 import dev.ohs.fhir.model.r4.Provenance
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
@@ -336,6 +337,196 @@ class QuestionnaireResponseExtractorTest {
           .requireString("reference"),
       )
     }
+
+  @Test
+  fun definitionExtractResourceRegistry_supportsFullR4ResourceRegistry() {
+    assertTrue(DefinitionExtractResourceRegistry.supportedResourceTypes.size > 100)
+    assertTrue(
+      DefinitionExtractResourceRegistry.supportedResourceTypes.containsAll(
+        setOf(
+          "Patient",
+          "RelatedPerson",
+          "Observation",
+          "Practitioner",
+          "ServiceRequest",
+          "Task",
+          "Bundle",
+          "ValueSet",
+        )
+      )
+    )
+  }
+
+  @Test
+  fun extract_definitionBasedQuestionnaire_supportsPractitionerResource() = runTest {
+    val bundle =
+      extract(
+        questionnaireJson =
+          """
+          {
+            "resourceType": "Questionnaire",
+            "status": "active",
+            "item": [
+              {
+                "linkId": "practitioner",
+                "text": "Practitioner details",
+                "type": "group",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-definitionExtract",
+                    "extension": [
+                      {
+                        "url": "definition",
+                        "valueCanonical": "http://hl7.org/fhir/StructureDefinition/Practitioner"
+                      }
+                    ]
+                  }
+                ],
+                "item": [
+                  {
+                    "linkId": "active",
+                    "type": "boolean",
+                    "definition": "http://hl7.org/fhir/StructureDefinition/Practitioner#Practitioner.active"
+                  },
+                  {
+                    "linkId": "name",
+                    "type": "string",
+                    "definition": "http://hl7.org/fhir/StructureDefinition/Practitioner#Practitioner.name.text"
+                  },
+                  {
+                    "linkId": "license",
+                    "type": "string",
+                    "definition": "http://hl7.org/fhir/StructureDefinition/Practitioner#Practitioner.identifier.value",
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-definitionExtractValue",
+                        "extension": [
+                          {
+                            "url": "definition",
+                            "valueUri": "http://hl7.org/fhir/StructureDefinition/Practitioner#Practitioner.identifier.system"
+                          },
+                          {
+                            "url": "fixed-value",
+                            "valueUri": "http://example.org/fhir/sid/practitioner-license"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "linkId": "phone",
+                    "type": "string",
+                    "definition": "http://hl7.org/fhir/StructureDefinition/Practitioner#Practitioner.telecom.value",
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-definitionExtractValue",
+                        "extension": [
+                          {
+                            "url": "definition",
+                            "valueUri": "http://hl7.org/fhir/StructureDefinition/Practitioner#Practitioner.telecom.system"
+                          },
+                          {
+                            "url": "fixed-value",
+                            "valueCode": "phone"
+                          }
+                        ]
+                      },
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-definitionExtractValue",
+                        "extension": [
+                          {
+                            "url": "definition",
+                            "valueUri": "http://hl7.org/fhir/StructureDefinition/Practitioner#Practitioner.telecom.use"
+                          },
+                          {
+                            "url": "fixed-value",
+                            "valueCode": "mobile"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+        questionnaireResponseJson =
+          """
+          {
+            "resourceType": "QuestionnaireResponse",
+            "status": "completed",
+            "item": [
+              {
+                "linkId": "practitioner",
+                "item": [
+                  {
+                    "linkId": "active",
+                    "answer": [
+                      {
+                        "valueBoolean": true
+                      }
+                    ]
+                  },
+                  {
+                    "linkId": "name",
+                    "answer": [
+                      {
+                        "valueString": "Naomi Wanjiku"
+                      }
+                    ]
+                  },
+                  {
+                    "linkId": "license",
+                    "answer": [
+                      {
+                        "valueString": "LIC-7788"
+                      }
+                    ]
+                  },
+                  {
+                    "linkId": "phone",
+                    "answer": [
+                      {
+                        "valueString": "+254711223344"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          """
+            .trimIndent(),
+      )
+
+    val bundleJson = bundleJsonParser.parseToJsonElement(json.encodeToString(bundle)).jsonObject
+    val practitionerEntry = bundleJson.requireArray("entry").singleByResourceType("Practitioner")
+    val practitionerResource = practitionerEntry.requireObject("resource")
+    val practitioner = bundle.resources().filterIsInstance<Practitioner>().single()
+
+    assertEquals(Bundle.BundleType.Transaction, bundle.type.value)
+    assertEquals("POST", practitionerEntry.requireObject("request").requireString("method"))
+    assertEquals("Practitioner", practitionerEntry.requireObject("request").requireString("url"))
+    assertTrue(practitionerEntry.requireString("fullUrl").startsWith("urn:uuid:"))
+    assertEquals(true, practitioner.active?.value)
+    assertEquals("Naomi Wanjiku", practitioner.name.single().text?.value)
+    assertEquals("LIC-7788", practitioner.identifier.single().value?.value)
+    assertEquals(
+      "http://example.org/fhir/sid/practitioner-license",
+      practitioner.identifier.single().system?.value,
+    )
+    assertEquals("+254711223344", practitioner.telecom.single().value?.value)
+    assertEquals(
+      "phone",
+      practitionerResource.requireArray("telecom").single().jsonObject.requireString("system"),
+    )
+    assertEquals(
+      "mobile",
+      practitionerResource.requireArray("telecom").single().jsonObject.requireString("use"),
+    )
+  }
 
   @Test
   fun extract_officialComplexTemplate_extractsExpectedResources() = runTest {

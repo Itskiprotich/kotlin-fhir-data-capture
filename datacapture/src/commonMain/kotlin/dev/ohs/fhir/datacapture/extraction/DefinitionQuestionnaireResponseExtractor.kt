@@ -42,14 +42,11 @@ import dev.ohs.fhir.model.r4.HumanName
 import dev.ohs.fhir.model.r4.Identifier
 import dev.ohs.fhir.model.r4.Integer
 import dev.ohs.fhir.model.r4.Meta
-import dev.ohs.fhir.model.r4.Observation
-import dev.ohs.fhir.model.r4.Patient
 import dev.ohs.fhir.model.r4.Period
 import dev.ohs.fhir.model.r4.Quantity
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.Reference
-import dev.ohs.fhir.model.r4.RelatedPerson
 import dev.ohs.fhir.model.r4.String as FhirString
 import dev.ohs.fhir.model.r4.Time
 import dev.ohs.fhir.model.r4.Uri
@@ -77,8 +74,6 @@ import kotlinx.serialization.json.put
  * - `definitionExtractValue`
  * - `extractAllocateId`
  * - `Questionnaire.item.definition`
- *
- * The extractor currently targets core R4 resources whose serializers are registered below.
  */
 internal object DefinitionQuestionnaireResponseExtractor {
   private val fhirJson = FhirR4Json()
@@ -977,21 +972,13 @@ internal object DefinitionQuestionnaireResponseExtractor {
   }
 
   private fun resourceDescriptor(resourceType: String): SerialDescriptor =
-    when (resourceType) {
-      "Observation" -> Observation.serializer().descriptor
-
-      "Patient" -> Patient.serializer().descriptor
-
-      "RelatedPerson" -> RelatedPerson.serializer().descriptor
-
-      else ->
-        error(
-          "Definition-based extraction currently supports Observation, Patient, and RelatedPerson resources. Unsupported resource type: $resourceType."
-        )
-    }
+    DefinitionExtractResourceRegistry.descriptorFor(resourceType)
+      ?: error(
+        "Definition-based extraction could not resolve a descriptor for resource type: $resourceType."
+      )
 
   private fun isSupportedResourceType(resourceType: String): Boolean =
-    resourceType == "Observation" || resourceType == "Patient" || resourceType == "RelatedPerson"
+    resourceType in DefinitionExtractResourceRegistry.supportedResourceTypes
 
   private fun buildItemPairs(
     questionnaireItems: List<Questionnaire.Item>,
