@@ -111,7 +111,7 @@ import kotlinx.serialization.json.jsonPrimitive
  * 3. Evaluates template context/value expressions as FHIRPath.
  * 4. Converts the processed JSON back into bundle entries with request metadata.
  */
-internal object TemplateQuestionnaireResponseExtractor {
+public object TemplateQuestionnaireResponseExtractor {
   /**
    * Runs one extraction pass for the provided questionnaire/response pair.
    *
