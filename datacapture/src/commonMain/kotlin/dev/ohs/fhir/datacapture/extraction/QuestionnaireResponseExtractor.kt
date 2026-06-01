@@ -22,8 +22,8 @@ import dev.ohs.fhir.model.r4.QuestionnaireResponse
 /**
  * Chooses the extraction strategy for a questionnaire/response pair.
  *
- * The branch currently uses a simple selector:
- * - questionnaires with `contained` resources use template-based extraction
+ * The selector follows the SDC extraction extensions:
+ * - questionnaires with `templateExtract`/`templateExtractBundle` metadata use template extraction
  * - otherwise questionnaires with definition-based extraction metadata use definition extraction
  * - otherwise extraction is skipped by [canExtract]
  */
@@ -47,7 +47,7 @@ public object QuestionnaireResponseExtractor {
 
   private fun selectExtractionMode(questionnaire: Questionnaire): ExtractionMode =
     when {
-      questionnaire.contained.isNotEmpty() -> ExtractionMode.TEMPLATE
+      TemplateQuestionnaireResponseExtractor.canExtract(questionnaire) -> ExtractionMode.TEMPLATE
 
       DefinitionQuestionnaireResponseExtractor.canExtract(questionnaire) ->
         ExtractionMode.DEFINITION

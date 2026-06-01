@@ -29,6 +29,7 @@ import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.RelatedPerson
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -185,7 +186,7 @@ class QuestionnaireResponseExtractorTest {
   }
 
   @Test
-  fun extract_prefersTemplateBasedExtractionWhenQuestionnaireHasContainedResources() = runTest {
+  fun extract_prefersTemplateBasedExtractionWhenQuestionnaireHasTemplateExtensions() = runTest {
     val bundle =
       extract(
         questionnaireJson =
@@ -263,6 +264,202 @@ class QuestionnaireResponseExtractorTest {
       bundle.resources().filterIsInstance<Patient>().single().name.single().text?.value,
     )
   }
+
+  @Test
+  fun canExtract_templateBasedQuestionnaireWithoutTemplateExtensions_returnsFalse() = runTest {
+    val questionnaire =
+      json.decodeFromString(
+        """
+        {
+          "resourceType": "Questionnaire",
+          "status": "active",
+          "contained": [
+            {
+              "resourceType": "Patient",
+              "id": "patientTemplate"
+            }
+          ]
+        }
+        """
+          .trimIndent()
+      ) as Questionnaire
+
+    assertFalse(QuestionnaireResponseExtractor.canExtract(questionnaire))
+  }
+
+  @Test
+  fun canExtract_templateExtractBundleAtQuestionnaireRoot_returnsTrue() = runTest {
+    val questionnaire =
+      json.decodeFromString(
+        """
+        {
+          "resourceType": "Questionnaire",
+          "status": "active",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle",
+              "valueReference": {
+                "reference": "#bundleTemplate"
+              }
+            }
+          ]
+        }
+        """
+          .trimIndent()
+      ) as Questionnaire
+
+    assertTrue(QuestionnaireResponseExtractor.canExtract(questionnaire))
+  }
+
+  @Test
+  fun canExtract_nestedItemTemplateExtractExtension_returnsTrue() = runTest {
+    val questionnaire =
+      json.decodeFromString(
+        """
+        {
+          "resourceType": "Questionnaire",
+          "status": "active",
+          "item": [
+            {
+              "linkId": "group",
+              "type": "group",
+              "item": [
+                {
+                  "linkId": "name",
+                  "type": "group",
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+                      "extension": [
+                        {
+                          "url": "template",
+                          "valueReference": {
+                            "reference": "#patientTemplate"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        """
+          .trimIndent()
+      ) as Questionnaire
+
+    assertTrue(QuestionnaireResponseExtractor.canExtract(questionnaire))
+  }
+
+  @Test
+  fun extract_templateWithoutTemplateExtensions_throws() = runTest {
+    val questionnaire =
+      json.decodeFromString(
+        """
+        {
+          "resourceType": "Questionnaire",
+          "status": "active",
+          "contained": [
+            {
+              "resourceType": "Patient",
+              "id": "patientTemplate"
+            }
+          ]
+        }
+        """
+          .trimIndent()
+      ) as Questionnaire
+    val questionnaireResponse =
+      json.decodeFromString(
+        """
+        {
+          "resourceType": "QuestionnaireResponse",
+          "status": "completed"
+        }
+        """
+          .trimIndent()
+      ) as QuestionnaireResponse
+
+    assertFailsWith<IllegalArgumentException> {
+      TemplateQuestionnaireResponseExtractor.extract(questionnaire, questionnaireResponse)
+    }
+  }
+
+  @Test
+  fun extract_definitionWithoutDefinitionExtractExtensions_throws() = runTest {
+    val questionnaire =
+      json.decodeFromString(
+        """
+        {
+          "resourceType": "Questionnaire",
+          "status": "active"
+        }
+        """
+          .trimIndent()
+      ) as Questionnaire
+    val questionnaireResponse =
+      json.decodeFromString(
+        """
+        {
+          "resourceType": "QuestionnaireResponse",
+          "status": "completed"
+        }
+        """
+          .trimIndent()
+      ) as QuestionnaireResponse
+
+    assertFailsWith<IllegalArgumentException> {
+      DefinitionQuestionnaireResponseExtractor.extract(questionnaire, questionnaireResponse)
+    }
+  }
+
+  @Test
+  fun extract_definitionBasedQuestionnaireWithUnansweredItemExtract_returnsEmptyTransactionBundle() =
+    runTest {
+      val questionnaire =
+        json.decodeFromString(
+          """
+          {
+            "resourceType": "Questionnaire",
+            "status": "active",
+            "item": [
+              {
+                "linkId": "patient",
+                "type": "group",
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-definitionExtract",
+                    "extension": [
+                      {
+                        "url": "definition",
+                        "valueCanonical": "http://hl7.org/fhir/StructureDefinition/Patient"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          """
+            .trimIndent()
+        ) as Questionnaire
+      val questionnaireResponse =
+        json.decodeFromString(
+          """
+          {
+            "resourceType": "QuestionnaireResponse",
+            "status": "completed"
+          }
+          """
+            .trimIndent()
+        ) as QuestionnaireResponse
+
+      val bundle = QuestionnaireResponseExtractor.extract(questionnaire, questionnaireResponse)
+
+      assertEquals(Bundle.BundleType.Transaction, bundle.type.value)
+      assertTrue(bundle.entry.isEmpty())
+    }
 
   @Test
   fun extract_definitionBasedQuestionnaireWithoutContainedResources_usesDefinitionExtraction() =

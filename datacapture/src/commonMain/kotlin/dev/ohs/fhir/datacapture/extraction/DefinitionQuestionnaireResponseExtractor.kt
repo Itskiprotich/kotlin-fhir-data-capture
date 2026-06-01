@@ -77,7 +77,11 @@ import kotlinx.serialization.json.put
  */
 public object DefinitionQuestionnaireResponseExtractor {
   private val fhirJson = FhirR4Json()
-  private val json = Json {
+
+  // `FhirR4Json` is needed for the final Bundle decode because it carries the R4 polymorphic
+  // serializers for Bundle.entry.resource. A plain Json instance is still used while assembling
+  // intermediate JsonElements for individual FHIR datatypes.
+  private val valueJson = Json {
     explicitNulls = false
     encodeDefaults = false
   }
@@ -92,6 +96,10 @@ public object DefinitionQuestionnaireResponseExtractor {
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
   ): Bundle {
+    require(canExtract(questionnaire)) {
+      "Definition-based extraction requires at least one sdc-questionnaire-definitionExtract extension on the questionnaire or one of its items."
+    }
+
     val packedResponse =
       questionnaireResponse.toBuilder().apply { packRepeatedGroups(questionnaire) }.build()
     val rootPairs = buildItemPairs(questionnaire.item, packedResponse.item)
@@ -120,10 +128,6 @@ public object DefinitionQuestionnaireResponseExtractor {
       inheritedAllocateIds = rootAllocateIds,
       outputEntries = entries,
     )
-
-    require(entries.isNotEmpty()) {
-      "No definition-based extraction instructions were found in the questionnaire."
-    }
 
     val bundleJson = buildJsonObject {
       put("resourceType", JsonPrimitive("Bundle"))
@@ -661,7 +665,7 @@ public object DefinitionQuestionnaireResponseExtractor {
       return buildJsonObject {
         put(
           "coding",
-          buildJsonArray { add(json.encodeToJsonElement(Coding.serializer(), rawValue)) },
+          buildJsonArray { add(valueJson.encodeToJsonElement(Coding.serializer(), rawValue)) },
         )
       }
     }
@@ -709,14 +713,14 @@ public object DefinitionQuestionnaireResponseExtractor {
         if (fieldDescriptor.kind is PrimitiveKind) {
           JsonPrimitive(rawValue.code?.value ?: "")
         } else {
-          json.encodeToJsonElement(Coding.serializer(), rawValue)
+          valueJson.encodeToJsonElement(Coding.serializer(), rawValue)
         }
 
       is Reference ->
         if (fieldDescriptor.kind is PrimitiveKind) {
           JsonPrimitive(rawValue.reference?.value ?: "")
         } else {
-          json.encodeToJsonElement(Reference.serializer(), rawValue)
+          valueJson.encodeToJsonElement(Reference.serializer(), rawValue)
         }
 
       is Quantity ->
@@ -725,22 +729,22 @@ public object DefinitionQuestionnaireResponseExtractor {
         ) {
           JsonPrimitive(rawValue.value?.value?.toString() ?: "")
         } else {
-          json.encodeToJsonElement(dev.ohs.fhir.model.r4.Quantity.serializer(), rawValue)
+          valueJson.encodeToJsonElement(dev.ohs.fhir.model.r4.Quantity.serializer(), rawValue)
         }
 
-      is CodeableConcept -> json.encodeToJsonElement(CodeableConcept.serializer(), rawValue)
+      is CodeableConcept -> valueJson.encodeToJsonElement(CodeableConcept.serializer(), rawValue)
 
-      is Identifier -> json.encodeToJsonElement(Identifier.serializer(), rawValue)
+      is Identifier -> valueJson.encodeToJsonElement(Identifier.serializer(), rawValue)
 
-      is HumanName -> json.encodeToJsonElement(HumanName.serializer(), rawValue)
+      is HumanName -> valueJson.encodeToJsonElement(HumanName.serializer(), rawValue)
 
-      is ContactPoint -> json.encodeToJsonElement(ContactPoint.serializer(), rawValue)
+      is ContactPoint -> valueJson.encodeToJsonElement(ContactPoint.serializer(), rawValue)
 
-      is Meta -> json.encodeToJsonElement(Meta.serializer(), rawValue)
+      is Meta -> valueJson.encodeToJsonElement(Meta.serializer(), rawValue)
 
-      is Period -> json.encodeToJsonElement(Period.serializer(), rawValue)
+      is Period -> valueJson.encodeToJsonElement(Period.serializer(), rawValue)
 
-      is Attachment -> json.encodeToJsonElement(Attachment.serializer(), rawValue)
+      is Attachment -> valueJson.encodeToJsonElement(Attachment.serializer(), rawValue)
 
       is FhirPathDate -> JsonPrimitive(rawValue.toString())
 

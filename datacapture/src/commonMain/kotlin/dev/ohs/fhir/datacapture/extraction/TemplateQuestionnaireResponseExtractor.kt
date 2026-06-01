@@ -17,7 +17,9 @@ package dev.ohs.fhir.datacapture.extraction
 
 import co.touchlab.kermit.Logger
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import dev.ohs.fhir.datacapture.extensions.EXTENSION_TEMPLATE_EXTRACT_BUNDLE_URL
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL
+import dev.ohs.fhir.datacapture.extensions.EXTENSION_TEMPLATE_EXTRACT_URL
 import dev.ohs.fhir.datacapture.extensions.EXTENSION_TEMPLATE_EXTRACT_VALUE_URL
 import dev.ohs.fhir.datacapture.extensions.TemplateExtractDefinition
 import dev.ohs.fhir.datacapture.extensions.allocateIdVariableNames
@@ -112,6 +114,12 @@ import kotlinx.serialization.json.jsonPrimitive
  * 4. Converts the processed JSON back into bundle entries with request metadata.
  */
 public object TemplateQuestionnaireResponseExtractor {
+  internal fun canExtract(questionnaire: Questionnaire): Boolean =
+    questionnaire.extension.any { extension ->
+      extension.url == EXTENSION_TEMPLATE_EXTRACT_URL ||
+        extension.url == EXTENSION_TEMPLATE_EXTRACT_BUNDLE_URL
+    } || questionnaire.item.any { it.hasTemplateExtractExtensionRecursively() }
+
   /**
    * Runs one extraction pass for the provided questionnaire/response pair.
    *
@@ -119,15 +127,24 @@ public object TemplateQuestionnaireResponseExtractor {
    * single questionnaire item with multiple answers, which matches how extraction templates are
    * usually authored.
    */
-  fun extract(questionnaire: Questionnaire, questionnaireResponse: QuestionnaireResponse): Bundle =
-    TemplateExtractionEngine(
+  fun extract(questionnaire: Questionnaire, questionnaireResponse: QuestionnaireResponse): Bundle {
+    require(canExtract(questionnaire)) {
+      "Template-based extraction requires sdc-questionnaire-templateExtract at the questionnaire root or on at least one questionnaire item, or sdc-questionnaire-templateExtractBundle at the questionnaire root."
+    }
+
+    return TemplateExtractionEngine(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
         packedQuestionnaireResponse =
           questionnaireResponse.toBuilder().apply { packRepeatedGroups(questionnaire) }.build(),
       )
       .extract()
+  }
 }
+
+private fun Questionnaire.Item.hasTemplateExtractExtensionRecursively(): Boolean =
+  extension.any { it.url == EXTENSION_TEMPLATE_EXTRACT_URL } ||
+    item.any { it.hasTemplateExtractExtensionRecursively() }
 
 /**
  * Stateful worker for a single extraction run.
