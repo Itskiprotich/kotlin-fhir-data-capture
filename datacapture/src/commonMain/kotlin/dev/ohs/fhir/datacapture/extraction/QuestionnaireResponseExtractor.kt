@@ -27,7 +27,7 @@ import dev.ohs.fhir.model.r4.QuestionnaireResponse
  * - otherwise questionnaires with definition-based extraction metadata use definition extraction
  * - otherwise extraction is skipped by [canExtract]
  */
-public object QuestionnaireResponseExtractor {
+public object QuestionnaireResponseDataExtractor {
   public fun canExtract(questionnaire: Questionnaire): Boolean =
     selectExtractionMode(questionnaire) != ExtractionMode.NONE
 
