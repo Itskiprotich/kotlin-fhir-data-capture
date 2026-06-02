@@ -75,7 +75,7 @@ import kotlinx.serialization.json.put
  * - `extractAllocateId`
  * - `Questionnaire.item.definition`
  */
-public object DefinitionQuestionnaireResponseExtractor {
+public object DefinitionBasedDataExtractor {
   private val fhirJson = FhirR4Json()
 
   // `FhirR4Json` is needed for the final Bundle decode because it carries the R4 polymorphic
