@@ -16,6 +16,7 @@
 package dev.ohs.fhir.datacapture.extensions
 
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractDefinition
 import dev.ohs.fhir.model.r4.Element
 import dev.ohs.fhir.model.r4.Expression
 import dev.ohs.fhir.model.r4.Extension
@@ -27,6 +28,19 @@ import kotlinx.datetime.LocalTime
 internal const val EXTENSION_CQF_CALCULATED_VALUE_URL: String =
   "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue"
 
+internal const val EXTENSION_TEMPLATE_EXTRACT_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract"
+
+internal const val EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext"
+
+internal const val EXTENSION_TEMPLATE_EXTRACT_VALUE_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue"
+
+internal const val EXTENSION_EXTRACT_ALLOCATE_ID_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extractAllocateId"
+
+/** Reads the first child extension with the supplied `uri` as a string-like primitive value. */
 fun Extension.readStringExtension(uri: String): String? {
   val ext = extension.single { it.url == uri }
   return ext.value?.asUri()?.value?.value
@@ -35,6 +49,49 @@ fun Extension.readStringExtension(uri: String): String? {
     ?: ext.value?.asInteger()?.value?.value?.toString()
     ?: ext.value?.asMarkdown()?.value?.value
     ?: ext.value?.asString()?.value?.value
+}
+
+/** Reads the string-like primitive variants commonly used by extraction extensions. */
+internal fun Extension.stringValue(): String? =
+  when (val extensionValue = value) {
+    is Extension.Value.String -> extensionValue.value.value
+    is Extension.Value.Uri -> extensionValue.value.value
+    is Extension.Value.Canonical -> extensionValue.value.value
+    is Extension.Value.Code -> extensionValue.value.value
+    is Extension.Value.Markdown -> extensionValue.value.value
+    else -> null
+  }
+
+/**
+ * Reads the literal `Reference.reference` target from extraction extensions that carry
+ * `valueReference`.
+ */
+internal fun Extension.referenceValue(): String? =
+  when (val extensionValue = value) {
+    is Extension.Value.Reference -> extensionValue.value.reference?.value
+    else -> null
+  }
+
+/**
+ * Converts the nested extension structure into a template extraction definition.
+ *
+ * If the mandatory `template` child extension is missing, the definition is ignored because there
+ * is no contained resource to materialize.
+ */
+internal fun Extension.asTemplateExtractDefinition(): TemplateExtractDefinition? {
+  val templateReference =
+    extension.firstOrNull { it.url == "template" }?.referenceValue() ?: return null
+
+  return TemplateExtractDefinition(
+    templateReference = templateReference,
+    fullUrlExpression = extension.firstOrNull { it.url == "fullUrl" }?.stringValue(),
+    resourceIdExpression = extension.firstOrNull { it.url == "resourceId" }?.stringValue(),
+    ifNoneMatchExpression = extension.firstOrNull { it.url == "ifNoneMatch" }?.stringValue(),
+    ifModifiedSinceExpression =
+      extension.firstOrNull { it.url == "ifModifiedSince" }?.stringValue(),
+    ifMatchExpression = extension.firstOrNull { it.url == "ifMatch" }?.stringValue(),
+    ifNoneExistExpression = extension.firstOrNull { it.url == "ifNoneExist" }?.stringValue(),
+  )
 }
 
 internal val Extension.Value.elementValue: Element

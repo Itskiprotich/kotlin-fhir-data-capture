@@ -15,6 +15,7 @@
  */
 package dev.ohs.fhir.datacapture.extensions
 
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractDefinition
 import dev.ohs.fhir.model.r4.Expression
 import dev.ohs.fhir.model.r4.Extension
 import dev.ohs.fhir.model.r4.Questionnaire
@@ -168,6 +169,26 @@ enum class EntryMode(val value: String) {
   companion object {
     fun from(type: String?): EntryMode? = entries.find { it.value == type }
   }
+}
+
+/** Root-level resource templates declared on the questionnaire itself. */
+internal val Questionnaire.templateExtractExtensions: List<TemplateExtractDefinition>
+  get() =
+    extension
+      .filter { it.url == EXTENSION_TEMPLATE_EXTRACT_URL }
+      .mapNotNull { it.asTemplateExtractDefinition() }
+
+/** Questionnaire-scoped `%variable` names that should be pre-populated with generated URNs. */
+internal val Questionnaire.allocateIdVariableNames: List<String>
+  get() =
+    extension
+      .filter { it.url == EXTENSION_EXTRACT_ALLOCATE_ID_URL }
+      .mapNotNull { it.stringValue()?.normalizedVariableName() }
+
+/** Resolves a contained resource whether the template used `id` or `#id` notation. */
+internal fun Questionnaire.findContainedResource(reference: String): Resource? {
+  val containedReference = if (reference.startsWith("#")) reference else "#$reference"
+  return contained.firstOrNull { resource -> resource.id?.let { "#$it" } == containedReference }
 }
 
 /**
