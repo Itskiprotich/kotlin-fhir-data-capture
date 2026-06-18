@@ -50,7 +50,6 @@ internal class TemplateExtractionEngine(
    * forward any allocated `%variable` values that later templates may reference.
    */
   fun extract(): TemplateExtractionResult {
-    val entries = mutableListOf<Bundle.Entry>()
     val rootVariables = allocateIdVariables(questionnaire.allocateIdVariableNames)
     val rootScope =
       TemplateEvaluationScope(
@@ -61,19 +60,24 @@ internal class TemplateExtractionEngine(
         variables = rootVariables,
       )
 
-    questionnaire.templateExtractExtensions.forEach { definition ->
-      extractTemplate(definition, rootScope, "Questionnaire").let(entries::addIfPresent)
-    }
+    val entries =
+      questionnaire.templateExtractExtensions.mapNotNull { definition ->
+        extractTemplate(definition, rootScope, "Questionnaire")
+      }
 
-    traverseQuestionnaireItems(
-      questionnaireItems = questionnaire.item,
-      responseItems = questionnaireResponse.item,
-      inheritedVariables = rootVariables,
-      outputEntries = entries,
-    )
+    val traversedEntries =
+      traverseQuestionnaireItems(
+        questionnaireItems = questionnaire.item,
+        responseItems = questionnaireResponse.item,
+        inheritedVariables = rootVariables,
+      )
 
     return TemplateExtractionResult(
-      bundle = Bundle(type = Enumeration(value = Bundle.BundleType.Transaction), entry = entries),
+      bundle =
+        Bundle(
+          type = Enumeration(value = Bundle.BundleType.Transaction),
+          entry = entries + traversedEntries,
+        ),
       operationOutcome = issues.takeIf { it.isNotEmpty() }?.toOperationOutcome(),
     )
   }
