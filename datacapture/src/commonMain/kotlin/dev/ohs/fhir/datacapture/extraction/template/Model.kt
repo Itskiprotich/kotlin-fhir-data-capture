@@ -23,6 +23,7 @@ import dev.ohs.fhir.model.r4.OperationOutcome
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.String as FhirString
+import kotlinx.serialization.json.JsonArray
 
 /**
  * Parsed view of the `sdc-questionnaire-templateExtract` complex extension.
@@ -65,7 +66,7 @@ internal data class TemplateNodeControls(
 /** Control extensions split away from any non-extraction extensions that must remain on output. */
 internal data class TemplateNodeExtensionState(
   val controls: TemplateNodeControls = TemplateNodeControls(),
-  val remainingExtensions: kotlinx.serialization.json.JsonArray? = null,
+  val remainingExtensions: JsonArray? = null,
 )
 
 /** Evaluation scope for a single template expansion pass. */

@@ -15,9 +15,6 @@
  */
 package dev.ohs.fhir.datacapture.extraction
 
-import dev.ohs.fhir.datacapture.extraction.EXTENSION_EXTRACT_ALLOCATE_ID_URL as EXTRACT_ALLOCATE_ID_URL
-import dev.ohs.fhir.datacapture.extraction.EXTENSION_TEMPLATE_EXTRACT_URL as TEMPLATE_EXTRACT_URL
-import dev.ohs.fhir.datacapture.extraction.EXTENSION_TEMPLATE_EXTRACT_VALUE_URL as TEMPLATE_EXTRACT_VALUE_URL
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionResult
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
@@ -50,22 +47,22 @@ class TemplateBasedDataExtractorTest {
           "status": "active",
           "extension": [
             {
-              "url": "$TEMPLATE_EXTRACT_URL",
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
               "extension": [
                 {
-                  "url": "$TEMPLATE_EXTRACT_CHILD_TEMPLATE_URL",
+                  "url": "template",
                   "valueReference": {
                     "reference": "#patient-template"
                   }
                 },
                 {
-                  "url": "$TEMPLATE_EXTRACT_CHILD_FULL_URL",
+                  "url": "fullUrl",
                   "valueString": "%patientFullUrl"
                 }
               ]
             },
             {
-              "url": "$EXTRACT_ALLOCATE_ID_URL",
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extractAllocateId",
               "valueString": "%patientFullUrl"
             }
           ],
@@ -88,10 +85,10 @@ class TemplateBasedDataExtractorTest {
               "repeats": true,
               "extension": [
                 {
-                  "url": "$TEMPLATE_EXTRACT_URL",
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
                   "extension": [
                     {
-                      "url": "$TEMPLATE_EXTRACT_CHILD_TEMPLATE_URL",
+                      "url": "template",
                       "valueReference": {
                         "reference": "#condition-template"
                       }
@@ -118,7 +115,7 @@ class TemplateBasedDataExtractorTest {
                   "_family": {
                     "extension": [
                       {
-                        "url": "$TEMPLATE_EXTRACT_VALUE_URL",
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
                         "valueString": "%resource.repeat(item).where(linkId='family').answer.value.first()"
                       }
                     ]
@@ -130,7 +127,7 @@ class TemplateBasedDataExtractorTest {
                     {
                       "extension": [
                         {
-                          "url": "$TEMPLATE_EXTRACT_VALUE_URL",
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
                           "valueString": "%resource.repeat(item).where(linkId='given').answer.value"
                         }
                       ]
@@ -142,7 +139,7 @@ class TemplateBasedDataExtractorTest {
               "_birthDate": {
                 "extension": [
                   {
-                    "url": "$TEMPLATE_EXTRACT_VALUE_URL",
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
                     "valueString": "%resource.repeat(item).where(linkId='birthDate').answer.value.first()"
                   }
                 ]
@@ -156,7 +153,7 @@ class TemplateBasedDataExtractorTest {
                 "_reference": {
                   "extension": [
                     {
-                      "url": "$TEMPLATE_EXTRACT_VALUE_URL",
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
                       "valueString": "%patientFullUrl"
                     }
                   ]
@@ -167,7 +164,7 @@ class TemplateBasedDataExtractorTest {
                 "_text": {
                   "extension": [
                     {
-                      "url": "$TEMPLATE_EXTRACT_VALUE_URL",
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
                       "valueString": "%context.item.where(linkId='condition-name').answer.value.first()"
                     }
                   ]
@@ -309,7 +306,7 @@ class TemplateBasedDataExtractorTest {
               "_valueString": {
                 "extension": [
                   {
-                    "url": "$TEMPLATE_EXTRACT_VALUE_URL",
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
                     "valueString": "%context.answer.value.first()"
                   }
                 ]
@@ -324,16 +321,16 @@ class TemplateBasedDataExtractorTest {
               "repeats": true,
               "extension": [
                 {
-                  "url": "$TEMPLATE_EXTRACT_URL",
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
                   "extension": [
                     {
-                      "url": "$TEMPLATE_EXTRACT_CHILD_TEMPLATE_URL",
+                      "url": "template",
                       "valueReference": {
                         "reference": "#phone-template"
                       }
                     },
                     {
-                      "url": "$TEMPLATE_EXTRACT_CHILD_RESOURCE_ID_URL",
+                      "url": "resourceId",
                       "valueString": "%context.answer.value.first()"
                     }
                   ]
@@ -404,10 +401,10 @@ class TemplateBasedDataExtractorTest {
           "status": "active",
           "extension": [
             {
-              "url": "$TEMPLATE_EXTRACT_URL",
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
               "extension": [
                 {
-                  "url": "$TEMPLATE_EXTRACT_CHILD_TEMPLATE_URL",
+                  "url": "template",
                   "valueReference": {
                     "reference": "#missing-template"
                   }

@@ -50,6 +50,7 @@ internal class TemplateExtractionEngine(
    * forward any allocated `%variable` values that later templates may reference.
    */
   fun extract(): TemplateExtractionResult {
+    val entries = mutableListOf<Bundle.Entry>()
     val rootVariables = allocateIdVariables(questionnaire.allocateIdVariableNames)
     val rootScope =
       TemplateEvaluationScope(
@@ -60,37 +61,47 @@ internal class TemplateExtractionEngine(
         variables = rootVariables,
       )
 
-    val entries =
-      questionnaire.templateExtractExtensions.mapNotNull { definition ->
-        extractTemplate(definition, rootScope, "Questionnaire")
-      }
+    questionnaire.templateExtractExtensions.forEach { definition ->
+      extractTemplate(definition, rootScope, "Questionnaire").let(entries::addIfPresent)
+    }
 
-    val traversedEntries =
-      traverseQuestionnaireItems(
-        questionnaireItems = questionnaire.item,
-        responseItems = questionnaireResponse.item,
-        inheritedVariables = rootVariables,
-      )
+    traverseQuestionnaireItems(
+      questionnaireItems = questionnaire.item,
+      responseItemsByLinkId = questionnaireResponse.item.groupBy { it.linkId.value },
+      inheritedVariables = rootVariables,
+      outputEntries = entries,
+    )
 
     return TemplateExtractionResult(
-      bundle =
-        Bundle(
-          type = Enumeration(value = Bundle.BundleType.Transaction),
-          entry = entries + traversedEntries,
-        ),
+      bundle = Bundle(type = Enumeration(value = Bundle.BundleType.Transaction), entry = entries),
       operationOutcome = issues.takeIf { it.isNotEmpty() }?.toOperationOutcome(),
     )
   }
 
+  /**
+   * Walks the Questionnaire item tree in lockstep with the matching QuestionnaireResponse items.
+   *
+   * For the current sibling level, [responseItemsByLinkId] provides an indexed view of the response
+   * items so each Questionnaire item can retrieve its matching response items in constant time
+   * instead of scanning the full list repeatedly. This lookup is intentionally scoped to the
+   * current branch of the response tree: when recursion moves into child items, a new map is built
+   * from that branch's child response items so nested extraction only sees the responses that
+   * belong to the current parent context.
+   *
+   * Each matched item is normalized into one or more extraction contexts to support repeated groups
+   * and repeating questions, item-level templates are evaluated for each logical occurrence, and
+   * any allocated `%variables` are carried forward to descendants. If multiple response items are
+   * found for a non-repeating Questionnaire item, extraction continues with a warning and uses the
+   * first logical occurrence for direct extraction.
+   */
   private fun traverseQuestionnaireItems(
     questionnaireItems: List<Questionnaire.Item>,
-    responseItems: List<QuestionnaireResponse.Item>,
+    responseItemsByLinkId: Map<String?, List<QuestionnaireResponse.Item>>,
     inheritedVariables: Map<String, Any?>,
     outputEntries: MutableList<Bundle.Entry>,
   ) {
     questionnaireItems.forEach { questionnaireItem ->
-      val matchingResponseItems =
-        responseItems.filter { it.linkId.value == questionnaireItem.linkId.value }
+      val matchingResponseItems = responseItemsByLinkId[questionnaireItem.linkId.value].orEmpty()
       if (matchingResponseItems.isEmpty()) return@forEach
 
       if (
@@ -128,7 +139,8 @@ internal class TemplateExtractionEngine(
         if (questionnaireItem.item.isNotEmpty()) {
           traverseQuestionnaireItems(
             questionnaireItems = questionnaireItem.item,
-            responseItems = extractionContext.childResponseItems,
+            responseItemsByLinkId =
+              extractionContext.childResponseItems.groupBy { it.linkId.value },
             inheritedVariables = currentVariables,
             outputEntries = outputEntries,
           )
