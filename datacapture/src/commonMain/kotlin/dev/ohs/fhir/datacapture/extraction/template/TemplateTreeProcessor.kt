@@ -52,26 +52,20 @@ internal class TemplateTreeProcessor(
 
     extensionState.controls.valueExpression?.let { valueExpression ->
       return scopedContexts.flatMap { scopedContext ->
-        recoverTemplateFailure(onIssue, { emptyList() }) {
-            evaluator.evaluate(valueExpression, scopedContext, path)
-          }
-          .mapNotNull { value ->
-            recoverTemplateFailure(onIssue, { null }) { valueConverter.toJsonElement(value, path) }
-          }
+        evaluator
+          .evaluate(valueExpression, scopedContext, path)
+          .map { value -> valueConverter.toJsonElement(value, path) }
           .mapNotNull { value ->
             if (value is JsonObject) {
               value
             } else {
-              onIssue(
-                TemplateExtractionIssue(
-                  severity = OperationOutcome.IssueSeverity.Error,
-                  code = OperationOutcome.IssueType.Invalid,
-                  diagnostics =
-                    "Template value replacement for '$path' must resolve to an object because the template node is complex.",
-                  expressionPath = path,
-                )
+              extractionFailure(
+                severity = OperationOutcome.IssueSeverity.Error,
+                code = OperationOutcome.IssueType.Invalid,
+                diagnostics =
+                  "Template value replacement for '$path' must resolve to an object because the template node is complex.",
+                expressionPath = path,
               )
-              null
             }
           }
       }
@@ -232,14 +226,12 @@ internal class TemplateTreeProcessor(
         }
 
         else -> {
-          onIssue(
-            TemplateExtractionIssue(
-              severity = OperationOutcome.IssueSeverity.Error,
-              code = OperationOutcome.IssueType.Invalid,
-              diagnostics =
-                "Primitive metadata array entries must be objects or null. Found ${currentMetadata::class.simpleName}.",
-              expressionPath = currentPath,
-            )
+          extractionFailure(
+            severity = OperationOutcome.IssueSeverity.Error,
+            code = OperationOutcome.IssueType.Invalid,
+            diagnostics =
+              "Primitive metadata array entries must be objects or null. Found ${currentMetadata::class.simpleName}.",
+            expressionPath = currentPath,
           )
         }
       }
@@ -288,23 +280,16 @@ internal class TemplateTreeProcessor(
 
     return scopedContexts.flatMap { scopedContext ->
       extensionState.controls.valueExpression?.let { valueExpression ->
-        val results =
-          recoverTemplateFailure(onIssue, { emptyList() }) {
-            evaluator.evaluate(valueExpression, scopedContext, path)
-          }
+        val results = evaluator.evaluate(valueExpression, scopedContext, path)
         if (results.isEmpty()) {
           emptyList()
         } else {
-          results.mapNotNull { value ->
-            recoverTemplateFailure(onIssue, { null }) {
-                valueConverter.toPrimitiveJsonElement(value, path)
-              }
-              ?.let { converted ->
-                PrimitiveOccurrence(
-                  value = converted,
-                  metadata = cleanedMetadata.takeIf { it.entries.isNotEmpty() },
-                )
-              }
+          results.map { value ->
+            val converted = valueConverter.toPrimitiveJsonElement(value, path)
+            PrimitiveOccurrence(
+              value = converted,
+              metadata = cleanedMetadata.takeIf { it.entries.isNotEmpty() },
+            )
           }
         }
       }
@@ -324,10 +309,7 @@ internal class TemplateTreeProcessor(
     onIssue: (TemplateExtractionIssue) -> Unit,
   ): List<TemplateEvaluationScope> {
     if (expression == null) return listOf(scope)
-    val results =
-      recoverTemplateFailure(onIssue, { emptyList() }) {
-        evaluator.evaluate(expression, scope, path)
-      }
+    val results = evaluator.evaluate(expression, scope, path)
     if (results.isEmpty()) return emptyList()
     return results.map { result ->
       scope.withContext(

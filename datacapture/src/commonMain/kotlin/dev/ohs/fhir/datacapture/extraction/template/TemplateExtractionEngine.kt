@@ -168,32 +168,26 @@ internal class TemplateExtractionEngine(
   ): Bundle.Entry? {
     val templateResource = questionnaire.findContainedResource(definition.templateReference)
     if (templateResource == null) {
-      onIssue(
-        TemplateExtractionIssue(
-          severity = OperationOutcome.IssueSeverity.Error,
-          code = OperationOutcome.IssueType.Required,
-          diagnostics =
-            "Contained template '${definition.templateReference}' was not found in the questionnaire.",
-          expressionPath = path,
-        )
+      extractionFailure(
+        severity = OperationOutcome.IssueSeverity.Error,
+        code = OperationOutcome.IssueType.Required,
+        diagnostics =
+          "Contained template '${definition.templateReference}' was not found in the questionnaire.",
+        expressionPath = path,
       )
-      return null
     }
 
     val templateJson = valueConverter.resourceToJson(templateResource).withoutTemplateId()
     val resourceType =
       templateJson["resourceType"]?.jsonPrimitive?.contentOrNull
         ?: run {
-          onIssue(
-            TemplateExtractionIssue(
-              severity = OperationOutcome.IssueSeverity.Error,
-              code = OperationOutcome.IssueType.Invalid,
-              diagnostics =
-                "Contained template '${definition.templateReference}' is missing resourceType.",
-              expressionPath = path,
-            )
+          extractionFailure(
+            severity = OperationOutcome.IssueSeverity.Error,
+            code = OperationOutcome.IssueType.Invalid,
+            diagnostics =
+              "Contained template '${definition.templateReference}' is missing resourceType.",
+            expressionPath = path,
           )
-          return null
         }
 
     // The JSON tree pass applies templateExtractContext/templateExtractValue recursively before we
@@ -214,10 +208,7 @@ internal class TemplateExtractionEngine(
 
     val resourceJson =
       processedResources.first().withEvaluatedResourceId(definition, scope, path, onIssue)
-    val extractedResource =
-      recoverTemplateFailure(onIssue, { null }) {
-        valueConverter.jsonToResource(resourceJson, path)
-      } ?: return null
+    val extractedResource = valueConverter.jsonToResource(resourceJson, path)
     return createBundleEntry(definition, scope, path, resourceType, extractedResource, onIssue)
   }
 
@@ -315,28 +306,19 @@ internal class TemplateExtractionEngine(
     scope: TemplateEvaluationScope,
     path: String,
     onIssue: (TemplateExtractionIssue) -> Unit,
-  ): List<Any> =
-    recoverTemplateFailure(onIssue, { emptyList() }) {
-      evaluator.evaluate(TemplateExtractExpression(expression), scope, path)
-    }
+  ): List<Any> = evaluator.evaluate(TemplateExtractExpression(expression), scope, path)
 
   private fun toStringValue(
     values: List<Any>,
     path: String,
     onIssue: (TemplateExtractionIssue) -> Unit,
-  ): String? =
-    recoverTemplateFailure(onIssue, { null }) {
-      valueConverter.toStringValue(values, path, onIssue)
-    }
+  ): String? = valueConverter.toStringValue(values, path, onIssue)
 
   private fun toInstantValue(
     values: List<Any>,
     path: String,
     onIssue: (TemplateExtractionIssue) -> Unit,
-  ): Instant? =
-    recoverTemplateFailure(onIssue, { null }) {
-      valueConverter.toInstantValue(values, path, onIssue)
-    }
+  ): Instant? = valueConverter.toInstantValue(values, path, onIssue)
 
   @OptIn(ExperimentalUuidApi::class)
   private fun allocateIdVariables(variableNames: List<String>): Map<String, Any?> =

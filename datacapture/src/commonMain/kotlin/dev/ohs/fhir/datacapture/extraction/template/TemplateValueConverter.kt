@@ -69,8 +69,7 @@ internal class TemplateValueConverter {
    * Converts one evaluated FHIRPath result into the JSON form expected by the template tree.
    *
    * This method accepts the runtime types produced by the FHIRPath engine as well as common Kotlin
-   * primitives and Kotlin FHIR model types. Unsupported values throw a recoverable extraction
-   * failure so callers can decide whether to skip only the current node or abort a larger step.
+   * primitives and Kotlin FHIR model types. Unsupported values throw a fatal extraction failure.
    */
   fun toJsonElement(value: Any, path: String): JsonElement =
     when (value) {
@@ -174,8 +173,8 @@ internal class TemplateValueConverter {
   /**
    * Narrows [toJsonElement] to template positions that represent primitive FHIR JSON values.
    *
-   * If an expression resolves to a complex object where the template expects a primitive, a
-   * recoverable extraction failure is raised so the caller can omit that assignment safely.
+   * If an expression resolves to a complex object where the template expects a primitive, a fatal
+   * extraction failure is raised.
    */
   fun toPrimitiveJsonElement(value: Any, path: String): JsonElement {
     val jsonValue = toJsonElement(value, path)
@@ -285,7 +284,7 @@ internal class TemplateValueConverter {
    * Rehydrates a processed JSON object back into a typed Kotlin FHIR [Resource].
    *
    * This is the final structural validation pass for one extracted resource. Any decoding failure
-   * is surfaced as a recoverable extraction failure for that template path.
+   * is surfaced as a fatal extraction failure for that template path.
    */
   fun jsonToResource(resourceJson: JsonObject, path: String): Resource =
     try {

@@ -19,6 +19,7 @@ import dev.ohs.fhir.datacapture.extensions.findContainedResource
 import dev.ohs.fhir.datacapture.extensions.templateExtractExtensions
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractDefinition
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionFailure
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionResult
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
@@ -48,6 +49,8 @@ object TemplateBasedDataExtractor {
    * @throws IllegalArgumentException if the questionnaire does not declare template extraction, if
    *   any declared template reference cannot be resolved to a contained resource, or if the
    *   questionnaire response points to a different questionnaire URL.
+   * @throws IllegalStateException if template evaluation encounters a fatal extraction error after
+   *   preflight validation succeeds.
    */
   fun extract(
     questionnaire: Questionnaire,
@@ -67,7 +70,11 @@ object TemplateBasedDataExtractor {
       "Missing contained template resource(s): ${missingTemplateReferences.joinToString()}. Each sdc-questionnaire-templateExtract reference must resolve before extraction starts."
     }
 
-    return TemplateExtractionEngine(questionnaire, questionnaireResponse).extract()
+    return try {
+      TemplateExtractionEngine(questionnaire, questionnaireResponse).extract()
+    } catch (failure: TemplateExtractionFailure) {
+      throw IllegalStateException(failure.issue.diagnostics, failure)
+    }
   }
 }
 

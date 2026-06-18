@@ -391,6 +391,76 @@ class TemplateBasedDataExtractorTest {
   }
 
   @Test
+  fun throwsWhenTemplateEvaluationEncountersFatalExtractionError() {
+    val questionnaire =
+      questionnaire(
+        """
+        {
+          "resourceType": "Questionnaire",
+          "url": "http://example.org/Questionnaire/invalid-template-language",
+          "status": "active",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract",
+              "extension": [
+                {
+                  "url": "template",
+                  "valueReference": {
+                    "reference": "#observation-template"
+                  }
+                }
+              ]
+            }
+          ],
+          "contained": [
+            {
+              "resourceType": "Observation",
+              "id": "observation-template",
+              "status": "final",
+              "code": {
+                "text": "demo"
+              },
+              "valueString": "",
+              "_valueString": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                    "valueExpression": {
+                      "language": "text/cql",
+                      "expression": "Patient.name.first()"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+        """
+      )
+
+    val questionnaireResponse =
+      questionnaireResponse(
+        """
+        {
+          "resourceType": "QuestionnaireResponse",
+          "questionnaire": "http://example.org/Questionnaire/invalid-template-language",
+          "status": "completed"
+        }
+        """
+      )
+
+    val throwable =
+      assertFailsWith<IllegalStateException> {
+        TemplateBasedDataExtractor.extract(questionnaire, questionnaireResponse)
+      }
+
+    assertTrue(
+      throwable.message.orEmpty().contains("Only FHIRPath expressions are supported"),
+      "Expected fatal runtime extraction errors to hard-fail with the underlying diagnostics.",
+    )
+  }
+
+  @Test
   fun requiresContainedTemplateReferenceBeforeExtraction() {
     val questionnaire =
       questionnaire(

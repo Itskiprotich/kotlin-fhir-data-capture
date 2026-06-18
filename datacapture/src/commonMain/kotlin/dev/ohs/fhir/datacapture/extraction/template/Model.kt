@@ -122,7 +122,7 @@ internal data class TemplateExtractionIssue(
     )
 }
 
-/** Internal control-flow exception used to surface one recoverable extraction issue. */
+/** Internal control-flow exception used to surface one fatal extraction issue. */
 internal class TemplateExtractionFailure(val issue: TemplateExtractionIssue) :
   RuntimeException(issue.diagnostics)
 
@@ -140,18 +140,6 @@ internal fun extractionFailure(
       expressionPath = expressionPath,
     )
   )
-
-internal inline fun <T> recoverTemplateFailure(
-  onIssue: (TemplateExtractionIssue) -> Unit,
-  fallback: () -> T,
-  block: () -> T,
-): T =
-  try {
-    block()
-  } catch (failure: TemplateExtractionFailure) {
-    onIssue(failure.issue)
-    fallback()
-  }
 
 /** Converts the collected extraction issues into a single FHIR-native diagnostic resource. */
 internal fun List<TemplateExtractionIssue>.toOperationOutcome(): OperationOutcome =
@@ -199,10 +187,9 @@ internal fun Questionnaire.Item.toExtractionContexts(
 /**
  * Result of SDC template-based extraction.
  *
- * @property bundle The extracted transaction bundle. This is always returned, even when warnings or
- *   recoverable errors were recorded during extraction.
- * @property operationOutcome Structured issues captured while processing the template. `null`
- *   indicates a clean extraction with no warnings or errors.
+ * @property bundle The extracted transaction bundle for a successful extraction run.
+ * @property operationOutcome Structured non-fatal issues captured while processing the template.
+ *   `null` indicates a clean extraction with no warnings.
  */
 data class TemplateExtractionResult(
   val bundle: Bundle,

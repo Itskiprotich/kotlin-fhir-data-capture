@@ -57,10 +57,7 @@ internal fun parseTemplateNodeExtensionState(
             )
           )
         } else {
-          contextExpression =
-            recoverTemplateFailure(onIssue, { null }) {
-              parseTemplateExpression(extensionObject, path)
-            }
+          contextExpression = parseTemplateExpression(extensionObject, path)
         }
       }
 
@@ -76,10 +73,7 @@ internal fun parseTemplateNodeExtensionState(
             )
           )
         } else {
-          valueExpression =
-            recoverTemplateFailure(onIssue, { null }) {
-              parseTemplateExpression(extensionObject, path)
-            }
+          valueExpression = parseTemplateExpression(extensionObject, path)
         }
       }
 
