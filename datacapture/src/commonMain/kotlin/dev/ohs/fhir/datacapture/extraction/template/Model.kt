@@ -122,6 +122,37 @@ internal data class TemplateExtractionIssue(
     )
 }
 
+/** Internal control-flow exception used to surface one recoverable extraction issue. */
+internal class TemplateExtractionFailure(val issue: TemplateExtractionIssue) :
+  RuntimeException(issue.diagnostics)
+
+internal fun extractionFailure(
+  severity: OperationOutcome.IssueSeverity,
+  code: OperationOutcome.IssueType,
+  diagnostics: String,
+  expressionPath: String? = null,
+): Nothing =
+  throw TemplateExtractionFailure(
+    TemplateExtractionIssue(
+      severity = severity,
+      code = code,
+      diagnostics = diagnostics,
+      expressionPath = expressionPath,
+    )
+  )
+
+internal inline fun <T> recoverTemplateFailure(
+  onIssue: (TemplateExtractionIssue) -> Unit,
+  fallback: () -> T,
+  block: () -> T,
+): T =
+  try {
+    block()
+  } catch (failure: TemplateExtractionFailure) {
+    onIssue(failure.issue)
+    fallback()
+  }
+
 /** Converts the collected extraction issues into a single FHIR-native diagnostic resource. */
 internal fun List<TemplateExtractionIssue>.toOperationOutcome(): OperationOutcome =
   OperationOutcome(issue = map { it.toOperationOutcomeIssue() })

@@ -21,6 +21,7 @@ import dev.ohs.fhir.datacapture.extensions.isRepeatedGroup
 import dev.ohs.fhir.datacapture.extensions.templateExtractExtensions
 import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Enumeration
+import dev.ohs.fhir.model.r4.Instant
 import dev.ohs.fhir.model.r4.OperationOutcome
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
@@ -39,7 +40,6 @@ internal class TemplateExtractionEngine(
   private val questionnaire: Questionnaire,
   private val questionnaireResponse: QuestionnaireResponse,
 ) {
-  private val issues = mutableListOf<TemplateExtractionIssue>()
   private val evaluator = TemplateFhirPathEvaluator()
   private val valueConverter = TemplateValueConverter()
   private val treeProcessor = TemplateTreeProcessor(evaluator, valueConverter)
@@ -51,6 +51,8 @@ internal class TemplateExtractionEngine(
    */
   fun extract(): TemplateExtractionResult {
     val entries = mutableListOf<Bundle.Entry>()
+    val issues = mutableListOf<TemplateExtractionIssue>()
+    val onIssue: (TemplateExtractionIssue) -> Unit = issues::add
     val rootVariables = allocateIdVariables(questionnaire.allocateIdVariableNames)
     val rootScope =
       TemplateEvaluationScope(
@@ -62,7 +64,7 @@ internal class TemplateExtractionEngine(
       )
 
     questionnaire.templateExtractExtensions.forEach { definition ->
-      extractTemplate(definition, rootScope, "Questionnaire").let(entries::addIfPresent)
+      extractTemplate(definition, rootScope, "Questionnaire", onIssue).let(entries::addIfPresent)
     }
 
     traverseQuestionnaireItems(
@@ -70,6 +72,7 @@ internal class TemplateExtractionEngine(
       responseItemsByLinkId = questionnaireResponse.item.groupBy { it.linkId.value },
       inheritedVariables = rootVariables,
       outputEntries = entries,
+      onIssue = onIssue,
     )
 
     return TemplateExtractionResult(
@@ -99,6 +102,7 @@ internal class TemplateExtractionEngine(
     responseItemsByLinkId: Map<String?, List<QuestionnaireResponse.Item>>,
     inheritedVariables: Map<String, Any?>,
     outputEntries: MutableList<Bundle.Entry>,
+    onIssue: (TemplateExtractionIssue) -> Unit,
   ) {
     questionnaireItems.forEach { questionnaireItem ->
       val matchingResponseItems = responseItemsByLinkId[questionnaireItem.linkId.value].orEmpty()
@@ -109,7 +113,7 @@ internal class TemplateExtractionEngine(
           questionnaireItem.repeats?.value != true &&
           matchingResponseItems.size > 1
       ) {
-        issues +=
+        onIssue(
           TemplateExtractionIssue(
             severity = OperationOutcome.IssueSeverity.Warning,
             code = OperationOutcome.IssueType.Invalid,
@@ -117,6 +121,7 @@ internal class TemplateExtractionEngine(
               "Multiple QuestionnaireResponse items were found for non-repeating item '${questionnaireItem.linkId.value}'. Only the first occurrence will be used for direct extraction.",
             expressionPath = questionnaireItem.linkId.value,
           )
+        )
       }
 
       questionnaireItem.toExtractionContexts(matchingResponseItems).forEach { extractionContext ->
@@ -132,7 +137,12 @@ internal class TemplateExtractionEngine(
           )
 
         questionnaireItem.templateExtractExtensions.forEach { definition ->
-          extractTemplate(definition, scope, questionnaireItem.linkId.value ?: "Questionnaire.item")
+          extractTemplate(
+              definition = definition,
+              scope = scope,
+              path = questionnaireItem.linkId.value ?: "Questionnaire.item",
+              onIssue = onIssue,
+            )
             .let(outputEntries::addIfPresent)
         }
 
@@ -143,6 +153,7 @@ internal class TemplateExtractionEngine(
               extractionContext.childResponseItems.groupBy { it.linkId.value },
             inheritedVariables = currentVariables,
             outputEntries = outputEntries,
+            onIssue = onIssue,
           )
         }
       }
@@ -153,10 +164,11 @@ internal class TemplateExtractionEngine(
     definition: TemplateExtractDefinition,
     scope: TemplateEvaluationScope,
     path: String,
+    onIssue: (TemplateExtractionIssue) -> Unit,
   ): Bundle.Entry? {
     val templateResource = questionnaire.findContainedResource(definition.templateReference)
     if (templateResource == null) {
-      issues +=
+      onIssue(
         TemplateExtractionIssue(
           severity = OperationOutcome.IssueSeverity.Error,
           code = OperationOutcome.IssueType.Required,
@@ -164,6 +176,7 @@ internal class TemplateExtractionEngine(
             "Contained template '${definition.templateReference}' was not found in the questionnaire.",
           expressionPath = path,
         )
+      )
       return null
     }
 
@@ -171,7 +184,7 @@ internal class TemplateExtractionEngine(
     val resourceType =
       templateJson["resourceType"]?.jsonPrimitive?.contentOrNull
         ?: run {
-          issues +=
+          onIssue(
             TemplateExtractionIssue(
               severity = OperationOutcome.IssueSeverity.Error,
               code = OperationOutcome.IssueType.Invalid,
@@ -179,15 +192,16 @@ internal class TemplateExtractionEngine(
                 "Contained template '${definition.templateReference}' is missing resourceType.",
               expressionPath = path,
             )
+          )
           return null
         }
 
     // The JSON tree pass applies templateExtractContext/templateExtractValue recursively before we
     // materialize the resource back into typed Kotlin FHIR models.
-    val processedResources = treeProcessor.processResource(templateJson, scope, issues)
+    val processedResources = treeProcessor.processResource(templateJson, scope, onIssue)
     if (processedResources.isEmpty()) return null
     if (processedResources.size > 1) {
-      issues +=
+      onIssue(
         TemplateExtractionIssue(
           severity = OperationOutcome.IssueSeverity.Warning,
           code = OperationOutcome.IssueType.Invalid,
@@ -195,25 +209,29 @@ internal class TemplateExtractionEngine(
             "Template '${definition.templateReference}' expanded to multiple resources in a singular extraction context. Only the first resource will be emitted.",
           expressionPath = path,
         )
+      )
     }
 
-    val resourceJson = processedResources.first().withEvaluatedResourceId(definition, scope, path)
-    val extractedResource = valueConverter.jsonToResource(resourceJson, path, issues) ?: return null
-    return createBundleEntry(definition, scope, path, resourceType, extractedResource)
+    val resourceJson =
+      processedResources.first().withEvaluatedResourceId(definition, scope, path, onIssue)
+    val extractedResource =
+      recoverTemplateFailure(onIssue, { null }) {
+        valueConverter.jsonToResource(resourceJson, path)
+      } ?: return null
+    return createBundleEntry(definition, scope, path, resourceType, extractedResource, onIssue)
   }
 
   private fun JsonObject.withEvaluatedResourceId(
     definition: TemplateExtractDefinition,
     scope: TemplateEvaluationScope,
     path: String,
+    onIssue: (TemplateExtractionIssue) -> Unit,
   ): JsonObject {
     val mutable = toMutableMap()
     val evaluatedId =
       definition.resourceIdExpression
-        ?.let {
-          evaluator.evaluate(TemplateExtractExpression(it), scope, "$path.resourceId", issues)
-        }
-        ?.let { values -> valueConverter.toStringValue(values, "$path.resourceId", issues) }
+        ?.let { evaluateExpression(it, scope, "$path.resourceId", onIssue) }
+        ?.let { values -> toStringValue(values, "$path.resourceId", onIssue) }
         ?.takeIf { it.isNotBlank() }
 
     if (evaluatedId == null) {
@@ -232,12 +250,13 @@ internal class TemplateExtractionEngine(
     path: String,
     resourceType: String,
     extractedResource: Resource,
+    onIssue: (TemplateExtractionIssue) -> Unit,
   ): Bundle.Entry {
     val resourceId = extractedResource.id
     val fullUrl =
       definition.fullUrlExpression
-        ?.let { evaluator.evaluate(TemplateExtractExpression(it), scope, "$path.fullUrl", issues) }
-        ?.let { values -> valueConverter.toStringValue(values, "$path.fullUrl", issues) }
+        ?.let { evaluateExpression(it, scope, "$path.fullUrl", onIssue) }
+        ?.let { values -> toStringValue(values, "$path.fullUrl", onIssue) }
         ?.takeIf { it.isNotBlank() } ?: generateAllocatedFullUrl()
 
     val requestUrl =
@@ -262,32 +281,26 @@ internal class TemplateExtractionEngine(
       )
 
     definition.ifNoneMatchExpression
-      ?.let {
-        evaluator.evaluate(TemplateExtractExpression(it), scope, "$path.ifNoneMatch", issues)
-      }
-      ?.let { values -> valueConverter.toStringValue(values, "$path.ifNoneMatch", issues) }
+      ?.let { evaluateExpression(it, scope, "$path.ifNoneMatch", onIssue) }
+      ?.let { values -> toStringValue(values, "$path.ifNoneMatch", onIssue) }
       ?.takeIf { it.isNotBlank() }
       ?.let { requestBuilder.ifNoneMatch = FhirString.Builder().apply { value = it } }
 
     definition.ifMatchExpression
-      ?.let { evaluator.evaluate(TemplateExtractExpression(it), scope, "$path.ifMatch", issues) }
-      ?.let { values -> valueConverter.toStringValue(values, "$path.ifMatch", issues) }
+      ?.let { evaluateExpression(it, scope, "$path.ifMatch", onIssue) }
+      ?.let { values -> toStringValue(values, "$path.ifMatch", onIssue) }
       ?.takeIf { it.isNotBlank() }
       ?.let { requestBuilder.ifMatch = FhirString.Builder().apply { value = it } }
 
     definition.ifNoneExistExpression
-      ?.let {
-        evaluator.evaluate(TemplateExtractExpression(it), scope, "$path.ifNoneExist", issues)
-      }
-      ?.let { values -> valueConverter.toStringValue(values, "$path.ifNoneExist", issues) }
+      ?.let { evaluateExpression(it, scope, "$path.ifNoneExist", onIssue) }
+      ?.let { values -> toStringValue(values, "$path.ifNoneExist", onIssue) }
       ?.takeIf { it.isNotBlank() }
       ?.let { requestBuilder.ifNoneExist = FhirString.Builder().apply { value = it } }
 
     definition.ifModifiedSinceExpression
-      ?.let {
-        evaluator.evaluate(TemplateExtractExpression(it), scope, "$path.ifModifiedSince", issues)
-      }
-      ?.let { values -> valueConverter.toInstantValue(values, "$path.ifModifiedSince", issues) }
+      ?.let { evaluateExpression(it, scope, "$path.ifModifiedSince", onIssue) }
+      ?.let { values -> toInstantValue(values, "$path.ifModifiedSince", onIssue) }
       ?.let { instant -> requestBuilder.ifModifiedSince = instant.toBuilder() }
 
     return Bundle.Entry(
@@ -296,6 +309,34 @@ internal class TemplateExtractionEngine(
       request = requestBuilder.build(),
     )
   }
+
+  private fun evaluateExpression(
+    expression: String,
+    scope: TemplateEvaluationScope,
+    path: String,
+    onIssue: (TemplateExtractionIssue) -> Unit,
+  ): List<Any> =
+    recoverTemplateFailure(onIssue, { emptyList() }) {
+      evaluator.evaluate(TemplateExtractExpression(expression), scope, path)
+    }
+
+  private fun toStringValue(
+    values: List<Any>,
+    path: String,
+    onIssue: (TemplateExtractionIssue) -> Unit,
+  ): String? =
+    recoverTemplateFailure(onIssue, { null }) {
+      valueConverter.toStringValue(values, path, onIssue)
+    }
+
+  private fun toInstantValue(
+    values: List<Any>,
+    path: String,
+    onIssue: (TemplateExtractionIssue) -> Unit,
+  ): Instant? =
+    recoverTemplateFailure(onIssue, { null }) {
+      valueConverter.toInstantValue(values, path, onIssue)
+    }
 
   @OptIn(ExperimentalUuidApi::class)
   private fun allocateIdVariables(variableNames: List<String>): Map<String, Any?> =

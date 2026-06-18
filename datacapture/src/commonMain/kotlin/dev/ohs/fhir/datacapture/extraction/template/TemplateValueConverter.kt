@@ -69,14 +69,10 @@ internal class TemplateValueConverter {
    * Converts one evaluated FHIRPath result into the JSON form expected by the template tree.
    *
    * This method accepts the runtime types produced by the FHIRPath engine as well as common Kotlin
-   * primitives and Kotlin FHIR model types. Unsupported values are reported as extraction issues so
-   * the caller can continue processing other template nodes.
+   * primitives and Kotlin FHIR model types. Unsupported values throw a recoverable extraction
+   * failure so callers can decide whether to skip only the current node or abort a larger step.
    */
-  fun toJsonElement(
-    value: Any,
-    path: String,
-    issues: MutableList<TemplateExtractionIssue>,
-  ): JsonElement? =
+  fun toJsonElement(value: Any, path: String): JsonElement =
     when (value) {
       is String -> JsonPrimitive(value)
 
@@ -165,41 +161,32 @@ internal class TemplateValueConverter {
 
       is Resource -> json.encodeToJsonElement(Resource.serializer(), value)
 
-      else -> {
-        issues +=
-          TemplateExtractionIssue(
-            severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-            code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-            diagnostics =
-              "Unsupported extraction result type ${value::class.simpleName} for '$path'.",
-            expressionPath = path,
-          )
-        null
-      }
+      else ->
+        extractionFailure(
+          severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
+          code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
+          diagnostics =
+            "Unsupported extraction result type ${value::class.simpleName} for '$path'.",
+          expressionPath = path,
+        )
     }
 
   /**
    * Narrows [toJsonElement] to template positions that represent primitive FHIR JSON values.
    *
-   * If an expression resolves to a complex object where the template expects a primitive, the
-   * mismatch is recorded and `null` is returned so the caller can omit that assignment safely.
+   * If an expression resolves to a complex object where the template expects a primitive, a
+   * recoverable extraction failure is raised so the caller can omit that assignment safely.
    */
-  fun toPrimitiveJsonElement(
-    value: Any,
-    path: String,
-    issues: MutableList<TemplateExtractionIssue>,
-  ): JsonElement? {
-    val jsonValue = toJsonElement(value, path, issues) ?: return null
+  fun toPrimitiveJsonElement(value: Any, path: String): JsonElement {
+    val jsonValue = toJsonElement(value, path)
     if (jsonValue !is JsonPrimitive) {
-      issues +=
-        TemplateExtractionIssue(
-          severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-          code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-          diagnostics =
-            "Expression for '$path' resolved to a non-primitive value, but the template element is primitive.",
-          expressionPath = path,
-        )
-      return null
+      extractionFailure(
+        severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
+        code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
+        diagnostics =
+          "Expression for '$path' resolved to a non-primitive value, but the template element is primitive.",
+        expressionPath = path,
+      )
     }
     return jsonValue
   }
@@ -214,11 +201,11 @@ internal class TemplateValueConverter {
   fun toStringValue(
     values: List<Any>,
     path: String,
-    issues: MutableList<TemplateExtractionIssue>,
+    onIssue: (TemplateExtractionIssue) -> Unit,
   ): String? {
     if (values.isEmpty()) return null
     if (values.size > 1) {
-      issues +=
+      onIssue(
         TemplateExtractionIssue(
           severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Warning,
           code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
@@ -226,6 +213,7 @@ internal class TemplateValueConverter {
             "Expression for '$path' produced multiple values. Only the first value will be used.",
           expressionPath = path,
         )
+      )
     }
     return when (val value = values.first()) {
       is String -> value
@@ -256,17 +244,14 @@ internal class TemplateValueConverter {
       is Oid,
       is Uuid -> FhirPathService.convertToString(listOf(value))
 
-      else -> {
-        issues +=
-          TemplateExtractionIssue(
-            severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-            code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-            diagnostics =
-              "Expression for '$path' must resolve to a string-compatible value, but found ${value::class.simpleName}.",
-            expressionPath = path,
-          )
-        null
-      }
+      else ->
+        extractionFailure(
+          severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
+          code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
+          diagnostics =
+            "Expression for '$path' must resolve to a string-compatible value, but found ${value::class.simpleName}.",
+          expressionPath = path,
+        )
     }
   }
 
@@ -279,21 +264,19 @@ internal class TemplateValueConverter {
   fun toInstantValue(
     values: List<Any>,
     path: String,
-    issues: MutableList<TemplateExtractionIssue>,
+    onIssue: (TemplateExtractionIssue) -> Unit,
   ): Instant? {
-    val value = toStringValue(values, path, issues)?.takeIf { it.isNotBlank() } ?: return null
+    val value = toStringValue(values, path, onIssue)?.takeIf { it.isNotBlank() } ?: return null
     val instantRegex =
       Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$")
     if (!instantRegex.matches(value)) {
-      issues +=
-        TemplateExtractionIssue(
-          severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-          code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-          diagnostics =
-            "Expression for '$path' must resolve to an instant with timezone information. Found '$value'.",
-          expressionPath = path,
-        )
-      return null
+      extractionFailure(
+        severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
+        code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
+        diagnostics =
+          "Expression for '$path' must resolve to an instant with timezone information. Found '$value'.",
+        expressionPath = path,
+      )
     }
     return Instant(value = FhirDateTime.fromString(value))
   }
@@ -302,25 +285,19 @@ internal class TemplateValueConverter {
    * Rehydrates a processed JSON object back into a typed Kotlin FHIR [Resource].
    *
    * This is the final structural validation pass for one extracted resource. Any decoding failure
-   * is treated as an extraction error for that template path.
+   * is surfaced as a recoverable extraction failure for that template path.
    */
-  fun jsonToResource(
-    resourceJson: JsonObject,
-    path: String,
-    issues: MutableList<TemplateExtractionIssue>,
-  ): Resource? =
+  fun jsonToResource(resourceJson: JsonObject, path: String): Resource =
     try {
       json.decodeFromString<Resource>(resourceJson.toString())
     } catch (throwable: Throwable) {
-      issues +=
-        TemplateExtractionIssue(
-          severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-          code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Exception,
-          diagnostics =
-            "Extracted resource at '$path' could not be decoded back into a Kotlin FHIR model: ${throwable.message ?: throwable::class.simpleName}",
-          expressionPath = path,
-        )
-      null
+      extractionFailure(
+        severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
+        code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Exception,
+        diagnostics =
+          "Extracted resource at '$path' could not be decoded back into a Kotlin FHIR model: ${throwable.message ?: throwable::class.simpleName}",
+        expressionPath = path,
+      )
     }
 
   /** Serializes a typed Kotlin FHIR resource into a mutable JSON object for template processing. */

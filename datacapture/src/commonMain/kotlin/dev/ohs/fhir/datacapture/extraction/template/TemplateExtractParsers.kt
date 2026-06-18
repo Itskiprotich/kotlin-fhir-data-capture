@@ -15,8 +15,6 @@
  */
 package dev.ohs.fhir.datacapture.extraction.template
 
-import dev.ohs.fhir.datacapture.extraction.EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL
-import dev.ohs.fhir.datacapture.extraction.EXTENSION_TEMPLATE_EXTRACT_VALUE_URL
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -25,11 +23,18 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 private const val FHIRPATH_LANGUAGE = "text/fhirpath"
+internal const val EXTENSION_EXTRACT_ALLOCATE_ID_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-extractAllocateId"
+
+internal const val EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext"
+internal const val EXTENSION_TEMPLATE_EXTRACT_VALUE_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue"
 
 internal fun parseTemplateNodeExtensionState(
   extensionElement: JsonElement?,
   path: String,
-  issues: MutableList<TemplateExtractionIssue>,
+  onIssue: (TemplateExtractionIssue) -> Unit,
 ): TemplateNodeExtensionState {
   val extensionArray = extensionElement as? JsonArray ?: return TemplateNodeExtensionState()
   var contextExpression: TemplateExtractExpression? = null
@@ -42,7 +47,7 @@ internal fun parseTemplateNodeExtensionState(
     when (url) {
       EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL -> {
         if (contextExpression != null) {
-          issues +=
+          onIssue(
             TemplateExtractionIssue(
               severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Warning,
               code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
@@ -50,14 +55,18 @@ internal fun parseTemplateNodeExtensionState(
                 "Multiple templateExtractContext extensions were found. Only the first one will be used.",
               expressionPath = path,
             )
+          )
         } else {
-          contextExpression = parseTemplateExpression(extensionObject, path, issues)
+          contextExpression =
+            recoverTemplateFailure(onIssue, { null }) {
+              parseTemplateExpression(extensionObject, path)
+            }
         }
       }
 
       EXTENSION_TEMPLATE_EXTRACT_VALUE_URL -> {
         if (valueExpression != null) {
-          issues +=
+          onIssue(
             TemplateExtractionIssue(
               severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Warning,
               code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
@@ -65,8 +74,12 @@ internal fun parseTemplateNodeExtensionState(
                 "Multiple templateExtractValue extensions were found. Only the first one will be used.",
               expressionPath = path,
             )
+          )
         } else {
-          valueExpression = parseTemplateExpression(extensionObject, path, issues)
+          valueExpression =
+            recoverTemplateFailure(onIssue, { null }) {
+              parseTemplateExpression(extensionObject, path)
+            }
         }
       }
 
@@ -87,7 +100,6 @@ internal fun parseTemplateNodeExtensionState(
 private fun parseTemplateExpression(
   extensionObject: JsonObject,
   path: String,
-  issues: MutableList<TemplateExtractionIssue>,
 ): TemplateExtractExpression? {
   extensionObject["valueString"]
     ?.jsonPrimitive
@@ -100,40 +112,34 @@ private fun parseTemplateExpression(
   val valueExpression =
     extensionObject["valueExpression"]?.jsonObject
       ?: run {
-        issues +=
-          TemplateExtractionIssue(
-            severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-            code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-            diagnostics =
-              "Template extraction extensions must declare valueString or valueExpression.",
-            expressionPath = path,
-          )
-        return null
+        extractionFailure(
+          severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
+          code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
+          diagnostics =
+            "Template extraction extensions must declare valueString or valueExpression.",
+          expressionPath = path,
+        )
       }
 
   val language = valueExpression["language"]?.jsonPrimitive?.contentOrNull
   if (language != null && language != FHIRPATH_LANGUAGE) {
-    issues +=
-      TemplateExtractionIssue(
-        severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-        code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-        diagnostics =
-          "Only FHIRPath expressions are supported for template extraction. Found language '$language'.",
-        expressionPath = path,
-      )
-    return null
+    extractionFailure(
+      severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
+      code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
+      diagnostics =
+        "Only FHIRPath expressions are supported for template extraction. Found language '$language'.",
+      expressionPath = path,
+    )
   }
 
   val expression = valueExpression["expression"]?.jsonPrimitive?.contentOrNull
   if (expression.isNullOrBlank()) {
-    issues +=
-      TemplateExtractionIssue(
-        severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-        code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Required,
-        diagnostics = "Template extraction expressions must include valueExpression.expression.",
-        expressionPath = path,
-      )
-    return null
+    extractionFailure(
+      severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
+      code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Required,
+      diagnostics = "Template extraction expressions must include valueExpression.expression.",
+      expressionPath = path,
+    )
   }
 
   return TemplateExtractExpression(

@@ -15,8 +15,7 @@
  */
 package dev.ohs.fhir.datacapture.extensions
 
-import dev.ohs.fhir.datacapture.extraction.EXTENSION_EXTRACT_ALLOCATE_ID_URL
-import dev.ohs.fhir.datacapture.extraction.EXTENSION_TEMPLATE_EXTRACT_URL
+import dev.ohs.fhir.datacapture.extraction.template.EXTENSION_EXTRACT_ALLOCATE_ID_URL
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractDefinition
 import dev.ohs.fhir.model.r4.Expression
 import dev.ohs.fhir.model.r4.Extension
@@ -24,6 +23,8 @@ import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.Resource
 import dev.ohs.fhir.model.r4.terminologies.ResourceType
+
+internal const val TEMPLATE_EXTRACT_CHILD_TEMPLATE_URL: String = "template"
 
 /**
  * The StructureMap url in the

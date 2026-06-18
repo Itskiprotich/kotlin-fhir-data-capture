@@ -24,7 +24,6 @@ internal class TemplateFhirPathEvaluator {
     expression: TemplateExtractExpression,
     scope: TemplateEvaluationScope,
     path: String,
-    issues: MutableList<TemplateExtractionIssue>,
   ): List<Any> {
     val baseContext = scope.context ?: scope.questionnaireResponse
     val variables = buildMap {
@@ -42,15 +41,13 @@ internal class TemplateFhirPathEvaluator {
         variables = variables,
       )
     } catch (throwable: Throwable) {
-      issues +=
-        TemplateExtractionIssue(
-          severity = OperationOutcome.IssueSeverity.Error,
-          code = OperationOutcome.IssueType.Exception,
-          diagnostics =
-            "FHIRPath evaluation failed for '${expression.expression}': ${throwable.message ?: throwable::class.simpleName}",
-          expressionPath = path,
-        )
-      emptyList()
+      extractionFailure(
+        severity = OperationOutcome.IssueSeverity.Error,
+        code = OperationOutcome.IssueType.Exception,
+        diagnostics =
+          "FHIRPath evaluation failed for '${expression.expression}': ${throwable.message ?: throwable::class.simpleName}",
+        expressionPath = path,
+      )
     }
   }
 }
