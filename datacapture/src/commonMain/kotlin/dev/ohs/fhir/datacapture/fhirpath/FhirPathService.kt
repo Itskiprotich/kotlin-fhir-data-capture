@@ -85,7 +85,7 @@ internal object FhirPathService {
       is Long -> value.toString()
       is Double -> value.toString()
       is Float -> value.toString()
-      is com.ionspin.kotlin.bignum.decimal.BigDecimal -> value.toString()
+      is com.ionspin.kotlin.bignum.decimal.BigDecimal -> value.toExpandedString()
       is FhirPathDate -> value.toFhirLiteral()
       is FhirPathDateTime -> value.toFhirLiteral()
       is FhirPathTime -> value.toFhirLiteral()
