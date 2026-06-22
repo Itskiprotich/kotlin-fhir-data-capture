@@ -123,7 +123,7 @@ internal data class TemplateExtractionIssue(
 }
 
 /** Internal control-flow exception used to surface one fatal extraction issue. */
-internal class TemplateExtractionFailure(val issue: TemplateExtractionIssue) :
+internal class TemplateExtractionException(val issue: TemplateExtractionIssue) :
   RuntimeException(issue.diagnostics)
 
 internal fun extractionFailure(
