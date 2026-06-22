@@ -80,28 +80,24 @@ internal class TemplateTreeProcessor(
     node: JsonObject,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
-  ): JsonObject {
-    val logicalPropertyNames = linkedSetOf<String>()
-    node.keys.forEach { key ->
-      logicalPropertyNames += if (key.startsWith("_")) key.removePrefix("_") else key
-    }
+    issues: MutableList<TemplateExtractionIssue>,
+  ): JsonObject = buildJsonObject {
+    node.keys
+      .filterNot { it.startsWith("_") }
+      .forEach { propertyName ->
+        val (value, metadata) =
+          processLogicalProperty(
+            propertyName = propertyName,
+            valueNode = node[propertyName],
+            metadataNode = node["_$propertyName"],
+            scope = scope,
+            path = appendJsonPath(path, propertyName),
+            issues = issues,
+          )
 
-    val output = linkedMapOf<String, JsonElement>()
-    logicalPropertyNames.forEach { propertyName ->
-      val processedProperty =
-        processLogicalProperty(
-          propertyName = propertyName,
-          valueNode = node[propertyName],
-          metadataNode = node["_$propertyName"],
-          scope = scope,
-          path = appendJsonPath(path, propertyName),
-          onIssue = onIssue,
-        )
-      processedProperty.value?.let { output[propertyName] = it }
-      processedProperty.metadata?.let { output["_$propertyName"] = it }
-    }
-    return JsonObject(output)
+        value?.let { put(propertyName, it) }
+        metadata?.let { put("_$propertyName", it) }
+      }
   }
 
   private fun processLogicalProperty(
