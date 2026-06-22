@@ -69,10 +69,7 @@ internal fun Extension.stringValue(): String? =
  * `valueReference`.
  */
 internal fun Extension.referenceValue(): String? =
-  when (val extensionValue = value) {
-    is Extension.Value.Reference -> extensionValue.value.reference?.value
-    else -> null
-  }
+ value?.asReference()?.value?.reference?.value
 
 /**
  * Converts the nested extension structure into a template extraction definition.
