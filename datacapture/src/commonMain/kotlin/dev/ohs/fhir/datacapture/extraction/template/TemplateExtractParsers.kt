@@ -15,6 +15,7 @@
  */
 package dev.ohs.fhir.datacapture.extraction.template
 
+import dev.ohs.fhir.datacapture.extraction.DataExtractionException
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -78,33 +79,22 @@ private fun parseTemplateExpression(
   val valueExpression =
     extensionObject["valueExpression"]?.jsonObject
       ?: run {
-        throw TemplateExtractionException(
-          severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-          code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-          diagnostics =
-            "Template extraction extensions must declare valueString or valueExpression.",
-          expressionPath = path,
+        throw DataExtractionException(
+          "Template extraction extensions must declare valueString or valueExpression for '$path'."
         )
       }
 
   val language = valueExpression["language"]?.jsonPrimitive?.contentOrNull
   if (language != null && language != FHIRPATH_LANGUAGE) {
-    throw TemplateExtractionException(
-      severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-      code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-      diagnostics =
-        "Only FHIRPath expressions are supported for template extraction. Found language '$language'.",
-      expressionPath = path,
+    throw DataExtractionException(
+      "Only FHIRPath expressions are supported for template extraction. Found language '$language' at '$path'."
     )
   }
 
   val expression = valueExpression["expression"]?.jsonPrimitive?.contentOrNull
   if (expression.isNullOrBlank()) {
-    throw TemplateExtractionException(
-      severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
-      code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Required,
-      diagnostics = "Template extraction expressions must include valueExpression.expression.",
-      expressionPath = path,
+    throw DataExtractionException(
+      "Template extraction expressions must include valueExpression.expression for '$path'."
     )
   }
 

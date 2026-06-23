@@ -17,7 +17,6 @@ package dev.ohs.fhir.datacapture.extraction.template
 
 import dev.ohs.fhir.datacapture.extensions.isRepeatedGroup
 import dev.ohs.fhir.datacapture.extensions.normalizedVariableName
-import dev.ohs.fhir.model.r4.OperationOutcome
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlinx.serialization.json.JsonArray
@@ -115,32 +114,6 @@ internal data class ItemExtractionContext(
   val baseContext: QuestionnaireResponse.Item,
   val childResponseItems: List<QuestionnaireResponse.Item>,
 )
-
-/** Internal extraction failure details attached to [TemplateExtractionException]. */
-internal data class TemplateExtractionIssue(
-  val severity: OperationOutcome.IssueSeverity,
-  val code: OperationOutcome.IssueType,
-  val diagnostics: String,
-  val expressionPath: String? = null,
-)
-
-/** Internal control-flow exception used to surface one fatal extraction issue. */
-internal class TemplateExtractionException(val issue: TemplateExtractionIssue) :
-  RuntimeException(issue.diagnostics) {
-  constructor(
-    severity: OperationOutcome.IssueSeverity,
-    code: OperationOutcome.IssueType,
-    diagnostics: String,
-    expressionPath: String? = null,
-  ) : this(
-    TemplateExtractionIssue(
-      severity = severity,
-      code = code,
-      diagnostics = diagnostics,
-      expressionPath = expressionPath,
-    )
-  )
-}
 
 /**
  * Normalizes a questionnaire item into the logical extraction units defined by SDC.

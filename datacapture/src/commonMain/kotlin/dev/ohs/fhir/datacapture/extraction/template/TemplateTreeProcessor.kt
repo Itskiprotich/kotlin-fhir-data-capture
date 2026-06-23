@@ -15,8 +15,8 @@
  */
 package dev.ohs.fhir.datacapture.extraction.template
 
+import dev.ohs.fhir.datacapture.extraction.DataExtractionException
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
-import dev.ohs.fhir.model.r4.OperationOutcome
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -63,12 +63,8 @@ internal class TemplateTreeProcessor {
             if (value is JsonObject) {
               value
             } else {
-              throw TemplateExtractionException(
-                severity = OperationOutcome.IssueSeverity.Error,
-                code = OperationOutcome.IssueType.Invalid,
-                diagnostics =
-                  "Template value replacement for '$path' must resolve to a JSON object because the template node has child properties.",
-                expressionPath = path,
+              throw DataExtractionException(
+                "Template value replacement for '$path' must resolve to a JSON object because the template node has child properties."
               )
             }
           }
@@ -186,12 +182,8 @@ internal class TemplateTreeProcessor {
             processPrimitiveOccurrences(currentValue, currentMetadata, scope, currentPath)
 
           else ->
-            throw TemplateExtractionException(
-              severity = OperationOutcome.IssueSeverity.Error,
-              code = OperationOutcome.IssueType.Invalid,
-              diagnostics =
-                "Primitive metadata array entries must be objects or null. Found ${currentMetadata::class.simpleName}.",
-              expressionPath = currentPath,
+            throw DataExtractionException(
+              "Primitive metadata array entries must be objects or null. Found ${currentMetadata::class.simpleName} at '$currentPath'."
             )
         }
       }

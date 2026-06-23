@@ -15,6 +15,9 @@
  */
 package dev.ohs.fhir.datacapture.extraction
 
+import dev.ohs.fhir.datacapture.extraction.template.TemplateEvaluationScope
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
+import dev.ohs.fhir.datacapture.extraction.template.TemplateTreeProcessor
 import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
@@ -29,11 +32,12 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-class TemplateBasedDataExtractorTest {
+class TemplateExtractionEngineTest {
   private val json = Json {
     explicitNulls = false
     encodeDefaults = false
   }
+  private val treeProcessor = TemplateTreeProcessor()
 
   @Test
   fun extractsRootAndRepeatedGroupResourcesUsingSharedAllocatedIds() {
@@ -233,7 +237,7 @@ class TemplateBasedDataExtractorTest {
         """
       )
 
-    val result = TemplateBasedDataExtractor.extract(questionnaire, questionnaireResponse)
+    val result = TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
 
     assertEquals(3, result.entry.size)
 
@@ -364,7 +368,7 @@ class TemplateBasedDataExtractorTest {
         """
       )
 
-    val result = TemplateBasedDataExtractor.extract(questionnaire, questionnaireResponse)
+    val result = TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
 
     assertEquals(2, result.entry.size)
 
@@ -385,6 +389,90 @@ class TemplateBasedDataExtractorTest {
           resource.getValue("valueString").jsonPrimitive.content
       }
     assertEquals(setOf("phone-1" to "phone-1", "phone-2" to "phone-2"), extractedIds.toSet())
+  }
+
+  @Test
+  fun processResource_allowsTemplateIdToBeOverriddenDuringJsonProcessing() {
+    val template =
+      json
+        .parseToJsonElement(
+          """
+          {
+            "resourceType": "Observation",
+            "id": "observation-template",
+            "_id": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "%context.answer.value.first()"
+                }
+              ]
+            },
+            "status": "final",
+            "code": {
+              "text": "phone"
+            }
+          }
+          """
+        )
+        .jsonObject
+
+    val questionnaire =
+      questionnaire(
+        """
+        {
+          "resourceType": "Questionnaire",
+          "url": "http://example.org/Questionnaire/template-id-override",
+          "status": "active",
+          "item": [
+            {
+              "linkId": "phone",
+              "text": "Phone",
+              "type": "string"
+            }
+          ]
+        }
+        """
+      )
+
+    val questionnaireResponse =
+      questionnaireResponse(
+        """
+        {
+          "resourceType": "QuestionnaireResponse",
+          "questionnaire": "http://example.org/Questionnaire/template-id-override",
+          "status": "completed",
+          "item": [
+            {
+              "linkId": "phone",
+              "answer": [
+                {
+                  "valueString": "phone-1"
+                }
+              ]
+            }
+          ]
+        }
+        """
+      )
+
+    val processedResources =
+      treeProcessor.processResource(
+        template = template,
+        scope =
+          TemplateEvaluationScope(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+            questionnaireItem = questionnaire.item.single(),
+            context = questionnaireResponse.item.single(),
+            variables = emptyMap(),
+          ),
+      )
+
+    assertEquals(1, processedResources.size)
+    val processedResource = processedResources.single()
+    assertEquals("phone-1", processedResource.getValue("id").jsonPrimitive.content)
+    assertFalse(processedResource.containsKey("_id"))
   }
 
   @Test
@@ -447,8 +535,8 @@ class TemplateBasedDataExtractorTest {
       )
 
     val throwable =
-      assertFailsWith<IllegalStateException> {
-        TemplateBasedDataExtractor.extract(questionnaire, questionnaireResponse)
+      assertFailsWith<DataExtractionException> {
+        TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
       }
 
     assertTrue(
@@ -496,7 +584,7 @@ class TemplateBasedDataExtractorTest {
 
     val throwable =
       assertFailsWith<IllegalArgumentException> {
-        TemplateBasedDataExtractor.extract(questionnaire, questionnaireResponse)
+        TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
       }
 
     assertTrue(

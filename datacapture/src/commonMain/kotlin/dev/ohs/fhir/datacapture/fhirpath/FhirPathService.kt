@@ -17,7 +17,7 @@ package dev.ohs.fhir.datacapture.fhirpath
 
 import co.touchlab.kermit.Logger
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionException
+import dev.ohs.fhir.datacapture.extraction.DataExtractionException
 import dev.ohs.fhir.fhirpath.FhirPathEngine
 import dev.ohs.fhir.fhirpath.types.FhirPathDate
 import dev.ohs.fhir.fhirpath.types.FhirPathDateTime
@@ -43,7 +43,6 @@ import dev.ohs.fhir.model.r4.Instant
 import dev.ohs.fhir.model.r4.Integer
 import dev.ohs.fhir.model.r4.Markdown
 import dev.ohs.fhir.model.r4.Oid
-import dev.ohs.fhir.model.r4.OperationOutcome
 import dev.ohs.fhir.model.r4.Period
 import dev.ohs.fhir.model.r4.PositiveInt
 import dev.ohs.fhir.model.r4.Quantity
@@ -253,11 +252,8 @@ internal object FhirPathService {
     primitiveJsonElementOrNull(value)
       ?: fhirPathQuantityJsonElementOrNull(value)
       ?: structuredJsonElementOrNull(json, value)
-      ?: throw TemplateExtractionException(
-        severity = OperationOutcome.IssueSeverity.Error,
-        code = OperationOutcome.IssueType.Invalid,
-        diagnostics = "Unsupported extraction result type ${value::class.simpleName} for '$path'.",
-        expressionPath = path,
+      ?: throw DataExtractionException(
+        "Unsupported extraction result type ${value::class.simpleName} for '$path'."
       )
 
   /**
@@ -269,12 +265,8 @@ internal object FhirPathService {
   internal fun toPrimitiveJsonElement(value: Any, path: String): JsonElement {
     val jsonValue = toJsonElement(value, path)
     if (jsonValue !is JsonPrimitive) {
-      throw TemplateExtractionException(
-        severity = OperationOutcome.IssueSeverity.Error,
-        code = OperationOutcome.IssueType.Invalid,
-        diagnostics =
-          "Expression for '$path' resolved to a non-primitive value, but the template element is primitive.",
-        expressionPath = path,
+      throw DataExtractionException(
+        "Expression for '$path' resolved to a non-primitive value, but the template element is primitive."
       )
     }
     return jsonValue
@@ -321,12 +313,8 @@ internal object FhirPathService {
       is Uuid -> convertToString(listOf(firstValue))
 
       else ->
-        throw TemplateExtractionException(
-          severity = OperationOutcome.IssueSeverity.Error,
-          code = OperationOutcome.IssueType.Invalid,
-          diagnostics =
-            "Expression for '$path' must resolve to a string-compatible value, but found ${firstValue::class.simpleName}.",
-          expressionPath = path,
+        throw DataExtractionException(
+          "Expression for '$path' must resolve to a string-compatible value, but found ${firstValue::class.simpleName}."
         )
     }
   }
@@ -342,12 +330,8 @@ internal object FhirPathService {
     val instantRegex =
       Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$")
     if (!instantRegex.matches(value)) {
-      throw TemplateExtractionException(
-        severity = OperationOutcome.IssueSeverity.Error,
-        code = OperationOutcome.IssueType.Invalid,
-        diagnostics =
-          "Expression for '$path' must resolve to an instant with timezone information. Found '$value'.",
-        expressionPath = path,
+      throw DataExtractionException(
+        "Expression for '$path' must resolve to an instant with timezone information. Found '$value'."
       )
     }
     return Instant(value = FhirDateTime.fromString(value))
@@ -363,12 +347,9 @@ internal object FhirPathService {
     try {
       json.decodeFromString<Resource>(resourceJson.toString())
     } catch (throwable: Throwable) {
-      throw TemplateExtractionException(
-        severity = OperationOutcome.IssueSeverity.Error,
-        code = OperationOutcome.IssueType.Exception,
-        diagnostics =
-          "Extracted resource at '$path' could not be decoded back into a Kotlin FHIR model: ${throwable.message ?: throwable::class.simpleName}",
-        expressionPath = path,
+      throw DataExtractionException(
+        "Extracted resource at '$path' could not be decoded back into a Kotlin FHIR model: ${throwable.message ?: throwable::class.simpleName}",
+        throwable,
       )
     }
 

@@ -18,10 +18,10 @@ package dev.ohs.fhir.datacapture.extraction.template
 import dev.ohs.fhir.datacapture.extensions.allocateIdVariableNames
 import dev.ohs.fhir.datacapture.extensions.findContainedResource
 import dev.ohs.fhir.datacapture.extensions.templateExtractExtensions
+import dev.ohs.fhir.datacapture.extraction.DataExtractionException
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
 import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.OperationOutcome
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.Resource
@@ -34,53 +34,93 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 
-/** Stateful worker for a single template extraction run. */
-internal class TemplateExtractionEngine(
-  private val questionnaire: Questionnaire,
-  private val questionnaireResponse: QuestionnaireResponse,
-) {
+/**
+ * Template-based extraction is the Structured Data Capture (SDC) mechanism for deriving one
+ * transaction Bundle from a completed [QuestionnaireResponse] by cloning contained resource
+ * templates and replacing their templated values with data selected from the response:
+ * https://build.fhir.org/ig/HL7/sdc/en/extraction.html
+ * https://build.fhir.org/ig/HL7/sdc/en/StructureDefinition-sdc-questionnaire-templateExtract.html
+ *
+ * This implementation supports the `sdc-questionnaire-templateExtract`,
+ * `sdc-questionnaire-templateExtractContext`, `sdc-questionnaire-templateExtractValue`, and
+ * `sdc-questionnaire-extractAllocateId` extensions defined by SDC. The extractor is
+ * platform-independent and lives in `commonMain`, so callers can use it from Android, iOS, JVM, JS,
+ * or Wasm after obtaining a completed questionnaire response from the data capture workflow.
+ */
+object TemplateExtractionEngine {
   private val treeProcessor = TemplateTreeProcessor()
 
-  /**
-   * Runs extraction in the same order SDC expects consumers to reason about it: questionnaire-level
-   * templates first, then item-level templates against each logical item occurrence, while carrying
-   * forward any allocated `%variable` values that later templates may reference.
-   */
-  fun extract(): Bundle {
-    val entries = mutableListOf<Bundle.Entry>()
-    val rootVariables = allocateIdVariables(questionnaire.allocateIdVariableNames)
-    val rootScope =
-      TemplateEvaluationScope(
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        questionnaireItem = null,
-        context = questionnaireResponse,
-        variables = rootVariables,
-      )
+  /** Returns `true` when the questionnaire declares at least one template extraction definition. */
+  fun canExtract(questionnaire: Questionnaire): Boolean =
+    questionnaire.templateExtractExtensions.isNotEmpty() ||
+      questionnaire.item.any { item -> item.hasTemplateExtractExtensionRecursively() }
 
-    questionnaire.templateExtractExtensions.forEach { definition ->
-      extractTemplate(definition, rootScope, "Questionnaire").let(entries::addIfPresent)
+  /**
+   * Runs one template extraction pass for the provided questionnaire/response pair.
+   *
+   * @throws IllegalArgumentException if the questionnaire does not declare template extraction, if
+   *   any declared template reference cannot be resolved to a contained resource, or if the
+   *   questionnaire response points to a different questionnaire URL.
+   * @throws DataExtractionException if template evaluation encounters a fatal extraction error
+   *   after preflight validation succeeds.
+   */
+  fun extract(questionnaire: Questionnaire, questionnaireResponse: QuestionnaireResponse): Bundle {
+    require(canExtract(questionnaire)) {
+      "Template-based extraction requires sdc-questionnaire-templateExtract on the questionnaire or one of its items."
     }
 
-    traverseQuestionnaireItems(
-      questionnaireItems = questionnaire.item,
-      responseItemsByLinkId = questionnaireResponse.item.groupBy { it.linkId.value },
-      inheritedVariables = rootVariables,
-      outputEntries = entries,
-    )
+    val questionnaireReference = questionnaireResponse.questionnaire?.value
+    require(questionnaireReference == null || questionnaireReference == questionnaire.url?.value) {
+      "Mismatching Questionnaire ${questionnaire.url?.value} and QuestionnaireResponse (for Questionnaire $questionnaireReference)."
+    }
 
-    return Bundle(type = Enumeration(value = Bundle.BundleType.Transaction), entry = entries)
+    val missingTemplateReferences = questionnaire.missingTemplateReferences()
+    require(missingTemplateReferences.isEmpty()) {
+      "Missing contained template resource(s): ${missingTemplateReferences.joinToString()}. Each sdc-questionnaire-templateExtract reference must resolve before extraction starts."
+    }
+
+    try {
+      val rootVariables = allocateIdVariables(questionnaire.allocateIdVariableNames)
+      val rootScope =
+        TemplateEvaluationScope(
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          questionnaireItem = null,
+          context = questionnaireResponse,
+          variables = rootVariables,
+        )
+
+      val entries =
+        questionnaire.templateExtractExtensions.mapNotNull { definition ->
+          extractTemplate(definition, rootScope, "Questionnaire")
+        }
+      val traversedEntries =
+        traverseQuestionnaireItems(
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          questionnaireItems = questionnaire.item,
+          responseItems = questionnaireResponse.item,
+          inheritedVariables = rootVariables,
+        )
+
+      return Bundle(
+        type = Enumeration(value = Bundle.BundleType.Transaction),
+        entry = entries + traversedEntries,
+      )
+    } catch (exception: DataExtractionException) {
+      throw exception
+    }
   }
 
   /**
    * Walks the Questionnaire item tree in lockstep with the matching QuestionnaireResponse items.
    *
-   * For the current sibling level, [responseItemsByLinkId] provides an indexed view of the response
-   * items so each Questionnaire item can retrieve its matching response items in constant time
-   * instead of scanning the full list repeatedly. This lookup is intentionally scoped to the
-   * current branch of the response tree: when recursion moves into child items, a new map is built
-   * from that branch's child response items so nested extraction only sees the responses that
-   * belong to the current parent context.
+   * For the current sibling level, the response items are indexed by `linkId` so each Questionnaire
+   * item can retrieve its matching response items in constant time instead of scanning the full
+   * list repeatedly. This lookup is intentionally scoped to the current branch of the response
+   * tree: when recursion moves into child items, the child response items from that branch become
+   * the next input so nested extraction only sees the responses that belong to the current parent
+   * context.
    *
    * Each matched item is normalized into one or more extraction contexts to support repeated groups
    * and repeating questions, item-level templates are evaluated for each logical occurrence, and
@@ -89,16 +129,18 @@ internal class TemplateExtractionEngine(
    * direct extraction.
    */
   private fun traverseQuestionnaireItems(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
     questionnaireItems: List<Questionnaire.Item>,
-    responseItemsByLinkId: Map<String?, List<QuestionnaireResponse.Item>>,
+    responseItems: List<QuestionnaireResponse.Item>,
     inheritedVariables: Map<String, Any?>,
-    outputEntries: MutableList<Bundle.Entry>,
-  ) {
-    questionnaireItems.forEach { questionnaireItem ->
+  ): List<Bundle.Entry> {
+    val responseItemsByLinkId = responseItems.groupBy { it.linkId.value }
+    return questionnaireItems.flatMap { questionnaireItem ->
       val matchingResponseItems = responseItemsByLinkId[questionnaireItem.linkId.value].orEmpty()
-      if (matchingResponseItems.isEmpty()) return@forEach
+      if (matchingResponseItems.isEmpty()) return@flatMap emptyList()
 
-      questionnaireItem.toExtractionContexts(matchingResponseItems).forEach { extractionContext ->
+      questionnaireItem.toExtractionContexts(matchingResponseItems).flatMap { extractionContext ->
         val currentVariables =
           inheritedVariables + allocateIdVariables(questionnaireItem.allocateIdVariableNames)
         val scope =
@@ -110,24 +152,29 @@ internal class TemplateExtractionEngine(
             variables = currentVariables,
           )
 
-        questionnaireItem.templateExtractExtensions.forEach { definition ->
-          extractTemplate(
+        val extractedEntries =
+          questionnaireItem.templateExtractExtensions.mapNotNull { definition ->
+            extractTemplate(
               definition = definition,
               scope = scope,
               path = questionnaireItem.linkId.value ?: "Questionnaire.item",
             )
-            .let(outputEntries::addIfPresent)
-        }
+          }
 
-        if (questionnaireItem.item.isNotEmpty()) {
-          traverseQuestionnaireItems(
-            questionnaireItems = questionnaireItem.item,
-            responseItemsByLinkId =
-              extractionContext.childResponseItems.groupBy { it.linkId.value },
-            inheritedVariables = currentVariables,
-            outputEntries = outputEntries,
-          )
-        }
+        val childEntries =
+          if (questionnaireItem.item.isNotEmpty()) {
+            traverseQuestionnaireItems(
+              questionnaire = questionnaire,
+              questionnaireResponse = questionnaireResponse,
+              questionnaireItems = questionnaireItem.item,
+              responseItems = extractionContext.childResponseItems,
+              inheritedVariables = currentVariables,
+            )
+          } else {
+            emptyList()
+          }
+
+        extractedEntries + childEntries
       }
     }
   }
@@ -138,13 +185,9 @@ internal class TemplateExtractionEngine(
     path: String,
   ): Bundle.Entry? {
     val templateResource =
-      questionnaire.findContainedResource(definition.templateReference)
-        ?: throw TemplateExtractionException(
-          severity = OperationOutcome.IssueSeverity.Error,
-          code = OperationOutcome.IssueType.Required,
-          diagnostics =
-            "Contained template '${definition.templateReference}' was not found in the questionnaire.",
-          expressionPath = path,
+      scope.questionnaire.findContainedResource(definition.templateReference)
+        ?: throw DataExtractionException(
+          "Contained template '${definition.templateReference}' was not found in the questionnaire."
         )
 
     // Keep the contained template id in the JSON tree while template directives are evaluated.
@@ -156,12 +199,8 @@ internal class TemplateExtractionEngine(
     val resourceType =
       templateJson["resourceType"]?.jsonPrimitive?.contentOrNull
         ?: run {
-          throw TemplateExtractionException(
-            severity = OperationOutcome.IssueSeverity.Error,
-            code = OperationOutcome.IssueType.Invalid,
-            diagnostics =
-              "Contained template '${definition.templateReference}' is missing resourceType.",
-            expressionPath = path,
+          throw DataExtractionException(
+            "Contained template '${definition.templateReference}' is missing resourceType."
           )
         }
 
@@ -287,8 +326,23 @@ internal class TemplateExtractionEngine(
   private fun generateAllocatedFullUrl(): String = "urn:uuid:${Uuid.random()}"
 }
 
-private fun MutableList<Bundle.Entry>.addIfPresent(entry: Bundle.Entry?) {
-  if (entry != null) {
-    add(entry)
-  }
-}
+/** Returns `true` when this questionnaire item subtree declares template extraction anywhere. */
+private fun Questionnaire.Item.hasTemplateExtractExtensionRecursively(): Boolean =
+  templateExtractExtensions.isNotEmpty() ||
+    item.any { child -> child.hasTemplateExtractExtensionRecursively() }
+
+/** Collects unresolved contained resource references declared by template extraction extensions. */
+private fun Questionnaire.missingTemplateReferences(): List<String> =
+  allTemplateExtractDefinitions()
+    .map { it.templateReference }
+    .distinct()
+    .filter { findContainedResource(it) == null }
+
+/** Flattens questionnaire-level and item-level template extraction declarations into one list. */
+private fun Questionnaire.allTemplateExtractDefinitions(): List<TemplateExtractDefinition> =
+  templateExtractExtensions +
+    item.flatMap { questionnaireItem -> questionnaireItem.allTemplateExtractDefinitions() }
+
+/** Recursively gathers template extraction declarations for one questionnaire item subtree. */
+private fun Questionnaire.Item.allTemplateExtractDefinitions(): List<TemplateExtractDefinition> =
+  templateExtractExtensions + item.flatMap { child -> child.allTemplateExtractDefinitions() }
