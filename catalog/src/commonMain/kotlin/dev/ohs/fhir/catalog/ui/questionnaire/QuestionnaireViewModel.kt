@@ -22,7 +22,7 @@ import kotlin_fhir_data_capture.catalog.generated.resources.Res
 import kotlinx.serialization.json.Json
 
 class QuestionnaireViewModel : ViewModel() {
-  private val jsonR4 = Json {
+  private val json = Json {
     explicitNulls = false
     encodeDefaults = false
   }
