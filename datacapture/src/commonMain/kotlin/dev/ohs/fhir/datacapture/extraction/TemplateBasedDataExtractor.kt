@@ -92,14 +92,9 @@ private fun Questionnaire.missingTemplateReferences(): List<String> =
 
 /** Flattens questionnaire-level and item-level template extraction declarations into one list. */
 private fun Questionnaire.allTemplateExtractDefinitions(): List<TemplateExtractDefinition> =
-  buildList {
-    addAll(templateExtractExtensions)
-    item.forEach { questionnaireItem -> addAll(questionnaireItem.allTemplateExtractDefinitions()) }
-  }
+  templateExtractExtensions +
+    item.flatMap { questionnaireItem -> questionnaireItem.allTemplateExtractDefinitions() }
 
 /** Recursively gathers template extraction declarations for one questionnaire item subtree. */
 private fun Questionnaire.Item.allTemplateExtractDefinitions(): List<TemplateExtractDefinition> =
-  buildList {
-    addAll(templateExtractExtensions)
-    item.forEach { child -> addAll(child.allTemplateExtractDefinitions()) }
-  }
+  templateExtractExtensions + item.flatMap { child -> child.allTemplateExtractDefinitions() }

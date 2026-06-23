@@ -30,6 +30,8 @@ internal const val EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext"
 internal const val EXTENSION_TEMPLATE_EXTRACT_VALUE_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue"
+private val TEMPLATE_CONTROL_EXTENSION_URLS =
+  setOf(EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL, EXTENSION_TEMPLATE_EXTRACT_VALUE_URL)
 
 internal fun parseTemplateNodeExtensionState(
   extensionElement: JsonElement?,
@@ -37,59 +39,54 @@ internal fun parseTemplateNodeExtensionState(
   onIssue: (TemplateExtractionIssue) -> Unit,
 ): TemplateNodeExtensionState {
   val extensionArray = extensionElement as? JsonArray ?: return TemplateNodeExtensionState()
-  var contextExpression: TemplateExtractExpression? = null
-  var valueExpression: TemplateExtractExpression? = null
-  val retainedExtensions = mutableListOf<JsonElement>()
-
-  extensionArray.forEach { extensionEntry ->
-    val extensionObject = extensionEntry as? JsonObject
-    val url = extensionObject?.get("url")?.jsonPrimitive?.contentOrNull
-    when (url) {
-      EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL -> {
-        if (contextExpression != null) {
-          onIssue(
-            TemplateExtractionIssue(
-              severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Warning,
-              code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-              diagnostics =
-                "Multiple templateExtractContext extensions were found. Only the first one will be used.",
-              expressionPath = path,
-            )
-          )
-        } else {
-          contextExpression = parseTemplateExpression(extensionObject, path)
-        }
-      }
-
-      EXTENSION_TEMPLATE_EXTRACT_VALUE_URL -> {
-        if (valueExpression != null) {
-          onIssue(
-            TemplateExtractionIssue(
-              severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Warning,
-              code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-              diagnostics =
-                "Multiple templateExtractValue extensions were found. Only the first one will be used.",
-              expressionPath = path,
-            )
-          )
-        } else {
-          valueExpression = parseTemplateExpression(extensionObject, path)
-        }
-      }
-
-      else -> retainedExtensions += extensionEntry
+  val contextExtensions =
+    extensionArray.filterExtensionsByUrl(EXTENSION_TEMPLATE_EXTRACT_CONTEXT_URL)
+  val valueExtensions = extensionArray.filterExtensionsByUrl(EXTENSION_TEMPLATE_EXTRACT_VALUE_URL)
+  val retainedExtensions =
+    extensionArray.filterNot { extensionEntry ->
+      (extensionEntry as? JsonObject)?.get("url")?.jsonPrimitive?.contentOrNull in
+        TEMPLATE_CONTROL_EXTENSION_URLS
     }
+
+  contextExtensions.drop(1).forEach {
+    onIssue(
+      TemplateExtractionIssue(
+        severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Warning,
+        code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
+        diagnostics =
+          "Multiple templateExtractContext extensions were found. Only the first one will be used.",
+        expressionPath = path,
+      )
+    )
+  }
+
+  valueExtensions.drop(1).forEach {
+    onIssue(
+      TemplateExtractionIssue(
+        severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Warning,
+        code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
+        diagnostics =
+          "Multiple templateExtractValue extensions were found. Only the first one will be used.",
+        expressionPath = path,
+      )
+    )
   }
 
   return TemplateNodeExtensionState(
     controls =
       TemplateNodeControls(
-        contextExpression = contextExpression,
-        valueExpression = valueExpression,
+        contextExpression =
+          contextExtensions.firstOrNull()?.let { parseTemplateExpression(it, path) },
+        valueExpression = valueExtensions.firstOrNull()?.let { parseTemplateExpression(it, path) },
       ),
     remainingExtensions = retainedExtensions.takeIf { it.isNotEmpty() }?.let(::JsonArray),
   )
 }
+
+private fun JsonArray.filterExtensionsByUrl(url: String): List<JsonObject> =
+  mapNotNull { extensionEntry ->
+    (extensionEntry as? JsonObject)?.takeIf { it["url"]?.jsonPrimitive?.contentOrNull == url }
+  }
 
 private fun parseTemplateExpression(
   extensionObject: JsonObject,

@@ -30,14 +30,22 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
     scope: TemplateEvaluationScope,
     onIssue: (TemplateExtractionIssue) -> Unit,
   ): List<JsonObject> =
-    processComplexObject(
+    expandObjectNode(
       node = template,
       scope = scope,
       path = template["resourceType"]?.toString() ?: "\$",
       onIssue = onIssue,
     )
 
-  private fun processComplexObject(
+  /**
+   * Expands one JSON object node from the template tree into zero or more output object nodes.
+   *
+   * Here, an "object node" means any non-primitive FHIR JSON value represented as a [JsonObject],
+   * such as the root resource, a backbone element, or a complex data type. The node can fan out
+   * because `templateExtractContext` may produce multiple evaluation scopes and
+   * `templateExtractValue` may replace the current node with multiple object results.
+   */
+  private fun expandObjectNode(
     node: JsonObject,
     scope: TemplateEvaluationScope,
     path: String,
@@ -62,7 +70,7 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
                 severity = OperationOutcome.IssueSeverity.Error,
                 code = OperationOutcome.IssueType.Invalid,
                 diagnostics =
-                  "Template value replacement for '$path' must resolve to an object because the template node is complex.",
+                  "Template value replacement for '$path' must resolve to a JSON object because the template node has child properties.",
                 expressionPath = path,
               )
             }
@@ -71,11 +79,12 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
     }
 
     return scopedContexts.map { scopedContext ->
-      processComplexObjectBody(cleanedNode, scopedContext, path, onIssue)
+      processObjectNodeProperties(cleanedNode, scopedContext, path, onIssue)
     }
   }
 
-  private fun processComplexObjectBody(
+  /** Rewrites the child properties of one JSON object node after scope/value expansion. */
+  private fun processObjectNodeProperties(
     node: JsonObject,
     scope: TemplateEvaluationScope,
     path: String,
@@ -118,7 +127,7 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
           null -> ProcessedLogicalProperty()
 
           is JsonObject -> {
-            val processedValues = processComplexObject(valueNode, scope, path, onIssue)
+            val processedValues = expandObjectNode(valueNode, scope, path, onIssue)
             when {
               processedValues.isEmpty() -> ProcessedLogicalProperty()
 
@@ -152,22 +161,19 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
     scope: TemplateEvaluationScope,
     path: String,
     onIssue: (TemplateExtractionIssue) -> Unit,
-  ): JsonArray? {
-    val processedElements = mutableListOf<JsonElement>()
-    arrayNode.forEachIndexed { index, element ->
-      val elementPath = appendArrayPath(path, index)
-      when (element) {
-        is JsonObject ->
-          processedElements += processComplexObject(element, scope, elementPath, onIssue)
-
-        is JsonArray ->
-          processArray(element, scope, elementPath, onIssue)?.let(processedElements::add)
-
-        else -> processedElements += element
+  ): JsonArray? =
+    buildList {
+        arrayNode.forEachIndexed { index, element ->
+          val elementPath = appendArrayPath(path, index)
+          when (element) {
+            is JsonObject -> addAll(expandObjectNode(element, scope, elementPath, onIssue))
+            is JsonArray -> processArray(element, scope, elementPath, onIssue)?.let(::add)
+            else -> add(element)
+          }
+        }
       }
-    }
-    return processedElements.takeIf { it.isNotEmpty() }?.let(::JsonArray)
-  }
+      .takeIf { it.isNotEmpty() }
+      ?.let(::JsonArray)
 
   private fun processPrimitiveScalarProperty(
     valueNode: JsonElement?,
@@ -201,51 +207,34 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
     onIssue: (TemplateExtractionIssue) -> Unit,
   ): ProcessedLogicalProperty {
     val maxSize = maxOf(valueNode?.size ?: 0, metadataNode.size)
-    val occurrences = mutableListOf<PrimitiveOccurrence>()
+    val occurrences =
+      (0 until maxSize).flatMap { index ->
+        val currentPath = appendArrayPath(path, index)
+        val currentValue = valueNode?.getOrNull(index)
+        when (val currentMetadata = metadataNode.getOrNull(index)) {
+          null,
+          JsonNull ->
+            listOfNotNull(currentValue?.let { PrimitiveOccurrence(value = it, metadata = null) })
 
-    for (index in 0 until maxSize) {
-      val currentPath = appendArrayPath(path, index)
-      val currentValue = valueNode?.getOrNull(index)
-      val currentMetadata = metadataNode.getOrNull(index)
-      when (currentMetadata) {
-        null,
-        JsonNull -> {
-          if (currentValue != null) {
-            occurrences += PrimitiveOccurrence(value = currentValue, metadata = null)
-          }
-        }
-
-        is JsonObject -> {
-          occurrences +=
+          is JsonObject ->
             processPrimitiveOccurrences(currentValue, currentMetadata, scope, currentPath, onIssue)
-        }
 
-        else -> {
-          extractionFailure(
-            severity = OperationOutcome.IssueSeverity.Error,
-            code = OperationOutcome.IssueType.Invalid,
-            diagnostics =
-              "Primitive metadata array entries must be objects or null. Found ${currentMetadata::class.simpleName}.",
-            expressionPath = currentPath,
-          )
+          else ->
+            extractionFailure(
+              severity = OperationOutcome.IssueSeverity.Error,
+              code = OperationOutcome.IssueType.Invalid,
+              diagnostics =
+                "Primitive metadata array entries must be objects or null. Found ${currentMetadata::class.simpleName}.",
+              expressionPath = currentPath,
+            )
         }
       }
-    }
 
     if (occurrences.isEmpty()) return ProcessedLogicalProperty()
 
-    val outputValues = mutableListOf<JsonElement>()
-    val outputMetadata = mutableListOf<JsonElement>()
-    var hasMetadata = false
-    occurrences.forEach { occurrence ->
-      outputValues += occurrence.value ?: JsonNull
-      if (occurrence.metadata != null) {
-        outputMetadata += occurrence.metadata
-        hasMetadata = true
-      } else {
-        outputMetadata += JsonNull
-      }
-    }
+    val outputValues = occurrences.map { occurrence -> occurrence.value ?: JsonNull }
+    val outputMetadata = occurrences.map { occurrence -> occurrence.metadata ?: JsonNull }
+    val hasMetadata = occurrences.any { occurrence -> occurrence.metadata != null }
 
     return ProcessedLogicalProperty(
       value = JsonArray(outputValues),
