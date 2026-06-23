@@ -19,7 +19,7 @@ import dev.ohs.fhir.datacapture.extensions.findContainedResource
 import dev.ohs.fhir.datacapture.extensions.templateExtractExtensions
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractDefinition
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
-import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionFailure
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionException
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionResult
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
@@ -72,7 +72,7 @@ object TemplateBasedDataExtractor {
 
     return try {
       TemplateExtractionEngine(questionnaire, questionnaireResponse).extract()
-    } catch (failure: TemplateExtractionFailure) {
+    } catch (failure: TemplateExtractionException) {
       throw IllegalStateException(failure.issue.diagnostics, failure)
     }
   }

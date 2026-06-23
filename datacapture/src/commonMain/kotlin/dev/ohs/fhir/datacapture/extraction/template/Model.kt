@@ -132,7 +132,7 @@ internal fun extractionFailure(
   diagnostics: String,
   expressionPath: String? = null,
 ): Nothing =
-  throw TemplateExtractionFailure(
+  throw TemplateExtractionException(
     TemplateExtractionIssue(
       severity = severity,
       code = code,

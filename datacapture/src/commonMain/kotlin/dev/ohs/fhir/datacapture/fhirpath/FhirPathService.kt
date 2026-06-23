@@ -16,18 +16,59 @@
 package dev.ohs.fhir.datacapture.fhirpath
 
 import co.touchlab.kermit.Logger
+import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionIssue
+import dev.ohs.fhir.datacapture.extraction.template.extractionFailure
 import dev.ohs.fhir.fhirpath.FhirPathEngine
 import dev.ohs.fhir.fhirpath.types.FhirPathDate
 import dev.ohs.fhir.fhirpath.types.FhirPathDateTime
 import dev.ohs.fhir.fhirpath.types.FhirPathQuantity
 import dev.ohs.fhir.fhirpath.types.FhirPathTime
+import dev.ohs.fhir.model.r4.Address
+import dev.ohs.fhir.model.r4.Annotation
+import dev.ohs.fhir.model.r4.Attachment
+import dev.ohs.fhir.model.r4.Boolean as FhirBoolean
+import dev.ohs.fhir.model.r4.Canonical
+import dev.ohs.fhir.model.r4.Code
+import dev.ohs.fhir.model.r4.CodeableConcept
+import dev.ohs.fhir.model.r4.Coding
+import dev.ohs.fhir.model.r4.ContactPoint
+import dev.ohs.fhir.model.r4.Date
+import dev.ohs.fhir.model.r4.DateTime
+import dev.ohs.fhir.model.r4.Decimal
+import dev.ohs.fhir.model.r4.FhirDateTime
+import dev.ohs.fhir.model.r4.HumanName
+import dev.ohs.fhir.model.r4.Id
+import dev.ohs.fhir.model.r4.Identifier
+import dev.ohs.fhir.model.r4.Instant
+import dev.ohs.fhir.model.r4.Integer
+import dev.ohs.fhir.model.r4.Markdown
+import dev.ohs.fhir.model.r4.Oid
+import dev.ohs.fhir.model.r4.OperationOutcome
+import dev.ohs.fhir.model.r4.Period
+import dev.ohs.fhir.model.r4.PositiveInt
+import dev.ohs.fhir.model.r4.Quantity
+import dev.ohs.fhir.model.r4.Reference
 import dev.ohs.fhir.model.r4.Resource
-import kotlin.Int
-import kotlin.Long
+import dev.ohs.fhir.model.r4.String as FhirString
+import dev.ohs.fhir.model.r4.Time
+import dev.ohs.fhir.model.r4.Uri
+import dev.ohs.fhir.model.r4.Url
+import dev.ohs.fhir.model.r4.Uuid
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
 
-/** Centralized service for FHIRPath evaluation and utility functions. */
+/** Centralized service for FHIRPath evaluation and normalization of raw engine results. */
 internal object FhirPathService {
   private val r4FhirPathEngine = FhirPathEngine.forR4()
+  private val json = Json {
+    explicitNulls = false
+    encodeDefaults = false
+  }
 
   /**
    * Evaluates the [expression] against any supported FHIRPath base value without coercing the
@@ -80,29 +121,309 @@ internal object FhirPathService {
   private fun convertSingleResultToString(value: Any): String =
     when (value) {
       is String -> value
-      is Boolean -> value.toString()
-      is Int -> value.toString()
-      is Long -> value.toString()
+
+      is Boolean,
+      is Int,
+      is Long,
+      is Float,
       is Double -> value.toString()
-      is Float -> value.toString()
-      is com.ionspin.kotlin.bignum.decimal.BigDecimal -> value.toExpandedString()
+
+      is BigDecimal -> value.toStringExpanded()
+
       is FhirPathDate -> value.toFhirLiteral()
+
       is FhirPathDateTime -> value.toFhirLiteral()
+
       is FhirPathTime -> value.toFhirLiteral()
+
       is FhirPathQuantity -> value.value?.toString() ?: ""
-      is dev.ohs.fhir.model.r4.String -> value.value ?: ""
-      is dev.ohs.fhir.model.r4.Integer -> value.value?.toString() ?: ""
-      is dev.ohs.fhir.model.r4.Decimal -> value.value?.toString() ?: ""
-      is dev.ohs.fhir.model.r4.Boolean -> value.value?.toString() ?: ""
-      is dev.ohs.fhir.model.r4.Date -> value.value?.toString() ?: ""
-      is dev.ohs.fhir.model.r4.DateTime -> value.value?.toString() ?: ""
-      is dev.ohs.fhir.model.r4.Time -> value.value?.toString() ?: ""
-      is dev.ohs.fhir.model.r4.Code -> value.value ?: ""
-      is dev.ohs.fhir.model.r4.Uri -> value.value ?: ""
-      is dev.ohs.fhir.model.r4.Coding -> value.display?.value ?: value.code?.value ?: ""
-      is dev.ohs.fhir.model.r4.Quantity -> value.value?.value?.toString() ?: ""
+
+      is FhirString -> value.value ?: ""
+
+      is FhirBoolean -> value.value?.toString() ?: ""
+
+      is Integer -> value.value?.toString() ?: ""
+
+      is PositiveInt -> value.value?.toString() ?: ""
+
+      is Decimal -> value.value?.toString() ?: ""
+
+      is Date -> value.value?.toString() ?: ""
+
+      is DateTime -> value.value?.toString() ?: ""
+
+      is Time -> value.value?.toString() ?: ""
+
+      is Uri -> value.value ?: ""
+
+      is Url -> value.value ?: ""
+
+      is Canonical -> value.value ?: ""
+
+      is Code -> value.value ?: ""
+
+      is Markdown -> value.value ?: ""
+
+      is Id -> value.value ?: ""
+
+      is Oid -> value.value ?: ""
+
+      is Uuid -> value.value ?: ""
+
+      is Coding -> value.display?.value ?: value.code?.value ?: ""
+
+      is Quantity -> value.value?.value?.toString() ?: ""
+
       else -> value.toString()
     }
+
+  /**
+   * Converts one raw FHIRPath result into the JSON form expected by template extraction.
+   *
+   * The FHIRPath engine returns `Any`, so extraction needs a single normalization point that knows
+   * how to serialize scalar engine types, Kotlin primitives, and Kotlin FHIR model classes.
+   * Unsupported values are surfaced as fatal extraction errors because the template cannot decide
+   * how to materialize them safely.
+   */
+  internal fun toJsonElement(value: Any, path: String): JsonElement =
+    when (value) {
+      is String -> JsonPrimitive(value)
+
+      is Boolean -> JsonPrimitive(value)
+
+      is Int -> JsonPrimitive(value)
+
+      is Long -> JsonPrimitive(value)
+
+      is Float -> JsonPrimitive(value)
+
+      is Double -> JsonPrimitive(value)
+
+      is BigDecimal -> JsonPrimitive(value.toString())
+
+      is FhirPathDate -> JsonPrimitive(convertToString(listOf(value)))
+
+      is FhirPathDateTime -> JsonPrimitive(convertToString(listOf(value)))
+
+      is FhirPathTime -> JsonPrimitive(convertToString(listOf(value)))
+
+      is FhirPathQuantity ->
+        JsonObject(
+          buildMap {
+            value.value?.let { put("value", JsonPrimitive(it.toString())) }
+            value.unit?.let {
+              put("code", JsonPrimitive(it))
+              put("unit", JsonPrimitive(it))
+            }
+          }
+        )
+
+      is FhirString -> JsonPrimitive(value.value)
+
+      is FhirBoolean -> JsonPrimitive(value.value)
+
+      is Integer -> JsonPrimitive(value.value)
+
+      is PositiveInt -> JsonPrimitive(value.value)
+
+      is Decimal -> JsonPrimitive(value.value?.toString())
+
+      is Date -> JsonPrimitive(value.value?.toString())
+
+      is DateTime -> JsonPrimitive(value.value?.toString())
+
+      is Time -> JsonPrimitive(value.value?.toString())
+
+      is Uri -> JsonPrimitive(value.value)
+
+      is Url -> JsonPrimitive(value.value)
+
+      is Canonical -> JsonPrimitive(value.value)
+
+      is Code -> JsonPrimitive(value.value)
+
+      is Markdown -> JsonPrimitive(value.value)
+
+      is Id -> JsonPrimitive(value.value)
+
+      is Oid -> JsonPrimitive(value.value)
+
+      is Uuid -> JsonPrimitive(value.value)
+
+      is Quantity -> json.encodeToJsonElement(Quantity.serializer(), value)
+
+      is Coding -> json.encodeToJsonElement(Coding.serializer(), value)
+
+      is CodeableConcept -> json.encodeToJsonElement(CodeableConcept.serializer(), value)
+
+      is Reference -> json.encodeToJsonElement(Reference.serializer(), value)
+
+      is Attachment -> json.encodeToJsonElement(Attachment.serializer(), value)
+
+      is Identifier -> json.encodeToJsonElement(Identifier.serializer(), value)
+
+      is HumanName -> json.encodeToJsonElement(HumanName.serializer(), value)
+
+      is Address -> json.encodeToJsonElement(Address.serializer(), value)
+
+      is ContactPoint -> json.encodeToJsonElement(ContactPoint.serializer(), value)
+
+      is Period -> json.encodeToJsonElement(Period.serializer(), value)
+
+      is Annotation -> json.encodeToJsonElement(Annotation.serializer(), value)
+
+      is Resource -> json.encodeToJsonElement(Resource.serializer(), value)
+
+      else ->
+        extractionFailure(
+          severity = OperationOutcome.IssueSeverity.Error,
+          code = OperationOutcome.IssueType.Invalid,
+          diagnostics =
+            "Unsupported extraction result type ${value::class.simpleName} for '$path'.",
+          expressionPath = path,
+        )
+    }
+
+  /**
+   * Narrows [toJsonElement] to template locations that represent primitive FHIR JSON values.
+   *
+   * This guards primitive slots such as `_id` or `_valueString` from being replaced with a complex
+   * object that the downstream JSON tree cannot legally attach to that position.
+   */
+  internal fun toPrimitiveJsonElement(value: Any, path: String): JsonElement {
+    val jsonValue = toJsonElement(value, path)
+    if (jsonValue !is JsonPrimitive) {
+      extractionFailure(
+        severity = OperationOutcome.IssueSeverity.Error,
+        code = OperationOutcome.IssueType.Invalid,
+        diagnostics =
+          "Expression for '$path' resolved to a non-primitive value, but the template element is primitive.",
+        expressionPath = path,
+      )
+    }
+    return jsonValue
+  }
+
+  /**
+   * Converts evaluated FHIRPath results into the singular string form used by request metadata.
+   *
+   * Template directives such as `resourceId`, `fullUrl`, and conditional request headers are
+   * singular by contract. If evaluation returns multiple values, extraction records a warning and
+   * keeps only the first so bundle assembly can continue deterministically.
+   */
+  internal fun toStringValue(
+    values: List<Any>,
+    path: String,
+    onIssue: (TemplateExtractionIssue) -> Unit,
+  ): String? {
+    if (values.isEmpty()) return null
+    if (values.size > 1) {
+      onIssue(
+        TemplateExtractionIssue(
+          severity = OperationOutcome.IssueSeverity.Warning,
+          code = OperationOutcome.IssueType.Invalid,
+          diagnostics =
+            "Expression for '$path' produced multiple values. Only the first value will be used.",
+          expressionPath = path,
+        )
+      )
+    }
+
+    val firstValue = values.first()
+    return when (firstValue) {
+      is String,
+      is Boolean,
+      is Int,
+      is Long,
+      is Float,
+      is Double,
+      is BigDecimal,
+      is FhirPathDate,
+      is FhirPathDateTime,
+      is FhirPathTime,
+      is FhirPathQuantity,
+      is FhirString,
+      is FhirBoolean,
+      is Integer,
+      is PositiveInt,
+      is Decimal,
+      is Date,
+      is DateTime,
+      is Time,
+      is Uri,
+      is Url,
+      is Canonical,
+      is Code,
+      is Markdown,
+      is Id,
+      is Oid,
+      is Uuid -> convertToString(listOf(firstValue))
+
+      else ->
+        extractionFailure(
+          severity = OperationOutcome.IssueSeverity.Error,
+          code = OperationOutcome.IssueType.Invalid,
+          diagnostics =
+            "Expression for '$path' must resolve to a string-compatible value, but found ${firstValue::class.simpleName}.",
+          expressionPath = path,
+        )
+    }
+  }
+
+  /**
+   * Parses a singular FHIRPath result into a FHIR `instant` for conditional request metadata.
+   *
+   * The extractor requires a timezone-aware timestamp so the generated transaction bundle carries
+   * an unambiguous HTTP date value.
+   */
+  internal fun toInstantValue(
+    values: List<Any>,
+    path: String,
+    onIssue: (TemplateExtractionIssue) -> Unit,
+  ): Instant? {
+    val value = toStringValue(values, path, onIssue)?.takeIf { it.isNotBlank() } ?: return null
+    val instantRegex =
+      Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$")
+    if (!instantRegex.matches(value)) {
+      extractionFailure(
+        severity = OperationOutcome.IssueSeverity.Error,
+        code = OperationOutcome.IssueType.Invalid,
+        diagnostics =
+          "Expression for '$path' must resolve to an instant with timezone information. Found '$value'.",
+        expressionPath = path,
+      )
+    }
+    return Instant(value = FhirDateTime.fromString(value))
+  }
+
+  /**
+   * Rehydrates a processed JSON object back into a typed Kotlin FHIR [Resource].
+   *
+   * This is the final structural validation pass for one extracted resource before it is attached
+   * to the output transaction bundle.
+   */
+  internal fun jsonToResource(resourceJson: JsonObject, path: String): Resource =
+    try {
+      json.decodeFromString<Resource>(resourceJson.toString())
+    } catch (throwable: Throwable) {
+      extractionFailure(
+        severity = OperationOutcome.IssueSeverity.Error,
+        code = OperationOutcome.IssueType.Exception,
+        diagnostics =
+          "Extracted resource at '$path' could not be decoded back into a Kotlin FHIR model: ${throwable.message ?: throwable::class.simpleName}",
+        expressionPath = path,
+      )
+    }
+
+  /**
+   * Serializes a typed FHIR resource into a mutable JSON object for template tree processing.
+   *
+   * Extraction works against JSON because SDC template directives are attached to primitive
+   * companion nodes such as `_valueString`, which are easier to rewrite before decoding back into
+   * the typed model layer.
+   */
+  internal fun resourceToJson(resource: Resource): JsonObject =
+    json.encodeToJsonElement(Resource.serializer(), resource).jsonObject
 
   /** Extracts the resource type from the given FHIRPath. */
   fun extractResourceTypeFromPath(fhirPath: String): String? {

@@ -19,9 +19,9 @@ import dev.ohs.fhir.datacapture.extensions.allocateIdVariableNames
 import dev.ohs.fhir.datacapture.extensions.findContainedResource
 import dev.ohs.fhir.datacapture.extensions.isRepeatedGroup
 import dev.ohs.fhir.datacapture.extensions.templateExtractExtensions
+import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
 import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Enumeration
-import dev.ohs.fhir.model.r4.Instant
 import dev.ohs.fhir.model.r4.OperationOutcome
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
@@ -41,8 +41,7 @@ internal class TemplateExtractionEngine(
   private val questionnaireResponse: QuestionnaireResponse,
 ) {
   private val evaluator = TemplateFhirPathEvaluator()
-  private val valueConverter = TemplateValueConverter()
-  private val treeProcessor = TemplateTreeProcessor(evaluator, valueConverter)
+  private val treeProcessor = TemplateTreeProcessor(evaluator)
 
   /**
    * Runs extraction in the same order SDC expects consumers to reason about it: questionnaire-level
@@ -166,18 +165,22 @@ internal class TemplateExtractionEngine(
     path: String,
     onIssue: (TemplateExtractionIssue) -> Unit,
   ): Bundle.Entry? {
-    val templateResource = questionnaire.findContainedResource(definition.templateReference)
-    if (templateResource == null) {
-      extractionFailure(
-        severity = OperationOutcome.IssueSeverity.Error,
-        code = OperationOutcome.IssueType.Required,
-        diagnostics =
-          "Contained template '${definition.templateReference}' was not found in the questionnaire.",
-        expressionPath = path,
-      )
-    }
+    val templateResource =
+      questionnaire.findContainedResource(definition.templateReference)
+        ?: extractionFailure(
+          severity = OperationOutcome.IssueSeverity.Error,
+          code = OperationOutcome.IssueType.Required,
+          diagnostics =
+            "Contained template '${definition.templateReference}' was not found in the questionnaire.",
+          expressionPath = path,
+        )
 
-    val templateJson = valueConverter.resourceToJson(templateResource).withoutTemplateId()
+    // Keep the contained template id in the JSON tree while template directives are evaluated.
+    // This lets `_id` participate in `templateExtractValue` the same way as any other primitive,
+    // while still giving us the original anchor so we can remove it from the emitted resource if
+    // no extraction logic replaces it.
+    val templateJson = FhirPathService.resourceToJson(templateResource)
+    val templateId = templateJson["id"]?.jsonPrimitive?.contentOrNull
     val resourceType =
       templateJson["resourceType"]?.jsonPrimitive?.contentOrNull
         ?: run {
@@ -207,13 +210,24 @@ internal class TemplateExtractionEngine(
     }
 
     val resourceJson =
-      processedResources.first().withEvaluatedResourceId(definition, scope, path, onIssue)
-    val extractedResource = valueConverter.jsonToResource(resourceJson, path)
+      processedResources
+        .first()
+        .withResolvedResourceId(definition, templateId, scope, path, onIssue)
+    val extractedResource = FhirPathService.jsonToResource(resourceJson, path)
     return createBundleEntry(definition, scope, path, resourceType, extractedResource, onIssue)
   }
 
-  private fun JsonObject.withEvaluatedResourceId(
+  /**
+   * Finalizes `Resource.id` after template processing completes.
+   *
+   * Contained template ids such as `#patient-template` identify the source template inside the
+   * Questionnaire; they are not valid emitted resource ids unless extraction logic explicitly turns
+   * them into one. We therefore apply the evaluated `resourceId` override when present, and
+   * otherwise strip the original template anchor only if it survived processing unchanged.
+   */
+  private fun JsonObject.withResolvedResourceId(
     definition: TemplateExtractDefinition,
+    templateId: String?,
     scope: TemplateEvaluationScope,
     path: String,
     onIssue: (TemplateExtractionIssue) -> Unit,
@@ -222,14 +236,14 @@ internal class TemplateExtractionEngine(
     val evaluatedId =
       definition.resourceIdExpression
         ?.let { evaluateExpression(it, scope, "$path.resourceId", onIssue) }
-        ?.let { values -> toStringValue(values, "$path.resourceId", onIssue) }
+        ?.let { values -> FhirPathService.toStringValue(values, "$path.resourceId", onIssue) }
         ?.takeIf { it.isNotBlank() }
 
-    if (evaluatedId == null) {
-      mutable.remove("id")
-      mutable.remove("_id")
-    } else {
+    if (evaluatedId != null) {
       mutable["id"] = JsonPrimitive(evaluatedId)
+      mutable.remove("_id")
+    } else if (mutable["id"]?.jsonPrimitive?.contentOrNull == templateId) {
+      mutable.remove("id")
       mutable.remove("_id")
     }
     return JsonObject(mutable)
@@ -247,7 +261,7 @@ internal class TemplateExtractionEngine(
     val fullUrl =
       definition.fullUrlExpression
         ?.let { evaluateExpression(it, scope, "$path.fullUrl", onIssue) }
-        ?.let { values -> toStringValue(values, "$path.fullUrl", onIssue) }
+        ?.let { values -> FhirPathService.toStringValue(values, "$path.fullUrl", onIssue) }
         ?.takeIf { it.isNotBlank() } ?: generateAllocatedFullUrl()
 
     val requestUrl =
@@ -273,25 +287,25 @@ internal class TemplateExtractionEngine(
 
     definition.ifNoneMatchExpression
       ?.let { evaluateExpression(it, scope, "$path.ifNoneMatch", onIssue) }
-      ?.let { values -> toStringValue(values, "$path.ifNoneMatch", onIssue) }
+      ?.let { values -> FhirPathService.toStringValue(values, "$path.ifNoneMatch", onIssue) }
       ?.takeIf { it.isNotBlank() }
       ?.let { requestBuilder.ifNoneMatch = FhirString.Builder().apply { value = it } }
 
     definition.ifMatchExpression
       ?.let { evaluateExpression(it, scope, "$path.ifMatch", onIssue) }
-      ?.let { values -> toStringValue(values, "$path.ifMatch", onIssue) }
+      ?.let { values -> FhirPathService.toStringValue(values, "$path.ifMatch", onIssue) }
       ?.takeIf { it.isNotBlank() }
       ?.let { requestBuilder.ifMatch = FhirString.Builder().apply { value = it } }
 
     definition.ifNoneExistExpression
       ?.let { evaluateExpression(it, scope, "$path.ifNoneExist", onIssue) }
-      ?.let { values -> toStringValue(values, "$path.ifNoneExist", onIssue) }
+      ?.let { values -> FhirPathService.toStringValue(values, "$path.ifNoneExist", onIssue) }
       ?.takeIf { it.isNotBlank() }
       ?.let { requestBuilder.ifNoneExist = FhirString.Builder().apply { value = it } }
 
     definition.ifModifiedSinceExpression
       ?.let { evaluateExpression(it, scope, "$path.ifModifiedSince", onIssue) }
-      ?.let { values -> toInstantValue(values, "$path.ifModifiedSince", onIssue) }
+      ?.let { values -> FhirPathService.toInstantValue(values, "$path.ifModifiedSince", onIssue) }
       ?.let { instant -> requestBuilder.ifModifiedSince = instant.toBuilder() }
 
     return Bundle.Entry(
@@ -308,18 +322,6 @@ internal class TemplateExtractionEngine(
     onIssue: (TemplateExtractionIssue) -> Unit,
   ): List<Any> = evaluator.evaluate(TemplateExtractExpression(expression), scope, path)
 
-  private fun toStringValue(
-    values: List<Any>,
-    path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
-  ): String? = valueConverter.toStringValue(values, path, onIssue)
-
-  private fun toInstantValue(
-    values: List<Any>,
-    path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
-  ): Instant? = valueConverter.toInstantValue(values, path, onIssue)
-
   @OptIn(ExperimentalUuidApi::class)
   private fun allocateIdVariables(variableNames: List<String>): Map<String, Any?> =
     variableNames.associateWith { generateAllocatedFullUrl() }
@@ -333,11 +335,3 @@ private fun MutableList<Bundle.Entry>.addIfPresent(entry: Bundle.Entry?) {
     add(entry)
   }
 }
-
-private fun JsonObject.withoutTemplateId(): JsonObject =
-  JsonObject(
-    toMutableMap().apply {
-      remove("id")
-      remove("_id")
-    }
-  )

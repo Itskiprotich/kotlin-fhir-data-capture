@@ -68,8 +68,7 @@ internal fun Extension.stringValue(): String? =
  * Reads the literal `Reference.reference` target from extraction extensions that carry
  * `valueReference`.
  */
-internal fun Extension.referenceValue(): String? =
- value?.asReference()?.value?.reference?.value
+internal fun Extension.referenceValue(): String? = value?.asReference()?.value?.reference?.value
 
 /**
  * Converts the nested extension structure into a template extraction definition.

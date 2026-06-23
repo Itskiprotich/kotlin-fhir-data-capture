@@ -15,17 +15,16 @@
  */
 package dev.ohs.fhir.datacapture.extraction.template
 
+import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
 import dev.ohs.fhir.model.r4.OperationOutcome
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 
 /** Applies template extraction context and value directives to a cloned JSON resource tree. */
-internal class TemplateTreeProcessor(
-  private val evaluator: TemplateFhirPathEvaluator,
-  private val valueConverter: TemplateValueConverter,
-) {
+internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEvaluator) {
   fun processResource(
     template: JsonObject,
     scope: TemplateEvaluationScope,
@@ -54,7 +53,7 @@ internal class TemplateTreeProcessor(
       return scopedContexts.flatMap { scopedContext ->
         evaluator
           .evaluate(valueExpression, scopedContext, path)
-          .map { value -> valueConverter.toJsonElement(value, path) }
+          .map { value -> FhirPathService.toJsonElement(value, path) }
           .mapNotNull { value ->
             if (value is JsonObject) {
               value
@@ -80,7 +79,7 @@ internal class TemplateTreeProcessor(
     node: JsonObject,
     scope: TemplateEvaluationScope,
     path: String,
-    issues: MutableList<TemplateExtractionIssue>,
+    onIssue: (TemplateExtractionIssue) -> Unit,
   ): JsonObject = buildJsonObject {
     node.keys
       .filterNot { it.startsWith("_") }
@@ -92,7 +91,7 @@ internal class TemplateTreeProcessor(
             metadataNode = node["_$propertyName"],
             scope = scope,
             path = appendJsonPath(path, propertyName),
-            issues = issues,
+            onIssue = onIssue,
           )
 
         value?.let { put(propertyName, it) }
@@ -281,7 +280,7 @@ internal class TemplateTreeProcessor(
           emptyList()
         } else {
           results.map { value ->
-            val converted = valueConverter.toPrimitiveJsonElement(value, path)
+            val converted = FhirPathService.toPrimitiveJsonElement(value, path)
             PrimitiveOccurrence(
               value = converted,
               metadata = cleanedMetadata.takeIf { it.entries.isNotEmpty() },
