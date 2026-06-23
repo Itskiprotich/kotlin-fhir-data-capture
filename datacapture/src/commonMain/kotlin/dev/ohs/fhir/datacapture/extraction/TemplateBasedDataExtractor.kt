@@ -20,7 +20,7 @@ import dev.ohs.fhir.datacapture.extensions.templateExtractExtensions
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractDefinition
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionException
-import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionResult
+import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 
@@ -39,7 +39,7 @@ import dev.ohs.fhir.model.r4.QuestionnaireResponse
  */
 object TemplateBasedDataExtractor {
   /** Returns `true` when the questionnaire declares at least one template extraction definition. */
-  public fun canExtract(questionnaire: Questionnaire): Boolean =
+  fun canExtract(questionnaire: Questionnaire): Boolean =
     questionnaire.templateExtractExtensions.isNotEmpty() ||
       questionnaire.item.any { item -> item.hasTemplateExtractExtensionRecursively() }
 
@@ -52,10 +52,7 @@ object TemplateBasedDataExtractor {
    * @throws IllegalStateException if template evaluation encounters a fatal extraction error after
    *   preflight validation succeeds.
    */
-  fun extract(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-  ): TemplateExtractionResult {
+  fun extract(questionnaire: Questionnaire, questionnaireResponse: QuestionnaireResponse): Bundle {
     require(canExtract(questionnaire)) {
       "Template-based extraction requires sdc-questionnaire-templateExtract on the questionnaire or one of its items."
     }

@@ -17,12 +17,9 @@ package dev.ohs.fhir.datacapture.extraction.template
 
 import dev.ohs.fhir.datacapture.extensions.isRepeatedGroup
 import dev.ohs.fhir.datacapture.extensions.normalizedVariableName
-import dev.ohs.fhir.model.r4.Bundle
-import dev.ohs.fhir.model.r4.Enumeration
 import dev.ohs.fhir.model.r4.OperationOutcome
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.String as FhirString
 import kotlinx.serialization.json.JsonArray
 
 /**
@@ -119,22 +116,13 @@ internal data class ItemExtractionContext(
   val childResponseItems: List<QuestionnaireResponse.Item>,
 )
 
-/** Internal issue model that is later converted into an [OperationOutcome]. */
+/** Internal extraction failure details attached to [TemplateExtractionException]. */
 internal data class TemplateExtractionIssue(
   val severity: OperationOutcome.IssueSeverity,
   val code: OperationOutcome.IssueType,
   val diagnostics: String,
   val expressionPath: String? = null,
-) {
-  /** Converts one internal extraction issue into the FHIR `OperationOutcome.issue` shape. */
-  fun toOperationOutcomeIssue(): OperationOutcome.Issue =
-    OperationOutcome.Issue(
-      severity = Enumeration(value = severity),
-      code = Enumeration(value = code),
-      diagnostics = FhirString(value = diagnostics),
-      expression = expressionPath?.let { listOf(FhirString(value = it)) } ?: emptyList(),
-    )
-}
+)
 
 /** Internal control-flow exception used to surface one fatal extraction issue. */
 internal class TemplateExtractionException(val issue: TemplateExtractionIssue) :
@@ -153,10 +141,6 @@ internal class TemplateExtractionException(val issue: TemplateExtractionIssue) :
     )
   )
 }
-
-/** Converts the collected extraction issues into a single FHIR-native diagnostic resource. */
-internal fun List<TemplateExtractionIssue>.toOperationOutcome(): OperationOutcome =
-  OperationOutcome(issue = map { it.toOperationOutcomeIssue() })
 
 /**
  * Normalizes a questionnaire item into the logical extraction units defined by SDC.
@@ -196,15 +180,3 @@ internal fun Questionnaire.Item.toExtractionContexts(
     ItemExtractionContext(baseContext = responseItem, childResponseItems = responseItem.item)
   )
 }
-
-/**
- * Result of SDC template-based extraction.
- *
- * @property bundle The extracted transaction bundle for a successful extraction run.
- * @property operationOutcome Structured non-fatal issues captured while processing the template.
- *   `null` indicates a clean extraction with no warnings.
- */
-data class TemplateExtractionResult(
-  val bundle: Bundle,
-  val operationOutcome: OperationOutcome? = null,
-)

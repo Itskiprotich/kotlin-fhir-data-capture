@@ -25,16 +25,11 @@ import kotlinx.serialization.json.buildJsonObject
 
 /** Applies template extraction context and value directives to a cloned JSON resource tree. */
 internal class TemplateTreeProcessor {
-  fun processResource(
-    template: JsonObject,
-    scope: TemplateEvaluationScope,
-    onIssue: (TemplateExtractionIssue) -> Unit,
-  ): List<JsonObject> =
+  fun processResource(template: JsonObject, scope: TemplateEvaluationScope): List<JsonObject> =
     expandObjectNode(
       node = template,
       scope = scope,
       path = template["resourceType"]?.toString() ?: "\$",
-      onIssue = onIssue,
     )
 
   /**
@@ -49,12 +44,11 @@ internal class TemplateTreeProcessor {
     node: JsonObject,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): List<JsonObject> {
-    val extensionState = parseTemplateNodeExtensionState(node["extension"], path, onIssue)
+    val extensionState = parseTemplateNodeExtensionState(node["extension"], path)
     val cleanedNode = node.withRemainingExtensions(extensionState.remainingExtensions)
     val scopedContexts =
-      applyContextExpression(extensionState.controls.contextExpression, scope, path, onIssue)
+      applyContextExpression(extensionState.controls.contextExpression, scope, path)
     if (scopedContexts.isEmpty()) return emptyList()
 
     extensionState.controls.valueExpression?.let { valueExpression ->
@@ -82,7 +76,7 @@ internal class TemplateTreeProcessor {
     }
 
     return scopedContexts.map { scopedContext ->
-      processObjectNodeProperties(cleanedNode, scopedContext, path, onIssue)
+      processObjectNodeProperties(cleanedNode, scopedContext, path)
     }
   }
 
@@ -91,19 +85,16 @@ internal class TemplateTreeProcessor {
     node: JsonObject,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): JsonObject = buildJsonObject {
     node.keys
       .filterNot { it.startsWith("_") }
       .forEach { propertyName ->
         val (value, metadata) =
           processLogicalProperty(
-            propertyName = propertyName,
             valueNode = node[propertyName],
             metadataNode = node["_$propertyName"],
             scope = scope,
             path = appendJsonPath(path, propertyName),
-            onIssue = onIssue,
           )
 
         value?.let { put(propertyName, it) }
@@ -112,48 +103,34 @@ internal class TemplateTreeProcessor {
   }
 
   private fun processLogicalProperty(
-    propertyName: String,
     valueNode: JsonElement?,
     metadataNode: JsonElement?,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): ProcessedLogicalProperty =
     when (metadataNode) {
-      is JsonObject -> processPrimitiveScalarProperty(valueNode, metadataNode, scope, path, onIssue)
+      is JsonObject -> processPrimitiveScalarProperty(valueNode, metadataNode, scope, path)
 
       is JsonArray ->
-        processPrimitiveArrayProperty(valueNode as? JsonArray, metadataNode, scope, path, onIssue)
+        processPrimitiveArrayProperty(valueNode as? JsonArray, metadataNode, scope, path)
 
       else ->
         when (valueNode) {
           null -> ProcessedLogicalProperty()
 
           is JsonObject -> {
-            val processedValues = expandObjectNode(valueNode, scope, path, onIssue)
+            val processedValues = expandObjectNode(valueNode, scope, path)
             when {
               processedValues.isEmpty() -> ProcessedLogicalProperty()
 
               processedValues.size == 1 ->
                 ProcessedLogicalProperty(value = processedValues.single())
 
-              else -> {
-                onIssue(
-                  TemplateExtractionIssue(
-                    severity = OperationOutcome.IssueSeverity.Warning,
-                    code = OperationOutcome.IssueType.Invalid,
-                    diagnostics =
-                      "Template node '$path' expanded to multiple objects, but the property '$propertyName' is singular. Only the first object will be kept.",
-                    expressionPath = path,
-                  )
-                )
-                ProcessedLogicalProperty(value = processedValues.first())
-              }
+              else -> ProcessedLogicalProperty(value = processedValues.first())
             }
           }
 
-          is JsonArray ->
-            ProcessedLogicalProperty(value = processArray(valueNode, scope, path, onIssue))
+          is JsonArray -> ProcessedLogicalProperty(value = processArray(valueNode, scope, path))
 
           else -> ProcessedLogicalProperty(value = valueNode)
         }
@@ -163,14 +140,13 @@ internal class TemplateTreeProcessor {
     arrayNode: JsonArray,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): JsonArray? =
     buildList {
         arrayNode.forEachIndexed { index, element ->
           val elementPath = appendArrayPath(path, index)
           when (element) {
-            is JsonObject -> addAll(expandObjectNode(element, scope, elementPath, onIssue))
-            is JsonArray -> processArray(element, scope, elementPath, onIssue)?.let(::add)
+            is JsonObject -> addAll(expandObjectNode(element, scope, elementPath))
+            is JsonArray -> processArray(element, scope, elementPath)?.let(::add)
             else -> add(element)
           }
         }
@@ -183,21 +159,9 @@ internal class TemplateTreeProcessor {
     metadataNode: JsonObject,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): ProcessedLogicalProperty {
-    val occurrences = processPrimitiveOccurrences(valueNode, metadataNode, scope, path, onIssue)
+    val occurrences = processPrimitiveOccurrences(valueNode, metadataNode, scope, path)
     if (occurrences.isEmpty()) return ProcessedLogicalProperty()
-    if (occurrences.size > 1) {
-      onIssue(
-        TemplateExtractionIssue(
-          severity = OperationOutcome.IssueSeverity.Warning,
-          code = OperationOutcome.IssueType.Invalid,
-          diagnostics =
-            "Template node '$path' expanded to multiple primitive values, but the property is singular. Only the first value will be kept.",
-          expressionPath = path,
-        )
-      )
-    }
     val occurrence = occurrences.first()
     return ProcessedLogicalProperty(value = occurrence.value, metadata = occurrence.metadata)
   }
@@ -207,7 +171,6 @@ internal class TemplateTreeProcessor {
     metadataNode: JsonArray,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): ProcessedLogicalProperty {
     val maxSize = maxOf(valueNode?.size ?: 0, metadataNode.size)
     val occurrences =
@@ -220,7 +183,7 @@ internal class TemplateTreeProcessor {
             listOfNotNull(currentValue?.let { PrimitiveOccurrence(value = it, metadata = null) })
 
           is JsonObject ->
-            processPrimitiveOccurrences(currentValue, currentMetadata, scope, currentPath, onIssue)
+            processPrimitiveOccurrences(currentValue, currentMetadata, scope, currentPath)
 
           else ->
             throw TemplateExtractionException(
@@ -257,12 +220,11 @@ internal class TemplateTreeProcessor {
     metadataNode: JsonObject,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): List<PrimitiveOccurrence> {
-    val extensionState = parseTemplateNodeExtensionState(metadataNode["extension"], path, onIssue)
+    val extensionState = parseTemplateNodeExtensionState(metadataNode["extension"], path)
     val cleanedMetadata = metadataNode.withRemainingExtensions(extensionState.remainingExtensions)
     val scopedContexts =
-      applyContextExpression(extensionState.controls.contextExpression, scope, path, onIssue)
+      applyContextExpression(extensionState.controls.contextExpression, scope, path)
     if (scopedContexts.isEmpty()) return emptyList()
 
     return scopedContexts.flatMap { scopedContext ->
@@ -298,7 +260,6 @@ internal class TemplateTreeProcessor {
     expression: TemplateExtractExpression?,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): List<TemplateEvaluationScope> {
     if (expression == null) return listOf(scope)
     val results =

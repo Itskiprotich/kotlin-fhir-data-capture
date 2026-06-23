@@ -18,7 +18,6 @@ package dev.ohs.fhir.datacapture.fhirpath
 import co.touchlab.kermit.Logger
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionException
-import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionIssue
 import dev.ohs.fhir.fhirpath.FhirPathEngine
 import dev.ohs.fhir.fhirpath.types.FhirPathDate
 import dev.ohs.fhir.fhirpath.types.FhirPathDateTime
@@ -285,26 +284,11 @@ internal object FhirPathService {
    * Converts evaluated FHIRPath results into the singular string form used by request metadata.
    *
    * Template directives such as `resourceId`, `fullUrl`, and conditional request headers are
-   * singular by contract. If evaluation returns multiple values, extraction records a warning and
-   * keeps only the first so bundle assembly can continue deterministically.
+   * singular by contract. If evaluation returns multiple values, extraction keeps only the first so
+   * bundle assembly can continue deterministically.
    */
-  internal fun toStringValue(
-    values: List<Any>,
-    path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
-  ): String? {
+  internal fun toStringValue(values: List<Any>, path: String): String? {
     if (values.isEmpty()) return null
-    if (values.size > 1) {
-      onIssue(
-        TemplateExtractionIssue(
-          severity = OperationOutcome.IssueSeverity.Warning,
-          code = OperationOutcome.IssueType.Invalid,
-          diagnostics =
-            "Expression for '$path' produced multiple values. Only the first value will be used.",
-          expressionPath = path,
-        )
-      )
-    }
 
     val firstValue = values.first()
     return when (firstValue) {
@@ -353,12 +337,8 @@ internal object FhirPathService {
    * The extractor requires a timezone-aware timestamp so the generated transaction bundle carries
    * an unambiguous HTTP date value.
    */
-  internal fun toInstantValue(
-    values: List<Any>,
-    path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
-  ): Instant? {
-    val value = toStringValue(values, path, onIssue)?.takeIf { it.isNotBlank() } ?: return null
+  internal fun toInstantValue(values: List<Any>, path: String): Instant? {
+    val value = toStringValue(values, path)?.takeIf { it.isNotBlank() } ?: return null
     val instantRegex =
       Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$")
     if (!instantRegex.matches(value)) {

@@ -15,14 +15,13 @@
  */
 package dev.ohs.fhir.datacapture.extraction
 
-import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionResult
+import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -236,8 +235,7 @@ class TemplateBasedDataExtractorTest {
 
     val result = TemplateBasedDataExtractor.extract(questionnaire, questionnaireResponse)
 
-    assertNull(result.operationOutcome)
-    assertEquals(3, result.bundle.entry.size)
+    assertEquals(3, result.entry.size)
 
     val entryObjects = bundleEntryObjects(result)
     val patientEntry = entryObjects.single { resourceType(it) == "Patient" }
@@ -368,8 +366,7 @@ class TemplateBasedDataExtractorTest {
 
     val result = TemplateBasedDataExtractor.extract(questionnaire, questionnaireResponse)
 
-    assertNull(result.operationOutcome)
-    assertEquals(2, result.bundle.entry.size)
+    assertEquals(2, result.entry.size)
 
     val entryObjects = bundleEntryObjects(result)
     val requestUrls =
@@ -514,9 +511,9 @@ class TemplateBasedDataExtractorTest {
   private fun questionnaireResponse(jsonString: String): QuestionnaireResponse =
     json.decodeFromString<QuestionnaireResponse>(jsonString.trimIndent())
 
-  private fun bundleEntryObjects(result: TemplateExtractionResult): List<JsonObject> =
+  private fun bundleEntryObjects(result: Bundle): List<JsonObject> =
     json
-      .parseToJsonElement(json.encodeToString(result.bundle))
+      .parseToJsonElement(json.encodeToString(result))
       .jsonObject
       .getValue("entry")
       .jsonArray

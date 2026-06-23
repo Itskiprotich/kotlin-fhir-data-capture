@@ -20,7 +20,6 @@ import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -98,7 +97,6 @@ class TemplateTreeProcessorTest {
         """
       )
 
-    val issues = mutableListOf<TemplateExtractionIssue>()
     val processedResources =
       treeProcessor.processResource(
         template = template,
@@ -110,10 +108,8 @@ class TemplateTreeProcessorTest {
             context = questionnaireResponse.item.single(),
             variables = emptyMap(),
           ),
-        onIssue = issues::add,
       )
 
-    assertTrue(issues.isEmpty())
     assertEquals(1, processedResources.size)
     val processedResource = processedResources.single()
     assertEquals("phone-1", processedResource.getValue("id").jsonPrimitive.content)

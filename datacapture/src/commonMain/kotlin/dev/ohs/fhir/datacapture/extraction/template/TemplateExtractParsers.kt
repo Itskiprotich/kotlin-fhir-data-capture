@@ -36,7 +36,6 @@ private val TEMPLATE_CONTROL_EXTENSION_URLS =
 internal fun parseTemplateNodeExtensionState(
   extensionElement: JsonElement?,
   path: String,
-  onIssue: (TemplateExtractionIssue) -> Unit,
 ): TemplateNodeExtensionState {
   val extensionArray = extensionElement as? JsonArray ?: return TemplateNodeExtensionState()
   val contextExtensions =
@@ -47,30 +46,6 @@ internal fun parseTemplateNodeExtensionState(
       (extensionEntry as? JsonObject)?.get("url")?.jsonPrimitive?.contentOrNull in
         TEMPLATE_CONTROL_EXTENSION_URLS
     }
-
-  contextExtensions.drop(1).forEach {
-    onIssue(
-      TemplateExtractionIssue(
-        severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Warning,
-        code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-        diagnostics =
-          "Multiple templateExtractContext extensions were found. Only the first one will be used.",
-        expressionPath = path,
-      )
-    )
-  }
-
-  valueExtensions.drop(1).forEach {
-    onIssue(
-      TemplateExtractionIssue(
-        severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Warning,
-        code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
-        diagnostics =
-          "Multiple templateExtractValue extensions were found. Only the first one will be used.",
-        expressionPath = path,
-      )
-    )
-  }
 
   return TemplateNodeExtensionState(
     controls =

@@ -17,7 +17,6 @@ package dev.ohs.fhir.datacapture.extraction.template
 
 import dev.ohs.fhir.datacapture.extensions.allocateIdVariableNames
 import dev.ohs.fhir.datacapture.extensions.findContainedResource
-import dev.ohs.fhir.datacapture.extensions.isRepeatedGroup
 import dev.ohs.fhir.datacapture.extensions.templateExtractExtensions
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
 import dev.ohs.fhir.model.r4.Bundle
@@ -47,10 +46,8 @@ internal class TemplateExtractionEngine(
    * templates first, then item-level templates against each logical item occurrence, while carrying
    * forward any allocated `%variable` values that later templates may reference.
    */
-  fun extract(): TemplateExtractionResult {
+  fun extract(): Bundle {
     val entries = mutableListOf<Bundle.Entry>()
-    val issues = mutableListOf<TemplateExtractionIssue>()
-    val onIssue: (TemplateExtractionIssue) -> Unit = issues::add
     val rootVariables = allocateIdVariables(questionnaire.allocateIdVariableNames)
     val rootScope =
       TemplateEvaluationScope(
@@ -62,7 +59,7 @@ internal class TemplateExtractionEngine(
       )
 
     questionnaire.templateExtractExtensions.forEach { definition ->
-      extractTemplate(definition, rootScope, "Questionnaire", onIssue).let(entries::addIfPresent)
+      extractTemplate(definition, rootScope, "Questionnaire").let(entries::addIfPresent)
     }
 
     traverseQuestionnaireItems(
@@ -70,13 +67,9 @@ internal class TemplateExtractionEngine(
       responseItemsByLinkId = questionnaireResponse.item.groupBy { it.linkId.value },
       inheritedVariables = rootVariables,
       outputEntries = entries,
-      onIssue = onIssue,
     )
 
-    return TemplateExtractionResult(
-      bundle = Bundle(type = Enumeration(value = Bundle.BundleType.Transaction), entry = entries),
-      operationOutcome = issues.takeIf { it.isNotEmpty() }?.toOperationOutcome(),
-    )
+    return Bundle(type = Enumeration(value = Bundle.BundleType.Transaction), entry = entries)
   }
 
   /**
@@ -92,35 +85,18 @@ internal class TemplateExtractionEngine(
    * Each matched item is normalized into one or more extraction contexts to support repeated groups
    * and repeating questions, item-level templates are evaluated for each logical occurrence, and
    * any allocated `%variables` are carried forward to descendants. If multiple response items are
-   * found for a non-repeating Questionnaire item, extraction continues with a warning and uses the
-   * first logical occurrence for direct extraction.
+   * found for a non-repeating Questionnaire item, extraction uses the first logical occurrence for
+   * direct extraction.
    */
   private fun traverseQuestionnaireItems(
     questionnaireItems: List<Questionnaire.Item>,
     responseItemsByLinkId: Map<String?, List<QuestionnaireResponse.Item>>,
     inheritedVariables: Map<String, Any?>,
     outputEntries: MutableList<Bundle.Entry>,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ) {
     questionnaireItems.forEach { questionnaireItem ->
       val matchingResponseItems = responseItemsByLinkId[questionnaireItem.linkId.value].orEmpty()
       if (matchingResponseItems.isEmpty()) return@forEach
-
-      if (
-        !questionnaireItem.isRepeatedGroup &&
-          questionnaireItem.repeats?.value != true &&
-          matchingResponseItems.size > 1
-      ) {
-        onIssue(
-          TemplateExtractionIssue(
-            severity = OperationOutcome.IssueSeverity.Warning,
-            code = OperationOutcome.IssueType.Invalid,
-            diagnostics =
-              "Multiple QuestionnaireResponse items were found for non-repeating item '${questionnaireItem.linkId.value}'. Only the first occurrence will be used for direct extraction.",
-            expressionPath = questionnaireItem.linkId.value,
-          )
-        )
-      }
 
       questionnaireItem.toExtractionContexts(matchingResponseItems).forEach { extractionContext ->
         val currentVariables =
@@ -139,7 +115,6 @@ internal class TemplateExtractionEngine(
               definition = definition,
               scope = scope,
               path = questionnaireItem.linkId.value ?: "Questionnaire.item",
-              onIssue = onIssue,
             )
             .let(outputEntries::addIfPresent)
         }
@@ -151,7 +126,6 @@ internal class TemplateExtractionEngine(
               extractionContext.childResponseItems.groupBy { it.linkId.value },
             inheritedVariables = currentVariables,
             outputEntries = outputEntries,
-            onIssue = onIssue,
           )
         }
       }
@@ -162,7 +136,6 @@ internal class TemplateExtractionEngine(
     definition: TemplateExtractDefinition,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): Bundle.Entry? {
     val templateResource =
       questionnaire.findContainedResource(definition.templateReference)
@@ -194,26 +167,13 @@ internal class TemplateExtractionEngine(
 
     // The JSON tree pass applies templateExtractContext/templateExtractValue recursively before we
     // materialize the resource back into typed Kotlin FHIR models.
-    val processedResources = treeProcessor.processResource(templateJson, scope, onIssue)
+    val processedResources = treeProcessor.processResource(templateJson, scope)
     if (processedResources.isEmpty()) return null
-    if (processedResources.size > 1) {
-      onIssue(
-        TemplateExtractionIssue(
-          severity = OperationOutcome.IssueSeverity.Warning,
-          code = OperationOutcome.IssueType.Invalid,
-          diagnostics =
-            "Template '${definition.templateReference}' expanded to multiple resources in a singular extraction context. Only the first resource will be emitted.",
-          expressionPath = path,
-        )
-      )
-    }
 
     val resourceJson =
-      processedResources
-        .first()
-        .withResolvedResourceId(definition, templateId, scope, path, onIssue)
+      processedResources.first().withResolvedResourceId(definition, templateId, scope, path)
     val extractedResource = FhirPathService.jsonToResource(resourceJson, path)
-    return createBundleEntry(definition, scope, path, resourceType, extractedResource, onIssue)
+    return createBundleEntry(definition, scope, path, resourceType, extractedResource)
   }
 
   /**
@@ -229,13 +189,12 @@ internal class TemplateExtractionEngine(
     templateId: String?,
     scope: TemplateEvaluationScope,
     path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): JsonObject {
     val mutable = toMutableMap()
     val evaluatedId =
       definition.resourceIdExpression
-        ?.let { evaluateExpression(it, scope, "$path.resourceId", onIssue) }
-        ?.let { values -> FhirPathService.toStringValue(values, "$path.resourceId", onIssue) }
+        ?.let { evaluateExpression(it, scope) }
+        ?.let { values -> FhirPathService.toStringValue(values, "$path.resourceId") }
         ?.takeIf { it.isNotBlank() }
 
     if (evaluatedId != null) {
@@ -254,13 +213,12 @@ internal class TemplateExtractionEngine(
     path: String,
     resourceType: String,
     extractedResource: Resource,
-    onIssue: (TemplateExtractionIssue) -> Unit,
   ): Bundle.Entry {
     val resourceId = extractedResource.id
     val fullUrl =
       definition.fullUrlExpression
-        ?.let { evaluateExpression(it, scope, "$path.fullUrl", onIssue) }
-        ?.let { values -> FhirPathService.toStringValue(values, "$path.fullUrl", onIssue) }
+        ?.let { evaluateExpression(it, scope) }
+        ?.let { values -> FhirPathService.toStringValue(values, "$path.fullUrl") }
         ?.takeIf { it.isNotBlank() } ?: generateAllocatedFullUrl()
 
     val requestUrl =
@@ -285,26 +243,26 @@ internal class TemplateExtractionEngine(
       )
 
     definition.ifNoneMatchExpression
-      ?.let { evaluateExpression(it, scope, "$path.ifNoneMatch", onIssue) }
-      ?.let { values -> FhirPathService.toStringValue(values, "$path.ifNoneMatch", onIssue) }
+      ?.let { evaluateExpression(it, scope) }
+      ?.let { values -> FhirPathService.toStringValue(values, "$path.ifNoneMatch") }
       ?.takeIf { it.isNotBlank() }
       ?.let { requestBuilder.ifNoneMatch = FhirString.Builder().apply { value = it } }
 
     definition.ifMatchExpression
-      ?.let { evaluateExpression(it, scope, "$path.ifMatch", onIssue) }
-      ?.let { values -> FhirPathService.toStringValue(values, "$path.ifMatch", onIssue) }
+      ?.let { evaluateExpression(it, scope) }
+      ?.let { values -> FhirPathService.toStringValue(values, "$path.ifMatch") }
       ?.takeIf { it.isNotBlank() }
       ?.let { requestBuilder.ifMatch = FhirString.Builder().apply { value = it } }
 
     definition.ifNoneExistExpression
-      ?.let { evaluateExpression(it, scope, "$path.ifNoneExist", onIssue) }
-      ?.let { values -> FhirPathService.toStringValue(values, "$path.ifNoneExist", onIssue) }
+      ?.let { evaluateExpression(it, scope) }
+      ?.let { values -> FhirPathService.toStringValue(values, "$path.ifNoneExist") }
       ?.takeIf { it.isNotBlank() }
       ?.let { requestBuilder.ifNoneExist = FhirString.Builder().apply { value = it } }
 
     definition.ifModifiedSinceExpression
-      ?.let { evaluateExpression(it, scope, "$path.ifModifiedSince", onIssue) }
-      ?.let { values -> FhirPathService.toInstantValue(values, "$path.ifModifiedSince", onIssue) }
+      ?.let { evaluateExpression(it, scope) }
+      ?.let { values -> FhirPathService.toInstantValue(values, "$path.ifModifiedSince") }
       ?.let { instant -> requestBuilder.ifModifiedSince = instant.toBuilder() }
 
     return Bundle.Entry(
@@ -314,12 +272,7 @@ internal class TemplateExtractionEngine(
     )
   }
 
-  private fun evaluateExpression(
-    expression: String,
-    scope: TemplateEvaluationScope,
-    path: String,
-    onIssue: (TemplateExtractionIssue) -> Unit,
-  ): List<Any> =
+  private fun evaluateExpression(expression: String, scope: TemplateEvaluationScope): List<Any> =
     FhirPathService.evaluate(
       expression = expression,
       resource = scope.fhirPathEvaluationContext(),
