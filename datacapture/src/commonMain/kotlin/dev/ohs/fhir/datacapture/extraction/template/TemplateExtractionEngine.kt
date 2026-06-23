@@ -16,7 +16,9 @@
 package dev.ohs.fhir.datacapture.extraction.template
 
 import dev.ohs.fhir.datacapture.extensions.allocateIdVariableNames
+import dev.ohs.fhir.datacapture.extensions.findContainedBundle
 import dev.ohs.fhir.datacapture.extensions.findContainedResource
+import dev.ohs.fhir.datacapture.extensions.templateExtractBundleReference
 import dev.ohs.fhir.datacapture.extensions.templateExtractExtensions
 import dev.ohs.fhir.datacapture.extraction.DataExtractionException
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
@@ -29,9 +31,11 @@ import dev.ohs.fhir.model.r4.String as FhirString
 import dev.ohs.fhir.model.r4.Uri
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
@@ -40,19 +44,26 @@ import kotlinx.serialization.json.jsonPrimitive
  * templates and replacing their templated values with data selected from the response:
  * https://build.fhir.org/ig/HL7/sdc/en/extraction.html
  * https://build.fhir.org/ig/HL7/sdc/en/StructureDefinition-sdc-questionnaire-templateExtract.html
+ * https://build.fhir.org/ig/HL7/sdc/en/StructureDefinition-sdc-questionnaire-templateExtractBundle.html
  *
  * This implementation supports the `sdc-questionnaire-templateExtract`,
- * `sdc-questionnaire-templateExtractContext`, `sdc-questionnaire-templateExtractValue`, and
- * `sdc-questionnaire-extractAllocateId` extensions defined by SDC. The extractor is
- * platform-independent and lives in `commonMain`, so callers can use it from Android, iOS, JVM, JS,
- * or Wasm after obtaining a completed questionnaire response from the data capture workflow.
+ * `sdc-questionnaire-templateExtractBundle`, `sdc-questionnaire-templateExtractContext`,
+ * `sdc-questionnaire-templateExtractValue`, and `sdc-questionnaire-extractAllocateId` extensions
+ * defined by SDC. The extractor is platform-independent and lives in `commonMain`, so callers can
+ * use it from Android, iOS, JVM, JS, or Wasm after obtaining a completed questionnaire response
+ * from the data capture workflow.
  */
 object TemplateExtractionEngine {
   private val treeProcessor = TemplateTreeProcessor()
+  private val json = Json {
+    explicitNulls = false
+    encodeDefaults = false
+  }
 
   /** Returns `true` when the questionnaire declares at least one template extraction definition. */
   fun canExtract(questionnaire: Questionnaire): Boolean =
-    questionnaire.templateExtractExtensions.isNotEmpty() ||
+    questionnaire.templateExtractBundleReference != null ||
+      questionnaire.templateExtractExtensions.isNotEmpty() ||
       questionnaire.item.any { item -> item.hasTemplateExtractExtensionRecursively() }
 
   /**
@@ -66,7 +77,7 @@ object TemplateExtractionEngine {
    */
   fun extract(questionnaire: Questionnaire, questionnaireResponse: QuestionnaireResponse): Bundle {
     require(canExtract(questionnaire)) {
-      "Template-based extraction requires sdc-questionnaire-templateExtract on the questionnaire or one of its items."
+      "Template-based extraction requires sdc-questionnaire-templateExtractBundle, sdc-questionnaire-templateExtract, or one of the item-level template extraction declarations."
     }
 
     val questionnaireReference = questionnaireResponse.questionnaire?.value
@@ -76,7 +87,7 @@ object TemplateExtractionEngine {
 
     val missingTemplateReferences = questionnaire.missingTemplateReferences()
     require(missingTemplateReferences.isEmpty()) {
-      "Missing contained template resource(s): ${missingTemplateReferences.joinToString()}. Each sdc-questionnaire-templateExtract reference must resolve before extraction starts."
+      "Missing contained template resource(s): ${missingTemplateReferences.joinToString()}. Each template extraction reference must resolve before extraction starts."
     }
 
     try {
@@ -90,6 +101,12 @@ object TemplateExtractionEngine {
           variables = rootVariables,
         )
 
+      val rootBundleEntries =
+        questionnaire.templateExtractBundleReference
+          ?.let { templateReference ->
+            extractBundleTemplate(templateReference, rootScope, "Questionnaire")
+          }
+          .orEmpty()
       val entries =
         questionnaire.templateExtractExtensions.mapNotNull { definition ->
           extractTemplate(definition, rootScope, "Questionnaire")
@@ -104,8 +121,8 @@ object TemplateExtractionEngine {
         )
 
       return Bundle(
-        type = Enumeration(value = Bundle.BundleType.Transaction),
-        entry = entries + traversedEntries,
+        type = questionnaire.extractedBundleType(),
+        entry = rootBundleEntries + entries + traversedEntries,
       )
     } catch (exception: DataExtractionException) {
       throw exception
@@ -214,6 +231,37 @@ object TemplateExtractionEngine {
     val extractedResource = FhirPathService.jsonToResource(resourceJson, path)
     return createBundleEntry(definition, scope, path, resourceType, extractedResource)
   }
+
+  private fun extractBundleTemplate(
+    templateReference: String,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): List<Bundle.Entry> {
+    val templateBundle =
+      scope.questionnaire.findContainedBundle(templateReference)
+        ?: throw DataExtractionException(
+          "Contained template bundle '$templateReference' was not found in the questionnaire."
+        )
+
+    return templateBundle.entry.flatMapIndexed { index, entryTemplate ->
+      val entryPath = "$path.templateBundle.entry[$index]"
+      val entryTemplateJson =
+        json.encodeToJsonElement(Bundle.Entry.serializer(), entryTemplate).jsonObject
+
+      treeProcessor.processObject(entryTemplateJson, scope, entryPath).map { entryJson ->
+        materializeBundleEntry(entryJson, entryPath)
+      }
+    }
+  }
+
+  private fun materializeBundleEntry(entryJson: JsonObject, path: String): Bundle.Entry =
+    try {
+      json.decodeFromJsonElement(Bundle.Entry.serializer(), entryJson)
+    } catch (exception: Exception) {
+      throw DataExtractionException(
+        "Failed to materialize extracted bundle entry at '$path': ${exception.message ?: exception::class.simpleName}"
+      )
+    }
 
   /**
    * Finalizes `Resource.id` after template processing completes.
@@ -333,10 +381,16 @@ private fun Questionnaire.Item.hasTemplateExtractExtensionRecursively(): Boolean
 
 /** Collects unresolved contained resource references declared by template extraction extensions. */
 private fun Questionnaire.missingTemplateReferences(): List<String> =
-  allTemplateExtractDefinitions()
-    .map { it.templateReference }
+  buildList {
+      templateExtractBundleReference?.let(::add)
+      addAll(allTemplateExtractDefinitions().map { it.templateReference })
+    }
     .distinct()
     .filter { findContainedResource(it) == null }
+
+private fun Questionnaire.extractedBundleType(): Enumeration<Bundle.BundleType> =
+  templateExtractBundleReference?.let(::findContainedBundle)?.type
+    ?: Enumeration(value = Bundle.BundleType.Transaction)
 
 /** Flattens questionnaire-level and item-level template extraction declarations into one list. */
 private fun Questionnaire.allTemplateExtractDefinitions(): List<TemplateExtractDefinition> =

@@ -22,15 +22,23 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 /** Applies template extraction context and value directives to a cloned JSON resource tree. */
 internal class TemplateTreeProcessor {
   fun processResource(template: JsonObject, scope: TemplateEvaluationScope): List<JsonObject> =
-    expandObjectNode(
-      node = template,
+    processObject(
+      template = template,
       scope = scope,
-      path = template["resourceType"]?.toString() ?: "\$",
+      path = template["resourceType"]?.jsonPrimitive?.contentOrNull ?: "\$",
     )
+
+  fun processObject(
+    template: JsonObject,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): List<JsonObject> = expandObjectNode(node = template, scope = scope, path = path)
 
   /**
    * Expands one JSON object node from the template tree into zero or more output object nodes.
@@ -82,20 +90,18 @@ internal class TemplateTreeProcessor {
     scope: TemplateEvaluationScope,
     path: String,
   ): JsonObject = buildJsonObject {
-    node.keys
-      .filterNot { it.startsWith("_") }
-      .forEach { propertyName ->
-        val (value, metadata) =
-          processLogicalProperty(
-            valueNode = node[propertyName],
-            metadataNode = node["_$propertyName"],
-            scope = scope,
-            path = appendJsonPath(path, propertyName),
-          )
+    node.logicalPropertyNames().forEach { propertyName ->
+      val (value, metadata) =
+        processLogicalProperty(
+          valueNode = node[propertyName],
+          metadataNode = node["_$propertyName"],
+          scope = scope,
+          path = appendJsonPath(path, propertyName),
+        )
 
-        value?.let { put(propertyName, it) }
-        metadata?.let { put("_$propertyName", it) }
-      }
+      value?.let { put(propertyName, it) }
+      metadata?.let { put("_$propertyName", it) }
+    }
   }
 
   private fun processLogicalProperty(
@@ -277,6 +283,9 @@ private data class ProcessedLogicalProperty(
 )
 
 private data class PrimitiveOccurrence(val value: JsonElement?, val metadata: JsonObject?)
+
+private fun JsonObject.logicalPropertyNames(): List<String> =
+  keys.map { key -> if (key.startsWith("_")) key.removePrefix("_") else key }.distinct()
 
 private fun JsonObject.withRemainingExtensions(remainingExtensions: JsonArray?): JsonObject {
   val updated = toMutableMap()

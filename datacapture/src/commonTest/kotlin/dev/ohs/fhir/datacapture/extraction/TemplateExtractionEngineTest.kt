@@ -546,6 +546,245 @@ class TemplateExtractionEngineTest {
   }
 
   @Test
+  fun extractsBundleTemplateEntriesFromQuestionnaireLevelExtension() {
+    val questionnaire =
+      questionnaire(
+        """
+        {
+          "resourceType": "Questionnaire",
+          "url": "http://example.org/Questionnaire/template-bundle",
+          "status": "active",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle",
+              "valueReference": {
+                "reference": "#bundle-template"
+              }
+            }
+          ],
+          "item": [
+            {
+              "linkId": "patient",
+              "text": "Patient",
+              "type": "group",
+              "item": [
+                {
+                  "linkId": "name",
+                  "text": "Name",
+                  "type": "group",
+                  "item": [
+                    {
+                      "linkId": "given",
+                      "text": "Given",
+                      "type": "string",
+                      "repeats": true
+                    },
+                    {
+                      "linkId": "family",
+                      "text": "Family",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "linkId": "obs",
+              "text": "Observation",
+              "type": "group",
+              "item": [
+                {
+                  "linkId": "height",
+                  "text": "Height in m",
+                  "type": "decimal"
+                }
+              ]
+            }
+          ],
+          "contained": [
+            {
+              "resourceType": "Bundle",
+              "id": "bundle-template",
+              "type": "transaction",
+              "entry": [
+                {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+                      "valueString": "item.where(linkId = 'patient')"
+                    }
+                  ],
+                  "fullUrl": "urn:uuid:patient-1",
+                  "resource": {
+                    "resourceType": "Patient",
+                    "name": [
+                      {
+                        "extension": [
+                          {
+                            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+                            "valueString": "item.where(linkId = 'name')"
+                          }
+                        ],
+                        "_family": {
+                          "extension": [
+                            {
+                              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                              "valueString": "item.where(linkId = 'family').answer.value.first()"
+                            }
+                          ]
+                        },
+                        "_given": [
+                          {
+                            "extension": [
+                              {
+                                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                                "valueString": "item.where(linkId = 'given').answer.value"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "request": {
+                    "method": "POST",
+                    "url": "Patient"
+                  }
+                },
+                {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+                      "valueString": "item.where(linkId = 'obs').item.where(linkId = 'height')"
+                    }
+                  ],
+                  "fullUrl": "urn:uuid:height-1",
+                  "resource": {
+                    "resourceType": "Observation",
+                    "status": "final",
+                    "code": {
+                      "text": "Height"
+                    },
+                    "subject": {
+                      "reference": "urn:uuid:patient-1"
+                    },
+                    "valueQuantity": {
+                      "value": 0,
+                      "_value": {
+                        "extension": [
+                          {
+                            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                            "valueString": "answer.value * 100"
+                          }
+                        ]
+                      },
+                      "unit": "cm",
+                      "system": "http://unitsofmeasure.org",
+                      "code": "cm"
+                    }
+                  },
+                  "request": {
+                    "method": "POST",
+                    "url": "Observation"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """
+      )
+
+    val questionnaireResponse =
+      questionnaireResponse(
+        """
+        {
+          "resourceType": "QuestionnaireResponse",
+          "id": "qr-123",
+          "questionnaire": "http://example.org/Questionnaire/template-bundle",
+          "status": "completed",
+          "item": [
+            {
+              "linkId": "patient",
+              "item": [
+                {
+                  "linkId": "name",
+                  "item": [
+                    {
+                      "linkId": "given",
+                      "answer": [
+                        {
+                          "valueString": "Jane"
+                        },
+                        {
+                          "valueString": "Alex"
+                        }
+                      ]
+                    },
+                    {
+                      "linkId": "family",
+                      "answer": [
+                        {
+                          "valueString": "Doe"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "linkId": "obs",
+              "item": [
+                {
+                  "linkId": "height",
+                  "answer": [
+                    {
+                      "valueDecimal": 1.75
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        """
+      )
+
+    val result = TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
+
+    assertEquals(Bundle.BundleType.Transaction, result.type.value)
+    assertEquals(2, result.entry.size)
+
+    val entryObjects = bundleEntryObjects(result)
+    val patientEntry = entryObjects.single { resourceType(it) == "Patient" }
+    val observationEntry = entryObjects.single { resourceType(it) == "Observation" }
+
+    val patientName =
+      patientEntry.getValue("resource").jsonObject.getValue("name").jsonArray.single().jsonObject
+    assertEquals("Doe", patientName.getValue("family").jsonPrimitive.content)
+    assertEquals(
+      listOf("Jane", "Alex"),
+      patientName.getValue("given").jsonArray.map { it.jsonPrimitive.content },
+    )
+
+    val valueQuantity =
+      observationEntry.getValue("resource").jsonObject.getValue("valueQuantity").jsonObject
+    assertEquals("175", valueQuantity.getValue("value").jsonPrimitive.content)
+    assertEquals(
+      "urn:uuid:patient-1",
+      observationEntry
+        .getValue("resource")
+        .jsonObject
+        .getValue("subject")
+        .jsonObject
+        .getValue("reference")
+        .jsonPrimitive
+        .content,
+    )
+  }
+
+  @Test
   fun requiresContainedTemplateReferenceBeforeExtraction() {
     val questionnaire =
       questionnaire(

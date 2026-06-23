@@ -29,6 +29,8 @@ internal const val EXTENSION_CQF_CALCULATED_VALUE_URL: String =
   "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue"
 internal const val EXTENSION_TEMPLATE_EXTRACT_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract"
+internal const val EXTENSION_TEMPLATE_EXTRACT_BUNDLE_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle"
 
 internal const val TEMPLATE_EXTRACT_CHILD_FULL_URL: String = "fullUrl"
 

@@ -17,6 +17,7 @@ package dev.ohs.fhir.datacapture.extensions
 
 import dev.ohs.fhir.datacapture.extraction.template.EXTENSION_EXTRACT_ALLOCATE_ID_URL
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractDefinition
+import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Expression
 import dev.ohs.fhir.model.r4.Extension
 import dev.ohs.fhir.model.r4.Questionnaire
@@ -188,6 +189,15 @@ internal val Questionnaire.templateExtractExtensions: List<TemplateExtractDefini
       .mapNotNull { it.asTemplateExtractDefinition() }
 
 /**
+ * The bundle template extension points to a contained Bundle whose entry templates should be cloned
+ * into the extracted output Bundle:
+ * https://build.fhir.org/ig/HL7/sdc/en/StructureDefinition-sdc-questionnaire-templateExtractBundle.html
+ */
+internal val Questionnaire.templateExtractBundleReference: String?
+  get() =
+    extension.firstOrNull { it.url == EXTENSION_TEMPLATE_EXTRACT_BUNDLE_URL }?.referenceValue()
+
+/**
  * The allocateId extension reserves a UUID-backed `%variable` once per questionnaire scope so
  * template expressions can cross-reference resources in the output Bundle without knowing the
  * server-assigned ids ahead of time:
@@ -205,6 +215,10 @@ internal fun Questionnaire.findContainedResource(reference: String): Resource? {
   val containedReference = if (reference.startsWith("#")) reference else "#$reference"
   return contained.firstOrNull { resource -> resource.id?.let { "#$it" } == containedReference }
 }
+
+/** Resolves a contained Bundle whether the template used `id` or `#id` notation. */
+internal fun Questionnaire.findContainedBundle(reference: String): Bundle? =
+  findContainedResource(reference) as? Bundle
 
 /**
  * Applies `forEach` on each questionnaire item and questionnaire response item pair in the
