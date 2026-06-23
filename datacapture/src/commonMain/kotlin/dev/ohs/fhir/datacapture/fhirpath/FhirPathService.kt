@@ -119,7 +119,7 @@ internal object FhirPathService {
       is Float,
       is Double -> value.toString()
 
-      is BigDecimal -> value.toStringExpanded()
+      is BigDecimal -> value.toPlainString()
 
       is FhirPathDate -> value.toString()
 
