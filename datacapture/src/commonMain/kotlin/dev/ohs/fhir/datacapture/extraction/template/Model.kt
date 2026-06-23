@@ -99,6 +99,20 @@ internal data class TemplateEvaluationScope(
   }
 }
 
+/** Returns the base value used when evaluating template FHIRPath expressions. */
+internal fun TemplateEvaluationScope.fhirPathEvaluationContext(): Any =
+  context ?: questionnaireResponse
+
+/** Builds the FHIRPath variable map exposed to template extraction expressions. */
+internal fun TemplateEvaluationScope.fhirPathVariables(): Map<String, Any?> = buildMap {
+  val baseContext = fhirPathEvaluationContext()
+  putAll(variables)
+  put("resource", questionnaireResponse)
+  put("context", baseContext)
+  put("questionnaire", questionnaire)
+  questionnaireItem?.let { put("qItem", it) }
+}
+
 /** A single logical occurrence of a questionnaire item for extraction purposes. */
 internal data class ItemExtractionContext(
   val baseContext: QuestionnaireResponse.Item,

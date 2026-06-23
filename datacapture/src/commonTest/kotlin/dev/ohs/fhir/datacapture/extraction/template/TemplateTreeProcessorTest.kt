@@ -31,7 +31,7 @@ class TemplateTreeProcessorTest {
     encodeDefaults = false
   }
 
-  private val treeProcessor = TemplateTreeProcessor(TemplateFhirPathEvaluator())
+  private val treeProcessor = TemplateTreeProcessor()
 
   @Test
   fun processResource_allowsTemplateIdToBeOverriddenDuringJsonProcessing() {

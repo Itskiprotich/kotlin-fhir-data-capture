@@ -24,7 +24,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 
 /** Applies template extraction context and value directives to a cloned JSON resource tree. */
-internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEvaluator) {
+internal class TemplateTreeProcessor {
   fun processResource(
     template: JsonObject,
     scope: TemplateEvaluationScope,
@@ -59,8 +59,11 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
 
     extensionState.controls.valueExpression?.let { valueExpression ->
       return scopedContexts.flatMap { scopedContext ->
-        evaluator
-          .evaluate(valueExpression, scopedContext, path)
+        FhirPathService.evaluate(
+            expression = valueExpression.expression,
+            resource = scopedContext.fhirPathEvaluationContext(),
+            variables = scopedContext.fhirPathVariables(),
+          )
           .map { value -> FhirPathService.toJsonElement(value, path) }
           .mapNotNull { value ->
             if (value is JsonObject) {
@@ -264,7 +267,12 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
 
     return scopedContexts.flatMap { scopedContext ->
       extensionState.controls.valueExpression?.let { valueExpression ->
-        val results = evaluator.evaluate(valueExpression, scopedContext, path)
+        val results =
+          FhirPathService.evaluate(
+            expression = valueExpression.expression,
+            resource = scopedContext.fhirPathEvaluationContext(),
+            variables = scopedContext.fhirPathVariables(),
+          )
         if (results.isEmpty()) {
           emptyList()
         } else {
@@ -293,7 +301,12 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
     onIssue: (TemplateExtractionIssue) -> Unit,
   ): List<TemplateEvaluationScope> {
     if (expression == null) return listOf(scope)
-    val results = evaluator.evaluate(expression, scope, path)
+    val results =
+      FhirPathService.evaluate(
+        expression = expression.expression,
+        resource = scope.fhirPathEvaluationContext(),
+        variables = scope.fhirPathVariables(),
+      )
     if (results.isEmpty()) return emptyList()
     return results.map { result ->
       scope.withContext(

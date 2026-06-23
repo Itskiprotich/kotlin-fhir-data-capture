@@ -40,8 +40,7 @@ internal class TemplateExtractionEngine(
   private val questionnaire: Questionnaire,
   private val questionnaireResponse: QuestionnaireResponse,
 ) {
-  private val evaluator = TemplateFhirPathEvaluator()
-  private val treeProcessor = TemplateTreeProcessor(evaluator)
+  private val treeProcessor = TemplateTreeProcessor()
 
   /**
    * Runs extraction in the same order SDC expects consumers to reason about it: questionnaire-level
@@ -320,7 +319,12 @@ internal class TemplateExtractionEngine(
     scope: TemplateEvaluationScope,
     path: String,
     onIssue: (TemplateExtractionIssue) -> Unit,
-  ): List<Any> = evaluator.evaluate(TemplateExtractExpression(expression), scope, path)
+  ): List<Any> =
+    FhirPathService.evaluate(
+      expression = expression,
+      resource = scope.fhirPathEvaluationContext(),
+      variables = scope.fhirPathVariables(),
+    )
 
   @OptIn(ExperimentalUuidApi::class)
   private fun allocateIdVariables(variableNames: List<String>): Map<String, Any?> =

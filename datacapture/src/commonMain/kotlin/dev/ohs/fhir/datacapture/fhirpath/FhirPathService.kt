@@ -75,38 +75,26 @@ internal object FhirPathService {
   }
 
   /**
-   * Evaluates the [expression] against any supported FHIRPath base value without coercing the
-   * result.
-   *
-   * Template extraction relies on these raw values to decide whether a template node should be
-   * removed, cloned into an array, or converted into a complex JSON subtree. If the underlying
-   * FHIRPath engine fails to evaluate the expression, this returns an empty result.
-   */
-  internal fun evaluateUntypedOrThrow(
-    expression: String,
-    base: Any?,
-    variables: Map<String, Any?> = emptyMap(),
-  ): List<Any> =
-    try {
-      r4FhirPathEngine.evaluateExpression(expression, base, variables).toList()
-    } catch (throwable: Throwable) {
-      Logger.e("Error evaluating untyped fhirPath expression $expression", throwable)
-      emptyList()
-    }
-
-  /**
    * Evaluates the [expression] on the [resource] with optional [variables].
    *
    * @param expression The FHIRPath expression to evaluate.
-   * @param resource The FHIR resource to evaluate the expression against.
+   * @param resource The FHIR base value to evaluate the expression against.
    * @param variables Optional map of variables to use during evaluation.
    * @return The list of evaluation results.
    */
   fun evaluate(
     expression: String,
-    resource: Resource,
+    resource: Any,
     variables: Map<String, Any?> = emptyMap(),
-  ): List<Any> = evaluateUntypedOrThrow(expression, resource, variables)
+  ): List<Any> =
+    runCatching { r4FhirPathEngine.evaluateExpression(expression, resource, variables).toList() }
+      .onFailure { throwable ->
+        Logger.e(
+          "Failed to evaluate FHIRPath expression '$expression': ${throwable.message ?: "Unknown error"}",
+          throwable,
+        )
+      }
+      .getOrElse { emptyList() }
 
   /** Converts the FHIRPath evaluation [result] to a boolean. */
   fun convertToBoolean(result: List<Any>): Boolean {
