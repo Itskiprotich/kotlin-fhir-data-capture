@@ -28,7 +28,7 @@ class QuestionnaireViewModel : ViewModel() {
   }
 
   fun getQuestionnaireResponseJson(response: QuestionnaireResponse): String =
-    jsonR4.encodeToString(QuestionnaireResponse.serializer(), response)
+    json.encodeToString(QuestionnaireResponse.serializer(), response)
 
   suspend fun getQuestionnaire(fileName: String) = Res.readBytes("files/$fileName").decodeToString()
 
