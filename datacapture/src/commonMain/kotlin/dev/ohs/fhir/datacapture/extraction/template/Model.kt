@@ -124,15 +124,13 @@ internal data class TemplateExtractionIssue(
 
 /** Internal control-flow exception used to surface one fatal extraction issue. */
 internal class TemplateExtractionException(val issue: TemplateExtractionIssue) :
-  RuntimeException(issue.diagnostics)
-
-internal fun extractionFailure(
-  severity: OperationOutcome.IssueSeverity,
-  code: OperationOutcome.IssueType,
-  diagnostics: String,
-  expressionPath: String? = null,
-): Nothing =
-  throw TemplateExtractionException(
+  RuntimeException(issue.diagnostics) {
+  constructor(
+    severity: OperationOutcome.IssueSeverity,
+    code: OperationOutcome.IssueType,
+    diagnostics: String,
+    expressionPath: String? = null,
+  ) : this(
     TemplateExtractionIssue(
       severity = severity,
       code = code,
@@ -140,6 +138,7 @@ internal fun extractionFailure(
       expressionPath = expressionPath,
     )
   )
+}
 
 /** Converts the collected extraction issues into a single FHIR-native diagnostic resource. */
 internal fun List<TemplateExtractionIssue>.toOperationOutcome(): OperationOutcome =

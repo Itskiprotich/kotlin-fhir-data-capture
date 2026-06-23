@@ -16,7 +16,6 @@
 package dev.ohs.fhir.datacapture.extraction.template
 
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
-import dev.ohs.fhir.model.r4.OperationOutcome
 
 /** FHIRPath adapter used by template extraction. */
 internal class TemplateFhirPathEvaluator {
@@ -34,20 +33,10 @@ internal class TemplateFhirPathEvaluator {
       scope.questionnaireItem?.let { put("qItem", it) }
     }
 
-    return try {
-      FhirPathService.evaluateUntypedOrThrow(
-        expression = expression.expression,
-        base = baseContext,
-        variables = variables,
-      )
-    } catch (throwable: Throwable) {
-      extractionFailure(
-        severity = OperationOutcome.IssueSeverity.Error,
-        code = OperationOutcome.IssueType.Exception,
-        diagnostics =
-          "FHIRPath evaluation failed for '${expression.expression}': ${throwable.message ?: throwable::class.simpleName}",
-        expressionPath = path,
-      )
-    }
+    return FhirPathService.evaluateUntypedOrThrow(
+      expression = expression.expression,
+      base = baseContext,
+      variables = variables,
+    )
   }
 }

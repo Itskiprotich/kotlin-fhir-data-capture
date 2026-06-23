@@ -17,8 +17,8 @@ package dev.ohs.fhir.datacapture.fhirpath
 
 import co.touchlab.kermit.Logger
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionException
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionIssue
-import dev.ohs.fhir.datacapture.extraction.template.extractionFailure
 import dev.ohs.fhir.fhirpath.FhirPathEngine
 import dev.ohs.fhir.fhirpath.types.FhirPathDate
 import dev.ohs.fhir.fhirpath.types.FhirPathDateTime
@@ -55,6 +55,10 @@ import dev.ohs.fhir.model.r4.Time
 import dev.ohs.fhir.model.r4.Uri
 import dev.ohs.fhir.model.r4.Url
 import dev.ohs.fhir.model.r4.Uuid
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime as KotlinLocalTime
+import kotlinx.datetime.YearMonth
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -75,13 +79,20 @@ internal object FhirPathService {
    * result.
    *
    * Template extraction relies on these raw values to decide whether a template node should be
-   * removed, cloned into an array, or converted into a complex JSON subtree.
+   * removed, cloned into an array, or converted into a complex JSON subtree. If the underlying
+   * FHIRPath engine fails to evaluate the expression, this returns an empty result.
    */
   internal fun evaluateUntypedOrThrow(
     expression: String,
     base: Any?,
     variables: Map<String, Any?> = emptyMap(),
-  ): List<Any> = r4FhirPathEngine.evaluateExpression(expression, base, variables).toList()
+  ): List<Any> =
+    try {
+      r4FhirPathEngine.evaluateExpression(expression, base, variables).toList()
+    } catch (throwable: Throwable) {
+      Logger.e("Error evaluating untyped fhirPath expression $expression", throwable)
+      emptyList()
+    }
 
   /**
    * Evaluates the [expression] on the [resource] with optional [variables].
@@ -95,13 +106,7 @@ internal object FhirPathService {
     expression: String,
     resource: Resource,
     variables: Map<String, Any?> = emptyMap(),
-  ): List<Any> =
-    try {
-      evaluateUntypedOrThrow(expression, resource, variables)
-    } catch (throwable: Throwable) {
-      Logger.e("Error evaluating fhirPath expression $expression", throwable)
-      emptyList()
-    }
+  ): List<Any> = evaluateUntypedOrThrow(expression, resource, variables)
 
   /** Converts the FHIRPath evaluation [result] to a boolean. */
   fun convertToBoolean(result: List<Any>): Boolean {
@@ -130,11 +135,83 @@ internal object FhirPathService {
 
       is BigDecimal -> value.toStringExpanded()
 
-      is FhirPathDate -> value.toFhirLiteral()
+      is FhirPathDate -> value.toString()
 
-      is FhirPathDateTime -> value.toFhirLiteral()
+      is FhirPathDateTime ->
+        run {
+          val month = value.month
+          val day = value.day
+          val hour = value.hour
+          val minute = value.minute
+          val second = value.second
+          val utcOffset = value.utcOffset
 
-      is FhirPathTime -> value.toFhirLiteral()
+          when {
+            month == null -> FhirDateTime.Year(value.year).toString()
+
+            day == null -> FhirDateTime.YearMonth(YearMonth(value.year, month)).toString()
+
+            hour == null -> FhirDateTime.Date(LocalDate(value.year, month, day)).toString()
+
+            minute != null && second != null && utcOffset != null -> {
+              val wholeSeconds = second.toInt()
+              val nanoseconds = second.rem(1).times(1_000_000_000.0).toInt()
+              FhirDateTime.DateTime(
+                  dateTime =
+                    LocalDateTime(value.year, month, day, hour, minute, wholeSeconds, nanoseconds),
+                  utcOffset = utcOffset,
+                )
+                .toString()
+            }
+
+            else ->
+              buildString {
+                // FHIRPath can retain partial time precision that the R4 dateTime primitive does
+                // not model directly, so preserve the original shape for those intermediate
+                // values.
+                append(value.year.toString().padStart(4, '0'))
+                append('-')
+                append(month.toString().padStart(2, '0'))
+                append('-')
+                append(day.toString().padStart(2, '0'))
+                append('T')
+                append(hour.toString().padStart(2, '0'))
+                minute?.let { minuteValue ->
+                  append(':')
+                  append(minuteValue.toString().padStart(2, '0'))
+                  second?.let { secondValue ->
+                    append(':')
+                    val normalized =
+                      if (secondValue % 1.0 == 0.0) {
+                        secondValue.toInt().toString().padStart(2, '0')
+                      } else {
+                        secondValue.toString().padStart(2, '0')
+                      }
+                    append(normalized)
+                  }
+                }
+                utcOffset?.let { append(it.toString()) }
+              }
+          }
+        }
+
+      is FhirPathTime ->
+        run {
+          val minute = value.minute
+          val second = value.second
+
+          when {
+            minute == null -> value.hour.toString().padStart(2, '0')
+
+            second == null -> KotlinLocalTime(value.hour, minute).toString()
+
+            else -> {
+              val wholeSeconds = second.toInt()
+              val nanoseconds = second.rem(1).times(1_000_000_000.0).toInt()
+              KotlinLocalTime(value.hour, minute, wholeSeconds, nanoseconds).toString()
+            }
+          }
+        }
 
       is FhirPathQuantity -> value.value?.toString() ?: ""
 
@@ -186,103 +263,15 @@ internal object FhirPathService {
    * how to materialize them safely.
    */
   internal fun toJsonElement(value: Any, path: String): JsonElement =
-    when (value) {
-      is String -> JsonPrimitive(value)
-
-      is Boolean -> JsonPrimitive(value)
-
-      is Int -> JsonPrimitive(value)
-
-      is Long -> JsonPrimitive(value)
-
-      is Float -> JsonPrimitive(value)
-
-      is Double -> JsonPrimitive(value)
-
-      is BigDecimal -> JsonPrimitive(value.toString())
-
-      is FhirPathDate -> JsonPrimitive(convertToString(listOf(value)))
-
-      is FhirPathDateTime -> JsonPrimitive(convertToString(listOf(value)))
-
-      is FhirPathTime -> JsonPrimitive(convertToString(listOf(value)))
-
-      is FhirPathQuantity ->
-        JsonObject(
-          buildMap {
-            value.value?.let { put("value", JsonPrimitive(it.toString())) }
-            value.unit?.let {
-              put("code", JsonPrimitive(it))
-              put("unit", JsonPrimitive(it))
-            }
-          }
-        )
-
-      is FhirString -> JsonPrimitive(value.value)
-
-      is FhirBoolean -> JsonPrimitive(value.value)
-
-      is Integer -> JsonPrimitive(value.value)
-
-      is PositiveInt -> JsonPrimitive(value.value)
-
-      is Decimal -> JsonPrimitive(value.value?.toString())
-
-      is Date -> JsonPrimitive(value.value?.toString())
-
-      is DateTime -> JsonPrimitive(value.value?.toString())
-
-      is Time -> JsonPrimitive(value.value?.toString())
-
-      is Uri -> JsonPrimitive(value.value)
-
-      is Url -> JsonPrimitive(value.value)
-
-      is Canonical -> JsonPrimitive(value.value)
-
-      is Code -> JsonPrimitive(value.value)
-
-      is Markdown -> JsonPrimitive(value.value)
-
-      is Id -> JsonPrimitive(value.value)
-
-      is Oid -> JsonPrimitive(value.value)
-
-      is Uuid -> JsonPrimitive(value.value)
-
-      is Quantity -> json.encodeToJsonElement(Quantity.serializer(), value)
-
-      is Coding -> json.encodeToJsonElement(Coding.serializer(), value)
-
-      is CodeableConcept -> json.encodeToJsonElement(CodeableConcept.serializer(), value)
-
-      is Reference -> json.encodeToJsonElement(Reference.serializer(), value)
-
-      is Attachment -> json.encodeToJsonElement(Attachment.serializer(), value)
-
-      is Identifier -> json.encodeToJsonElement(Identifier.serializer(), value)
-
-      is HumanName -> json.encodeToJsonElement(HumanName.serializer(), value)
-
-      is Address -> json.encodeToJsonElement(Address.serializer(), value)
-
-      is ContactPoint -> json.encodeToJsonElement(ContactPoint.serializer(), value)
-
-      is Period -> json.encodeToJsonElement(Period.serializer(), value)
-
-      is Annotation -> json.encodeToJsonElement(Annotation.serializer(), value)
-
-      is Resource -> json.encodeToJsonElement(Resource.serializer(), value)
-
-      else ->
-        extractionFailure(
-          severity = OperationOutcome.IssueSeverity.Error,
-          code = OperationOutcome.IssueType.Invalid,
-          diagnostics =
-            "Unsupported extraction result type ${value::class.simpleName} for '$path'.",
-          expressionPath = path,
-        )
-    }
+    primitiveJsonElementOrNull(value)
+      ?: fhirPathQuantityJsonElementOrNull(value)
+      ?: structuredJsonElementOrNull(json, value)
+      ?: throw TemplateExtractionException(
+        severity = OperationOutcome.IssueSeverity.Error,
+        code = OperationOutcome.IssueType.Invalid,
+        diagnostics = "Unsupported extraction result type ${value::class.simpleName} for '$path'.",
+        expressionPath = path,
+      )
 
   /**
    * Narrows [toJsonElement] to template locations that represent primitive FHIR JSON values.
@@ -293,7 +282,7 @@ internal object FhirPathService {
   internal fun toPrimitiveJsonElement(value: Any, path: String): JsonElement {
     val jsonValue = toJsonElement(value, path)
     if (jsonValue !is JsonPrimitive) {
-      extractionFailure(
+      throw TemplateExtractionException(
         severity = OperationOutcome.IssueSeverity.Error,
         code = OperationOutcome.IssueType.Invalid,
         diagnostics =
@@ -360,7 +349,7 @@ internal object FhirPathService {
       is Uuid -> convertToString(listOf(firstValue))
 
       else ->
-        extractionFailure(
+        throw TemplateExtractionException(
           severity = OperationOutcome.IssueSeverity.Error,
           code = OperationOutcome.IssueType.Invalid,
           diagnostics =
@@ -385,7 +374,7 @@ internal object FhirPathService {
     val instantRegex =
       Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$")
     if (!instantRegex.matches(value)) {
-      extractionFailure(
+      throw TemplateExtractionException(
         severity = OperationOutcome.IssueSeverity.Error,
         code = OperationOutcome.IssueType.Invalid,
         diagnostics =
@@ -406,7 +395,7 @@ internal object FhirPathService {
     try {
       json.decodeFromString<Resource>(resourceJson.toString())
     } catch (throwable: Throwable) {
-      extractionFailure(
+      throw TemplateExtractionException(
         severity = OperationOutcome.IssueSeverity.Error,
         code = OperationOutcome.IssueType.Exception,
         diagnostics =
@@ -446,60 +435,90 @@ internal object FhirPathService {
     expressions.joinToString(" ") { evaluateFhirPathToString(it, data) }
 }
 
-private fun FhirPathDate.toFhirLiteral(): String = buildString {
-  append(year.toString().padStart(4, '0'))
-  month?.let {
-    append('-')
-    append(it.toString().padStart(2, '0'))
-    day?.let { dayValue ->
-      append('-')
-      append(dayValue.toString().padStart(2, '0'))
-    }
-  }
-}
+private fun FhirPathService.primitiveJsonElementOrNull(value: Any): JsonElement? =
+  when (value) {
+    is String -> JsonPrimitive(value)
 
-private fun FhirPathDateTime.toFhirLiteral(): String = buildString {
-  append(year.toString().padStart(4, '0'))
-  month?.let {
-    append('-')
-    append(it.toString().padStart(2, '0'))
-    day?.let { dayValue ->
-      append('-')
-      append(dayValue.toString().padStart(2, '0'))
-      hour?.let { hourValue ->
-        append('T')
-        append(hourValue.toString().padStart(2, '0'))
-        minute?.let { minuteValue ->
-          append(':')
-          append(minuteValue.toString().padStart(2, '0'))
-          second?.let { secondValue ->
-            append(':')
-            val normalized =
-              if (secondValue % 1.0 == 0.0) {
-                secondValue.toInt().toString().padStart(2, '0')
-              } else {
-                secondValue.toString().padStart(2, '0')
-              }
-            append(normalized)
+    is Boolean -> JsonPrimitive(value)
+
+    is Int -> JsonPrimitive(value)
+
+    is Long -> JsonPrimitive(value)
+
+    is Float -> JsonPrimitive(value)
+
+    is Double -> JsonPrimitive(value)
+
+    is BigDecimal -> JsonPrimitive(value.toString())
+
+    is FhirPathDate,
+    is FhirPathDateTime,
+    is FhirPathTime -> JsonPrimitive(convertToString(listOf(value)))
+
+    is FhirString -> JsonPrimitive(value.value)
+
+    is FhirBoolean -> JsonPrimitive(value.value)
+
+    is Integer -> JsonPrimitive(value.value)
+
+    is PositiveInt -> JsonPrimitive(value.value)
+
+    is Decimal -> JsonPrimitive(value.value?.toString())
+
+    is Date -> JsonPrimitive(value.value?.toString())
+
+    is DateTime -> JsonPrimitive(value.value?.toString())
+
+    is Time -> JsonPrimitive(value.value?.toString())
+
+    is Uri -> JsonPrimitive(value.value)
+
+    is Url -> JsonPrimitive(value.value)
+
+    is Canonical -> JsonPrimitive(value.value)
+
+    is Code -> JsonPrimitive(value.value)
+
+    is Markdown -> JsonPrimitive(value.value)
+
+    is Id -> JsonPrimitive(value.value)
+
+    is Oid -> JsonPrimitive(value.value)
+
+    is Uuid -> JsonPrimitive(value.value)
+
+    else -> null
+  }
+
+private fun fhirPathQuantityJsonElementOrNull(value: Any): JsonElement? =
+  when (value) {
+    is FhirPathQuantity ->
+      JsonObject(
+        buildMap {
+          value.value?.let { put("value", JsonPrimitive(it.toString())) }
+          value.unit?.let {
+            put("code", JsonPrimitive(it))
+            put("unit", JsonPrimitive(it))
           }
         }
-        utcOffset?.let { append(it.toString()) }
-      }
-    }
-  }
-}
+      )
 
-private fun FhirPathTime.toFhirLiteral(): String = buildString {
-  append(hour.toString().padStart(2, '0'))
-  append(':')
-  append(minute.toString().padStart(2, '0'))
-  append(':')
-  val secondValue = second ?: 0.0
-  val normalizedSecond =
-    if (secondValue % 1.0 == 0.0) {
-      secondValue.toInt().toString().padStart(2, '0')
-    } else {
-      secondValue.toString().padStart(2, '0')
-    }
-  append(normalizedSecond)
-}
+    else -> null
+  }
+
+private fun structuredJsonElementOrNull(json: Json, value: Any): JsonElement? =
+  when (value) {
+    is Quantity -> json.encodeToJsonElement(Quantity.serializer(), value)
+    is Coding -> json.encodeToJsonElement(Coding.serializer(), value)
+    is CodeableConcept -> json.encodeToJsonElement(CodeableConcept.serializer(), value)
+    is Reference -> json.encodeToJsonElement(Reference.serializer(), value)
+    is Attachment -> json.encodeToJsonElement(Attachment.serializer(), value)
+    is Identifier -> json.encodeToJsonElement(Identifier.serializer(), value)
+    is HumanName -> json.encodeToJsonElement(HumanName.serializer(), value)
+    is Address -> json.encodeToJsonElement(Address.serializer(), value)
+    is ContactPoint -> json.encodeToJsonElement(ContactPoint.serializer(), value)
+    is Period -> json.encodeToJsonElement(Period.serializer(), value)
+    is Annotation -> json.encodeToJsonElement(Annotation.serializer(), value)
+    is Resource -> json.encodeToJsonElement(Resource.serializer(), value)
+    else -> null
+  }

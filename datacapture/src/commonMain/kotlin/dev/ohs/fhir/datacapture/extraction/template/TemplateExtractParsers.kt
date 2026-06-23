@@ -103,7 +103,7 @@ private fun parseTemplateExpression(
   val valueExpression =
     extensionObject["valueExpression"]?.jsonObject
       ?: run {
-        extractionFailure(
+        throw TemplateExtractionException(
           severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
           code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
           diagnostics =
@@ -114,7 +114,7 @@ private fun parseTemplateExpression(
 
   val language = valueExpression["language"]?.jsonPrimitive?.contentOrNull
   if (language != null && language != FHIRPATH_LANGUAGE) {
-    extractionFailure(
+    throw TemplateExtractionException(
       severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
       code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Invalid,
       diagnostics =
@@ -125,7 +125,7 @@ private fun parseTemplateExpression(
 
   val expression = valueExpression["expression"]?.jsonPrimitive?.contentOrNull
   if (expression.isNullOrBlank()) {
-    extractionFailure(
+    throw TemplateExtractionException(
       severity = dev.ohs.fhir.model.r4.OperationOutcome.IssueSeverity.Error,
       code = dev.ohs.fhir.model.r4.OperationOutcome.IssueType.Required,
       diagnostics = "Template extraction expressions must include valueExpression.expression.",

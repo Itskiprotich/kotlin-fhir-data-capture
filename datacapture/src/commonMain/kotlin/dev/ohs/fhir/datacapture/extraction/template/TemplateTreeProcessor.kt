@@ -66,7 +66,7 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
             if (value is JsonObject) {
               value
             } else {
-              extractionFailure(
+              throw TemplateExtractionException(
                 severity = OperationOutcome.IssueSeverity.Error,
                 code = OperationOutcome.IssueType.Invalid,
                 diagnostics =
@@ -220,7 +220,7 @@ internal class TemplateTreeProcessor(private val evaluator: TemplateFhirPathEval
             processPrimitiveOccurrences(currentValue, currentMetadata, scope, currentPath, onIssue)
 
           else ->
-            extractionFailure(
+            throw TemplateExtractionException(
               severity = OperationOutcome.IssueSeverity.Error,
               code = OperationOutcome.IssueType.Invalid,
               diagnostics =

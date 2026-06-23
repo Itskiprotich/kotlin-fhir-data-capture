@@ -167,7 +167,7 @@ internal class TemplateExtractionEngine(
   ): Bundle.Entry? {
     val templateResource =
       questionnaire.findContainedResource(definition.templateReference)
-        ?: extractionFailure(
+        ?: throw TemplateExtractionException(
           severity = OperationOutcome.IssueSeverity.Error,
           code = OperationOutcome.IssueType.Required,
           diagnostics =
@@ -184,7 +184,7 @@ internal class TemplateExtractionEngine(
     val resourceType =
       templateJson["resourceType"]?.jsonPrimitive?.contentOrNull
         ?: run {
-          extractionFailure(
+          throw TemplateExtractionException(
             severity = OperationOutcome.IssueSeverity.Error,
             code = OperationOutcome.IssueType.Invalid,
             diagnostics =
