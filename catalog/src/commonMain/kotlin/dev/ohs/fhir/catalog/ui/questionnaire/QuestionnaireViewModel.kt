@@ -16,16 +16,19 @@
 package dev.ohs.fhir.catalog.ui.questionnaire
 
 import androidx.lifecycle.ViewModel
-import dev.ohs.fhir.model.r4.FhirR4Json
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin_fhir_data_capture.catalog.generated.resources.Res
+import kotlinx.serialization.json.Json
 
 class QuestionnaireViewModel : ViewModel() {
-  private val fhirJson = FhirR4Json()
+  private val json = Json {
+    explicitNulls = false
+    encodeDefaults = false
+  }
 
   fun getQuestionnaireResponseJson(response: QuestionnaireResponse): String =
-    fhirJson.encodeToString(response)
+    json.encodeToString(QuestionnaireResponse.serializer(), response)
 
   suspend fun getQuestionnaire(fileName: String) = Res.readBytes("files/$fileName").decodeToString()
 

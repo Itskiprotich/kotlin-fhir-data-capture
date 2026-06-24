@@ -15,12 +15,17 @@
  */
 package dev.ohs.fhir.datacapture.extensions
 
+import dev.ohs.fhir.datacapture.extraction.template.EXTENSION_EXTRACT_ALLOCATE_ID_URL
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractDefinition
+import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Expression
 import dev.ohs.fhir.model.r4.Extension
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.Resource
 import dev.ohs.fhir.model.r4.terminologies.ResourceType
+
+internal const val TEMPLATE_EXTRACT_CHILD_TEMPLATE_URL: String = "template"
 
 /**
  * The StructureMap url in the
@@ -169,6 +174,51 @@ enum class EntryMode(val value: String) {
     fun from(type: String?): EntryMode? = entries.find { it.value == type }
   }
 }
+
+/**
+ * The template extraction extension declares contained resource templates that should be cloned
+ * into the transaction Bundle returned by extraction when the QuestionnaireResponse is complete.
+ * The SDC profile also defines optional expressions for `fullUrl`, `resourceId`, and
+ * `Bundle.entry.request` metadata:
+ * https://build.fhir.org/ig/HL7/sdc/en/StructureDefinition-sdc-questionnaire-templateExtract.html
+ */
+internal val Questionnaire.templateExtractExtensions: List<TemplateExtractDefinition>
+  get() =
+    extension
+      .filter { it.url == EXTENSION_TEMPLATE_EXTRACT_URL }
+      .mapNotNull { it.asTemplateExtractDefinition() }
+
+/**
+ * The bundle template extension points to a contained Bundle whose entry templates should be cloned
+ * into the extracted output Bundle:
+ * https://build.fhir.org/ig/HL7/sdc/en/StructureDefinition-sdc-questionnaire-templateExtractBundle.html
+ */
+internal val Questionnaire.templateExtractBundleReference: String?
+  get() =
+    extension.firstOrNull { it.url == EXTENSION_TEMPLATE_EXTRACT_BUNDLE_URL }?.referenceValue()
+
+/**
+ * The allocateId extension reserves a UUID-backed `%variable` once per questionnaire scope so
+ * template expressions can cross-reference resources in the output Bundle without knowing the
+ * server-assigned ids ahead of time:
+ * https://build.fhir.org/ig/HL7/sdc/en/StructureDefinition-sdc-questionnaire-extractAllocateId.html
+ * https://build.fhir.org/ig/HL7/sdc/en/expressions.html
+ */
+internal val Questionnaire.allocateIdVariableNames: List<String>
+  get() =
+    extension
+      .filter { it.url == EXTENSION_EXTRACT_ALLOCATE_ID_URL }
+      .mapNotNull { it.stringValue()?.normalizedVariableName() }
+
+/** Resolves a contained resource whether the template used `id` or `#id` notation. */
+internal fun Questionnaire.findContainedResource(reference: String): Resource? {
+  val containedReference = if (reference.startsWith("#")) reference else "#$reference"
+  return contained.firstOrNull { resource -> resource.id?.let { "#$it" } == containedReference }
+}
+
+/** Resolves a contained Bundle whether the template used `id` or `#id` notation. */
+internal fun Questionnaire.findContainedBundle(reference: String): Bundle? =
+  findContainedResource(reference) as? Bundle
 
 /**
  * Applies `forEach` on each questionnaire item and questionnaire response item pair in the

@@ -1,0 +1,309 @@
+/*
+ * Copyright 2026 Open Health Stack Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dev.ohs.fhir.datacapture.extraction.template
+
+import dev.ohs.fhir.datacapture.extraction.DataExtractionException
+import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
+
+/** Applies template extraction context and value directives to a cloned JSON resource tree. */
+internal class TemplateTreeProcessor {
+  fun processResource(template: JsonObject, scope: TemplateEvaluationScope): List<JsonObject> =
+    processObject(
+      template = template,
+      scope = scope,
+      path = template["resourceType"]?.jsonPrimitive?.contentOrNull ?: "\$",
+    )
+
+  fun processObject(
+    template: JsonObject,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): List<JsonObject> = expandObjectNode(node = template, scope = scope, path = path)
+
+  /**
+   * Expands one JSON object node from the template tree into zero or more output object nodes.
+   *
+   * Here, an "object node" means any non-primitive FHIR JSON value represented as a [JsonObject],
+   * such as the root resource, a backbone element, or a complex data type. The node can fan out
+   * because `templateExtractContext` may produce multiple evaluation scopes and
+   * `templateExtractValue` may replace the current node with multiple object results.
+   */
+  private fun expandObjectNode(
+    node: JsonObject,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): List<JsonObject> {
+    val extensionState = parseTemplateNodeExtensionState(node["extension"], path)
+    val cleanedNode = node.withRemainingExtensions(extensionState.remainingExtensions)
+    val scopedContexts =
+      applyContextExpression(extensionState.controls.contextExpression, scope, path)
+    if (scopedContexts.isEmpty()) return emptyList()
+
+    extensionState.controls.valueExpression?.let { valueExpression ->
+      return scopedContexts.flatMap { scopedContext ->
+        FhirPathService.evaluate(
+            expression = valueExpression.expression,
+            resource = scopedContext.fhirPathEvaluationContext(),
+            variables = scopedContext.fhirPathVariables(),
+          )
+          .map { value -> FhirPathService.toJsonElement(value, path) }
+          .mapNotNull { value ->
+            if (value is JsonObject) {
+              value
+            } else {
+              throw DataExtractionException(
+                "Template value replacement for '$path' must resolve to a JSON object because the template node has child properties."
+              )
+            }
+          }
+      }
+    }
+
+    return scopedContexts.map { scopedContext ->
+      processObjectNodeProperties(cleanedNode, scopedContext, path)
+    }
+  }
+
+  /** Rewrites the child properties of one JSON object node after scope/value expansion. */
+  private fun processObjectNodeProperties(
+    node: JsonObject,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): JsonObject = buildJsonObject {
+    node.logicalPropertyNames().forEach { propertyName ->
+      val (value, metadata) =
+        processLogicalProperty(
+          valueNode = node[propertyName],
+          metadataNode = node["_$propertyName"],
+          scope = scope,
+          path = appendJsonPath(path, propertyName),
+        )
+
+      value?.let { put(propertyName, it) }
+      metadata?.let { put("_$propertyName", it) }
+    }
+  }
+
+  private fun processLogicalProperty(
+    valueNode: JsonElement?,
+    metadataNode: JsonElement?,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): ProcessedLogicalProperty =
+    when (metadataNode) {
+      is JsonObject -> processPrimitiveScalarProperty(valueNode, metadataNode, scope, path)
+
+      is JsonArray ->
+        processPrimitiveArrayProperty(valueNode as? JsonArray, metadataNode, scope, path)
+
+      else ->
+        when (valueNode) {
+          null -> ProcessedLogicalProperty()
+
+          is JsonObject -> {
+            val processedValues = expandObjectNode(valueNode, scope, path)
+            when {
+              processedValues.isEmpty() -> ProcessedLogicalProperty()
+
+              processedValues.size == 1 ->
+                ProcessedLogicalProperty(value = processedValues.single())
+
+              else -> ProcessedLogicalProperty(value = processedValues.first())
+            }
+          }
+
+          is JsonArray -> ProcessedLogicalProperty(value = processArray(valueNode, scope, path))
+
+          else -> ProcessedLogicalProperty(value = valueNode)
+        }
+    }
+
+  private fun processArray(
+    arrayNode: JsonArray,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): JsonArray? =
+    buildList {
+        arrayNode.forEachIndexed { index, element ->
+          val elementPath = appendArrayPath(path, index)
+          when (element) {
+            is JsonObject -> addAll(expandObjectNode(element, scope, elementPath))
+            is JsonArray -> processArray(element, scope, elementPath)?.let(::add)
+            else -> add(element)
+          }
+        }
+      }
+      .takeIf { it.isNotEmpty() }
+      ?.let(::JsonArray)
+
+  private fun processPrimitiveScalarProperty(
+    valueNode: JsonElement?,
+    metadataNode: JsonObject,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): ProcessedLogicalProperty {
+    val occurrences = processPrimitiveOccurrences(valueNode, metadataNode, scope, path)
+    if (occurrences.isEmpty()) return ProcessedLogicalProperty()
+    val occurrence = occurrences.first()
+    return ProcessedLogicalProperty(value = occurrence.value, metadata = occurrence.metadata)
+  }
+
+  private fun processPrimitiveArrayProperty(
+    valueNode: JsonArray?,
+    metadataNode: JsonArray,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): ProcessedLogicalProperty {
+    val maxSize = maxOf(valueNode?.size ?: 0, metadataNode.size)
+    val occurrences =
+      (0 until maxSize).flatMap { index ->
+        val currentPath = appendArrayPath(path, index)
+        val currentValue = valueNode?.getOrNull(index)
+        when (val currentMetadata = metadataNode.getOrNull(index)) {
+          null,
+          JsonNull ->
+            listOfNotNull(currentValue?.let { PrimitiveOccurrence(value = it, metadata = null) })
+
+          is JsonObject ->
+            processPrimitiveOccurrences(currentValue, currentMetadata, scope, currentPath)
+
+          else ->
+            throw DataExtractionException(
+              "Primitive metadata array entries must be objects or null. Found ${currentMetadata::class.simpleName} at '$currentPath'."
+            )
+        }
+      }
+
+    if (occurrences.isEmpty()) return ProcessedLogicalProperty()
+
+    val outputValues = occurrences.map { occurrence -> occurrence.value ?: JsonNull }
+    val outputMetadata = occurrences.map { occurrence -> occurrence.metadata ?: JsonNull }
+    val hasMetadata = occurrences.any { occurrence -> occurrence.metadata != null }
+
+    return ProcessedLogicalProperty(
+      value = JsonArray(outputValues),
+      metadata = hasMetadata.takeIf { it }?.let { JsonArray(outputMetadata) },
+    )
+  }
+
+  /**
+   * Evaluates one primitive template node into zero-to-many concrete array/scalar occurrences.
+   *
+   * The SDC template rules allow a primitive placeholder inside an array to expand into multiple
+   * actual primitive values. We keep the metadata object paired with each expanded value so
+   * primitive extension companions stay aligned with the generated output slots.
+   */
+  private fun processPrimitiveOccurrences(
+    valueNode: JsonElement?,
+    metadataNode: JsonObject,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): List<PrimitiveOccurrence> {
+    val extensionState = parseTemplateNodeExtensionState(metadataNode["extension"], path)
+    val cleanedMetadata = metadataNode.withRemainingExtensions(extensionState.remainingExtensions)
+    val scopedContexts =
+      applyContextExpression(extensionState.controls.contextExpression, scope, path)
+    if (scopedContexts.isEmpty()) return emptyList()
+
+    return scopedContexts.flatMap { scopedContext ->
+      extensionState.controls.valueExpression?.let { valueExpression ->
+        val results =
+          FhirPathService.evaluate(
+            expression = valueExpression.expression,
+            resource = scopedContext.fhirPathEvaluationContext(),
+            variables = scopedContext.fhirPathVariables(),
+          )
+        if (results.isEmpty()) {
+          emptyList()
+        } else {
+          results.map { value ->
+            val converted = FhirPathService.toPrimitiveJsonElement(value, path)
+            PrimitiveOccurrence(
+              value = converted,
+              metadata = cleanedMetadata.takeIf { it.entries.isNotEmpty() },
+            )
+          }
+        }
+      }
+        ?: listOf(
+          PrimitiveOccurrence(
+            value = valueNode,
+            metadata = cleanedMetadata.takeIf { it.entries.isNotEmpty() },
+          )
+        )
+    }
+  }
+
+  private fun applyContextExpression(
+    expression: TemplateExtractExpression?,
+    scope: TemplateEvaluationScope,
+    path: String,
+  ): List<TemplateEvaluationScope> {
+    if (expression == null) return listOf(scope)
+    val results =
+      FhirPathService.evaluate(
+        expression = expression.expression,
+        resource = scope.fhirPathEvaluationContext(),
+        variables = scope.fhirPathVariables(),
+      )
+    if (results.isEmpty()) return emptyList()
+    return results.map { result ->
+      scope.withContext(
+        nextContext = result,
+        namedVariable = expression.variableName,
+        namedValue = result,
+      )
+    }
+  }
+}
+
+private data class ProcessedLogicalProperty(
+  val value: JsonElement? = null,
+  val metadata: JsonElement? = null,
+)
+
+private data class PrimitiveOccurrence(val value: JsonElement?, val metadata: JsonObject?)
+
+private fun JsonObject.logicalPropertyNames(): List<String> =
+  keys.map { key -> if (key.startsWith("_")) key.removePrefix("_") else key }.distinct()
+
+private fun JsonObject.withRemainingExtensions(remainingExtensions: JsonArray?): JsonObject {
+  val updated = toMutableMap()
+  if (containsKey("extension")) {
+    if (remainingExtensions == null) {
+      updated.remove("extension")
+    } else {
+      updated["extension"] = remainingExtensions
+    }
+  }
+  return JsonObject(updated)
+}
+
+private fun appendJsonPath(path: String, propertyName: String): String =
+  when {
+    path.isBlank() -> propertyName
+    path == "$" -> "$.$propertyName"
+    else -> "$path.$propertyName"
+  }
+
+private fun appendArrayPath(path: String, index: Int): String = "$path[$index]"
