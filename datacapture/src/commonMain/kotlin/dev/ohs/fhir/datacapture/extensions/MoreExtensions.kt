@@ -31,6 +31,10 @@ internal const val EXTENSION_TEMPLATE_EXTRACT_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtract"
 internal const val EXTENSION_TEMPLATE_EXTRACT_BUNDLE_URL: String =
   "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle"
+internal const val EXTENSION_DEFINITION_EXTRACT_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-definitionExtract"
+internal const val EXTENSION_DEFINITION_EXTRACT_VALUE_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-definitionExtractValue"
 
 internal const val TEMPLATE_EXTRACT_CHILD_FULL_URL: String = "fullUrl"
 
