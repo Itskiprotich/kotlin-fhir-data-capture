@@ -17,13 +17,10 @@ package dev.ohs.fhir.datacapture.extraction.definition
 
 import co.touchlab.kermit.Logger
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
-import dev.ohs.fhir.datacapture.extensions.EXTENSION_DEFINITION_EXTRACT_URL
-import dev.ohs.fhir.datacapture.extensions.EXTENSION_DEFINITION_EXTRACT_VALUE_URL
 import dev.ohs.fhir.datacapture.extensions.elementValue
 import dev.ohs.fhir.datacapture.extensions.packRepeatedGroups
 import dev.ohs.fhir.datacapture.extraction.template.EXTENSION_EXTRACT_ALLOCATE_ID_URL
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
-import dev.ohs.fhir.fhirpath.FhirPathEngine
 import dev.ohs.fhir.fhirpath.types.FhirPathDate
 import dev.ohs.fhir.fhirpath.types.FhirPathDateTime
 import dev.ohs.fhir.fhirpath.types.FhirPathQuantity
@@ -68,18 +65,29 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 
 /**
- * Internal definition-based extractor for completed [QuestionnaireResponse] resources.
+ * Implements the SDC definition-based extraction workflow for completed [QuestionnaireResponse]s.
  *
- * This restores the working implementation from before the template-based merge while preserving
- * support for the full R4 resource model through [DefinitionExtractResourceRegistry].
+ * The SDC "Form Data Extraction" guide describes this approach as:
+ * - locating each `definitionExtract` scope that initiates a resource
+ * - creating a stub resource for that scope
+ * - walking the scoped Questionnaire/QuestionnaireResponse items
+ * - populating matching `Questionnaire.item.definition` paths and `definitionExtractValue`
+ *   directives that share the same canonical definition
+ * - assembling the resulting resource into a transaction `Bundle.entry`
+ *
+ * Reference: https://build.fhir.org/ig/HL7/sdc/en/extraction.html#definition-extract
  */
+internal const val EXTENSION_DEFINITION_EXTRACT_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-definitionExtract"
+
+internal const val EXTENSION_DEFINITION_EXTRACT_VALUE_URL: String =
+  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-definitionExtractValue"
+
 object DefinitionExtractionEngine {
   private val json = Json {
     explicitNulls = false
     encodeDefaults = false
   }
-
-  private val fhirPathEngine = FhirPathEngine.forR4()
 
   fun canExtract(questionnaire: Questionnaire): Boolean =
     questionnaire.extension.any { it.url == EXTENSION_DEFINITION_EXTRACT_URL } ||
@@ -93,14 +101,18 @@ object DefinitionExtractionEngine {
 
     val packedResponse =
       questionnaireResponse.toBuilder().apply { packRepeatedGroups(questionnaire) }.build()
-    val rootPairs = buildItemPairs(questionnaire.item, packedResponse.item)
+    val rootPairs =
+      alignQuestionnaireItemsWithResponseItems(questionnaire.item, packedResponse.item)
     val rootAllocateIds =
       questionnaire.extractAllocateIdVariableNames.associateWith { generateAllocatedFullUrl() }
     val entries = mutableListOf<JsonObject>()
 
     questionnaire.definitionExtractExtensions.forEach { definitionExtract ->
-      entries.add(
-        extractScope(
+      appendValidEntryOrSkip(
+        outputEntries = entries,
+        scopeDescription = "Questionnaire definition '${definitionExtract.definition}'",
+      ) {
+        extractBundleEntryForDefinitionScope(
           definitionExtract = definitionExtract,
           questionnaire = questionnaire,
           questionnaireResponse = questionnaireResponse,
@@ -109,10 +121,10 @@ object DefinitionExtractionEngine {
           scopePairs = rootPairs,
           inheritedAllocateIds = rootAllocateIds,
         )
-      )
+      }
     }
 
-    walkPairsForDefinitionExtracts(
+    extractNestedDefinitionScopeEntries(
       pairs = rootPairs,
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
@@ -120,8 +132,10 @@ object DefinitionExtractionEngine {
       outputEntries = entries,
     )
 
-    require(entries.isNotEmpty()) {
-      "No definition-based extraction instructions were found in the questionnaire."
+    if (entries.isEmpty()) {
+      Logger.w(
+        "Definition-based extraction did not produce any valid bundle entries. Returning an empty transaction bundle."
+      )
     }
 
     val bundleJson = buildJsonObject {
@@ -133,13 +147,34 @@ object DefinitionExtractionEngine {
     return FhirPathService.jsonToResource(bundleJson, "Bundle") as Bundle
   }
 
-  private fun extractScope(
+  private fun requireMatchingQuestionnaire(
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+  ) {
+    require(
+      questionnaireResponse.questionnaire?.value == null ||
+        questionnaireResponse.questionnaire?.value == questionnaire.url?.value
+    ) {
+      "Mismatching Questionnaire ${questionnaire.url?.value} and QuestionnaireResponse (for Questionnaire ${questionnaireResponse.questionnaire?.value})"
+    }
+  }
+
+  /**
+   * Executes one `definitionExtract` scope and returns the `Bundle.entry` JSON for that scope.
+   *
+   * This is the spec's "initiate resource extraction" step. It creates the stub resource identified
+   * by the `definitionExtract.definition`, applies any root/item `definitionExtractValue`
+   * directives in scope, walks descendant items whose `Questionnaire.item.definition` canonical
+   * matches the scoped canonical, and then assembles request metadata such as `fullUrl`, `method`,
+   * and conditional headers.
+   */
+  private fun extractBundleEntryForDefinitionScope(
     definitionExtract: DefinitionExtractConfig,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     scopeBase: Any,
     scopeQuestionnaireItem: Questionnaire.Item?,
-    scopePairs: List<ItemPair>,
+    scopePairs: List<QuestionnaireItemResponsePair>,
     inheritedAllocateIds: Map<String, String>,
   ): JsonObject {
     val resourceType = inferResourceType(definitionExtract.definition, scopePairs)
@@ -150,7 +185,7 @@ object DefinitionExtractionEngine {
     val scopeCanonical = definitionExtract.definition
 
     if (scopeQuestionnaireItem == null) {
-      applyDefinitionExtractValues(
+      applyDefinitionExtractValueDirectives(
         sourceExtensions = questionnaire.extension,
         scopeCanonical = scopeCanonical,
         questionnaire = questionnaire,
@@ -166,7 +201,7 @@ object DefinitionExtractionEngine {
     }
 
     scopePairs.forEach {
-      processPairInScope(
+      applyQuestionnairePairToDefinitionScope(
         pair = it,
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
@@ -187,7 +222,7 @@ object DefinitionExtractionEngine {
       val fullUrl =
         definitionExtract.fullUrlExpression
           ?.let {
-            evaluateExpressionToString(
+            evaluateDefinitionExtractExpressionToString(
               expression = it,
               base = scopeBase,
               questionnaire = questionnaire,
@@ -216,7 +251,7 @@ object DefinitionExtractionEngine {
           )
           definitionExtract.ifNoneMatchExpression
             ?.let {
-              evaluateExpressionToString(
+              evaluateDefinitionExtractExpressionToString(
                 expression = it,
                 base = scopeBase,
                 questionnaire = questionnaire,
@@ -230,7 +265,7 @@ object DefinitionExtractionEngine {
             ?.let { put("ifNoneMatch", JsonPrimitive(it)) }
           definitionExtract.ifModifiedSinceExpression
             ?.let {
-              evaluateExpressionToString(
+              evaluateDefinitionExtractExpressionToString(
                 expression = it,
                 base = scopeBase,
                 questionnaire = questionnaire,
@@ -244,7 +279,7 @@ object DefinitionExtractionEngine {
             ?.let { put("ifModifiedSince", JsonPrimitive(it)) }
           definitionExtract.ifMatchExpression
             ?.let {
-              evaluateExpressionToString(
+              evaluateDefinitionExtractExpressionToString(
                 expression = it,
                 base = scopeBase,
                 questionnaire = questionnaire,
@@ -258,7 +293,7 @@ object DefinitionExtractionEngine {
             ?.let { put("ifMatch", JsonPrimitive(it)) }
           definitionExtract.ifNoneExistExpression
             ?.let {
-              evaluateExpressionToString(
+              evaluateDefinitionExtractExpressionToString(
                 expression = it,
                 base = scopeBase,
                 questionnaire = questionnaire,
@@ -277,23 +312,31 @@ object DefinitionExtractionEngine {
     return entryJson
   }
 
-  private fun walkPairsForDefinitionExtracts(
-    pairs: List<ItemPair>,
+  /**
+   * Recursively finds nested `definitionExtract` scopes below the Questionnaire root.
+   *
+   * The SDC definition-based rules say that item-level `definitionExtract` directives only create a
+   * resource when the corresponding QuestionnaireResponse item has content, and that repeating
+   * items create a distinct resource per repetition. This traversal enforces both rules while also
+   * carrying inherited `extractAllocateId` variables down the tree.
+   */
+  private fun extractNestedDefinitionScopeEntries(
+    pairs: List<QuestionnaireItemResponsePair>,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     inheritedAllocateIds: Map<String, String>,
     outputEntries: MutableList<JsonObject>,
   ) {
-    pairs.forEach { pair ->
+    for (pair in pairs) {
       val pairAllocateIds =
         inheritedAllocateIds +
           pair.questionnaireItem.extractAllocateIdVariableNames.associateWith {
             generateAllocatedFullUrl()
           }
 
-      pair.questionnaireItem.definitionExtractExtensions.forEach { definitionExtract ->
+      for (definitionExtract in pair.questionnaireItem.definitionExtractExtensions) {
         if (pair.questionnaireItem.repeats?.value == true && !pair.questionnaireItem.isGroup()) {
-          pair.responseItem.answer.forEach { answer ->
+          for (answer in pair.responseItem.answer) {
             val syntheticResponseItem =
               pair.responseItem
                 .toBuilder()
@@ -303,14 +346,19 @@ object DefinitionExtractionEngine {
                 }
                 .build()
             val syntheticPair =
-              ItemPair(
+              QuestionnaireItemResponsePair(
                 questionnaireItem = pair.questionnaireItem,
                 responseItem = syntheticResponseItem,
-                children = buildItemPairs(pair.questionnaireItem.item, answer.item),
+                children =
+                  alignQuestionnaireItemsWithResponseItems(pair.questionnaireItem.item, answer.item),
               )
-            if (hasAnyContent(syntheticResponseItem)) {
-              outputEntries.add(
-                extractScope(
+            if (hasResponseContent(syntheticResponseItem)) {
+              appendValidEntryOrSkip(
+                outputEntries = outputEntries,
+                scopeDescription =
+                  "item '${pair.questionnaireItem.linkId.value.orEmpty()}' definition '${definitionExtract.definition}'",
+              ) {
+                extractBundleEntryForDefinitionScope(
                   definitionExtract = definitionExtract,
                   questionnaire = questionnaire,
                   questionnaireResponse = questionnaireResponse,
@@ -319,12 +367,16 @@ object DefinitionExtractionEngine {
                   scopePairs = listOf(syntheticPair),
                   inheritedAllocateIds = pairAllocateIds,
                 )
-              )
+              }
             }
           }
-        } else if (hasAnyContent(pair.responseItem)) {
-          outputEntries.add(
-            extractScope(
+        } else if (hasResponseContent(pair.responseItem)) {
+          appendValidEntryOrSkip(
+            outputEntries = outputEntries,
+            scopeDescription =
+              "item '${pair.questionnaireItem.linkId.value.orEmpty()}' definition '${definitionExtract.definition}'",
+          ) {
+            extractBundleEntryForDefinitionScope(
               definitionExtract = definitionExtract,
               questionnaire = questionnaire,
               questionnaireResponse = questionnaireResponse,
@@ -333,11 +385,11 @@ object DefinitionExtractionEngine {
               scopePairs = listOf(pair),
               inheritedAllocateIds = pairAllocateIds,
             )
-          )
+          }
         }
       }
 
-      walkPairsForDefinitionExtracts(
+      extractNestedDefinitionScopeEntries(
         pairs = pair.children,
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
@@ -347,8 +399,17 @@ object DefinitionExtractionEngine {
     }
   }
 
-  private fun processPairInScope(
-    pair: ItemPair,
+  /**
+   * Applies one aligned Questionnaire/QuestionnaireResponse item pair to the current resource
+   * scope.
+   *
+   * If the item's `Questionnaire.item.definition` belongs to the current `definitionExtract`
+   * canonical, its answers populate the matching StructureDefinition path. Group items act as
+   * anchors for repeated backbone/collection elements so descendant answers land in the same
+   * extracted object instance, as described by the SDC parent/child matching rules.
+   */
+  private fun applyQuestionnairePairToDefinitionScope(
+    pair: QuestionnaireItemResponsePair,
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     scopeCanonical: String,
@@ -356,7 +417,7 @@ object DefinitionExtractionEngine {
     rootAnchor: AnchorContext,
     parentAnchor: AnchorContext,
   ) {
-    if (!hasAnyContent(pair.responseItem)) {
+    if (!hasResponseContent(pair.responseItem)) {
       return
     }
 
@@ -376,7 +437,7 @@ object DefinitionExtractionEngine {
         if (anchorPath == parentAnchor.path) {
           parentAnchor
         } else {
-          ensureAnchor(
+          ensureDefinitionPathAnchor(
             rootAnchor = rootAnchor,
             parentAnchor = parentAnchor,
             anchorPath = anchorPath,
@@ -387,7 +448,7 @@ object DefinitionExtractionEngine {
     if (!pair.questionnaireItem.isGroup() && definitionPath != null) {
       val answerValues = pair.responseItem.answer.mapNotNull { it.elementValue }
       if (answerValues.isNotEmpty()) {
-        setPathValues(
+        writeValuesToDefinitionPath(
           rootAnchor = rootAnchor,
           anchor = directAnchor ?: rootAnchor,
           fullPath = definitionPath.pathSegments,
@@ -396,7 +457,7 @@ object DefinitionExtractionEngine {
       }
     }
 
-    applyDefinitionExtractValues(
+    applyDefinitionExtractValueDirectives(
       sourceExtensions = pair.questionnaireItem.extension,
       scopeCanonical = scopeCanonical,
       questionnaire = questionnaire,
@@ -411,7 +472,7 @@ object DefinitionExtractionEngine {
     )
 
     pair.children.forEach {
-      processPairInScope(
+      applyQuestionnairePairToDefinitionScope(
         pair = it,
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
@@ -423,7 +484,14 @@ object DefinitionExtractionEngine {
     }
   }
 
-  private fun applyDefinitionExtractValues(
+  /**
+   * Applies `definitionExtractValue` directives for the current scope.
+   *
+   * The SDC definition-based spec allows fixed values and calculated FHIRPath values to populate
+   * the extracted resource even when the user did not directly answer that exact property. Only
+   * directives whose canonical definition matches the active `definitionExtract` scope are applied.
+   */
+  private fun applyDefinitionExtractValueDirectives(
     sourceExtensions: List<Extension>,
     scopeCanonical: String,
     questionnaire: Questionnaire,
@@ -443,7 +511,7 @@ object DefinitionExtractionEngine {
       .forEach { config ->
         val rawValues =
           config.expression?.let {
-            evaluateExpression(
+            evaluateDefinitionExtractExpression(
               expression = it,
               base = base,
               questionnaire = questionnaire,
@@ -466,14 +534,14 @@ object DefinitionExtractionEngine {
               config.definition.pathSegments.startsWithPath(parentAnchor.path) -> parentAnchor
 
             else ->
-              ensureAnchor(
+              ensureDefinitionPathAnchor(
                 rootAnchor = rootAnchor,
                 parentAnchor = rootAnchor,
                 anchorPath = computeValueAnchorPath(config.definition.pathSegments),
               )
           }
 
-        setPathValues(
+        writeValuesToDefinitionPath(
           rootAnchor = rootAnchor,
           anchor = targetAnchor,
           fullPath = config.definition.pathSegments,
@@ -482,7 +550,39 @@ object DefinitionExtractionEngine {
       }
   }
 
-  private fun evaluateExpression(
+  /**
+   * Adds an extracted entry only if it fully materializes as a valid `Bundle.entry`.
+   *
+   * The SDC guide says extraction errors should be logged and processing should continue as though
+   * the failed query or directive produced no data. This helper keeps that behavior localized to
+   * one resource scope instead of failing the whole extraction transaction.
+   */
+  private inline fun appendValidEntryOrSkip(
+    outputEntries: MutableList<JsonObject>,
+    scopeDescription: String,
+    block: () -> JsonObject,
+  ) {
+    try {
+      val entryJson = block()
+      json.decodeFromJsonElement(Bundle.Entry.serializer(), entryJson)
+      outputEntries.add(entryJson)
+    } catch (throwable: Throwable) {
+      Logger.w(
+        "Skipping definition-based extraction for $scopeDescription because it could not be fully materialized.",
+        throwable,
+      )
+    }
+  }
+
+  /**
+   * Evaluates a FHIRPath expression in the SDC definition-extraction context.
+   *
+   * Per the spec, `$extract` expressions only have access to QuestionnaireResponse data,
+   * Questionnaire data, and `extractAllocateId` variables. This wrapper builds that scoped variable
+   * map and delegates raw FHIRPath execution to the shared [FhirPathService]. The small fallback
+   * table preserves compatibility for expressions that older engine versions handled specially.
+   */
+  private fun evaluateDefinitionExtractExpression(
     expression: Expression,
     base: Any,
     questionnaire: Questionnaire,
@@ -495,30 +595,24 @@ object DefinitionExtractionEngine {
       ?.value
       ?.let { evaluateResourceExpressionFallback(it, questionnaireResponse) }
       ?.takeIf { it.isNotEmpty() }
-      ?: try {
-        fhirPathEngine
-          .evaluateExpression(
-            expression = expression.expression?.value ?: "",
-            base = base,
-            variables =
-              buildMap {
-                put("resource", questionnaireResponse)
-                put("context", responseItem ?: base)
-                put("questionnaire", questionnaire)
-                questionnaireItem?.let { put("qItem", it) }
-                putAll(allocateIds)
-              },
-          )
-          .toList()
-      } catch (throwable: Throwable) {
-        Logger.e(
-          "Error evaluating definition extract expression ${expression.expression?.value}",
-          throwable,
-        )
-        emptyList()
-      }
+      ?: FhirPathService.evaluate(
+        expression = expression.expression?.value ?: "",
+        resource = base,
+        variables =
+          buildMap {
+            put("resource", questionnaireResponse)
+            put("context", responseItem ?: base)
+            put("questionnaire", questionnaire)
+            questionnaireItem?.let { put("qItem", it) }
+            putAll(allocateIds)
+          },
+      )
 
-  private fun evaluateExpressionToString(
+  /**
+   * Resolves a definition-extraction FHIRPath expression to the singular string form required by
+   * `Bundle.entry` request metadata such as `fullUrl`, `ifMatch`, and `ifNoneExist`.
+   */
+  private fun evaluateDefinitionExtractExpressionToString(
     expression: String,
     base: Any,
     questionnaire: Questionnaire,
@@ -527,22 +621,28 @@ object DefinitionExtractionEngine {
     responseItem: QuestionnaireResponse.Item?,
     allocateIds: Map<String, String>,
   ): String =
-    evaluateExpression(
-        expression =
-          Expression(
-            language = Enumeration(value = Expression.ExpressionLanguage.Text_Fhirpath),
-            expression = FhirString(value = expression),
-          ),
-        base = base,
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        questionnaireItem = questionnaireItem,
-        responseItem = responseItem,
-        allocateIds = allocateIds,
-      )
-      .firstOrNull()
-      ?.let(::stringifyValue) ?: ""
+    FhirPathService.toStringValue(
+      values =
+        evaluateDefinitionExtractExpression(
+          expression =
+            Expression(
+              language = Enumeration(value = Expression.ExpressionLanguage.Text_Fhirpath),
+              expression = FhirString(value = expression),
+            ),
+          base = base,
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          questionnaireItem = questionnaireItem,
+          responseItem = responseItem,
+          allocateIds = allocateIds,
+        ),
+      path = "definition extraction expression '$expression'",
+    ) ?: ""
 
+  /**
+   * Preserves a few historical `%resource` expressions that prior implementations treated as direct
+   * QuestionnaireResponse accessors even when the underlying FHIRPath engine returned no value.
+   */
   private fun evaluateResourceExpressionFallback(
     expression: String,
     questionnaireResponse: QuestionnaireResponse,
@@ -609,7 +709,15 @@ object DefinitionExtractionEngine {
         )
     }
 
-  private fun setPathValues(
+  /**
+   * Writes extracted answer/fixed/calculated values into the StructureDefinition path named by
+   * `Questionnaire.item.definition` or `definitionExtractValue.definition`.
+   *
+   * This implements the spec rule that intermediate resource elements do not need matching
+   * Questionnaire items; the extractor creates the missing backbone/data type objects as needed and
+   * only enforces cardinality when the target leaf is singular.
+   */
+  private fun writeValuesToDefinitionPath(
     rootAnchor: AnchorContext,
     anchor: AnchorContext,
     fullPath: List<String>,
@@ -760,7 +868,7 @@ object DefinitionExtractionEngine {
     }
   }
 
-  private fun ensureAnchor(
+  private fun ensureDefinitionPathAnchor(
     rootAnchor: AnchorContext,
     parentAnchor: AnchorContext,
     anchorPath: List<String>,
@@ -978,7 +1086,10 @@ object DefinitionExtractionEngine {
     profiles.values.add(MutableJsonLiteral(JsonPrimitive(definitionCanonical)))
   }
 
-  private fun inferResourceType(definitionCanonical: String, scopePairs: List<ItemPair>): String {
+  private fun inferResourceType(
+    definitionCanonical: String,
+    scopePairs: List<QuestionnaireItemResponsePair>,
+  ): String {
     val canonicalWithoutVersion = definitionCanonical.substringBefore("|")
     val coreCandidate = canonicalWithoutVersion.substringAfterLast("/")
     if (isSupportedResourceType(coreCandidate)) {
@@ -1014,10 +1125,17 @@ object DefinitionExtractionEngine {
   private fun isSupportedResourceType(resourceType: String): Boolean =
     resourceType in DefinitionExtractResourceRegistry.supportedResourceTypes
 
-  private fun buildItemPairs(
+  /**
+   * Aligns Questionnaire items with their QuestionnaireResponse counterparts before extraction.
+   *
+   * The definition-based spec expects traversal to follow the Questionnaire structure from the root
+   * through each item. Repeating groups are expanded here so each repetition can establish its own
+   * extraction scope and collection/backbone anchor.
+   */
+  private fun alignQuestionnaireItemsWithResponseItems(
     questionnaireItems: List<Questionnaire.Item>,
     responseItems: List<QuestionnaireResponse.Item>,
-  ): List<ItemPair> {
+  ): List<QuestionnaireItemResponsePair> {
     val responseItemsByLinkId = responseItems.groupBy { it.linkId.value.orEmpty() }
     return questionnaireItems.flatMap { questionnaireItem ->
       val itemLinkId = questionnaireItem.linkId.value.orEmpty()
@@ -1033,10 +1151,11 @@ object DefinitionExtractionEngine {
                   this.item = answer.item.map { it.toBuilder() }.toMutableList()
                 }
                 .build()
-            ItemPair(
+            QuestionnaireItemResponsePair(
               questionnaireItem = questionnaireItem,
               responseItem = syntheticResponseItem,
-              children = buildItemPairs(questionnaireItem.item, answer.item),
+              children =
+                alignQuestionnaireItemsWithResponseItems(questionnaireItem.item, answer.item),
             )
           }
         }
@@ -1048,24 +1167,25 @@ object DefinitionExtractionEngine {
               questionnaireItem.item.isNotEmpty() -> responseItem.answer.flatMap { it.item }
               else -> emptyList()
             }
-          ItemPair(
+          QuestionnaireItemResponsePair(
             questionnaireItem = questionnaireItem,
             responseItem = responseItem,
-            children = buildItemPairs(questionnaireItem.item, childResponseItems),
+            children =
+              alignQuestionnaireItemsWithResponseItems(questionnaireItem.item, childResponseItems),
           )
         }
       }
     }
   }
 
-  private fun hasAnyContent(item: QuestionnaireResponse.Item): Boolean {
+  private fun hasResponseContent(item: QuestionnaireResponse.Item): Boolean {
     if (item.answer.any { it.value != null }) {
       return true
     }
-    if (item.item.any(::hasAnyContent)) {
+    if (item.item.any(::hasResponseContent)) {
       return true
     }
-    return item.answer.any { answer -> answer.item.any(::hasAnyContent) }
+    return item.answer.any { answer -> answer.item.any(::hasResponseContent) }
   }
 
   private fun Questionnaire.Item.isGroup(): Boolean =
@@ -1195,26 +1315,6 @@ object DefinitionExtractionEngine {
     }-${hex.substring(16, 20)}-${hex.substring(20)}"
   }
 
-  private fun stringifyValue(value: Any): String =
-    when (value) {
-      is FhirString -> value.value.orEmpty()
-      is dev.ohs.fhir.model.r4.Boolean -> value.value?.toString().orEmpty()
-      is Integer -> value.value?.toString().orEmpty()
-      is Decimal -> value.value?.toString().orEmpty()
-      is Date -> value.value?.toString().orEmpty()
-      is DateTime -> value.value?.toString().orEmpty()
-      is Time -> value.value?.toString().orEmpty()
-      is Uri -> value.value.orEmpty()
-      is Canonical -> value.value.orEmpty()
-      is Code -> value.value.orEmpty()
-      is Coding -> value.code?.value ?: value.display?.value.orEmpty()
-      is Reference -> value.reference?.value.orEmpty()
-      is FhirPathDateTime -> formatFhirPathDateTime(value)
-      is FhirPathTime -> formatFhirPathTime(value)
-      is FhirPathQuantity -> listOfNotNull(value.value?.toString(), value.unit).joinToString(" ")
-      else -> value.toString()
-    }
-
   private fun formatFhirPathDateTime(value: FhirPathDateTime): String {
     val year = value.year.toString().padStart(4, '0')
     val month = value.month?.toString()?.padStart(2, '0')
@@ -1314,10 +1414,10 @@ object DefinitionExtractionEngine {
     val isList: Boolean,
   )
 
-  private data class ItemPair(
+  private data class QuestionnaireItemResponsePair(
     val questionnaireItem: Questionnaire.Item,
     val responseItem: QuestionnaireResponse.Item,
-    val children: List<ItemPair>,
+    val children: List<QuestionnaireItemResponsePair>,
   )
 
   private data class AnchorContext(
