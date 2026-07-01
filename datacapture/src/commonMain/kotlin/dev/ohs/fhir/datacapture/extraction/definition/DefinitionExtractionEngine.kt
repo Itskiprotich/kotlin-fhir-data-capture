@@ -58,7 +58,6 @@ import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
@@ -744,11 +743,10 @@ object DefinitionExtractionEngine {
       val elementDescriptor = leafFieldInfo.descriptor.getElementDescriptor(0)
       val existingArray = currentNode.values[leafName] as? MutableJsonArray
       val targetArray =
-        existingArray
-          ?: MutableJsonArray(elementDescriptor).also { currentNode.values[leafName] = it }
-      rawValues
-        .map { encodeValueForField(it, elementDescriptor) }
-        .forEach { targetArray.values.add(MutableJsonLiteral(it)) }
+        existingArray ?: MutableJsonArray().also { currentNode.values[leafName] = it }
+      for (rawValue in rawValues) {
+        targetArray.values.add(MutableJsonLiteral(encodeValueForField(rawValue, elementDescriptor)))
+      }
       return
     }
 
@@ -899,9 +897,7 @@ object DefinitionExtractionEngine {
     if (fieldInfo.isList) {
       val array =
         (currentNode.values[fieldInfo.jsonName] as? MutableJsonArray)
-          ?: MutableJsonArray(fieldInfo.descriptor.getElementDescriptor(0)).also {
-            currentNode.values[fieldInfo.jsonName] = it
-          }
+          ?: MutableJsonArray().also { currentNode.values[fieldInfo.jsonName] = it }
       if (!appendToList && array.values.lastOrNull() is MutableJsonObject) {
         return array.values.last() as MutableJsonObject
       }
@@ -1078,11 +1074,9 @@ object DefinitionExtractionEngine {
     val metaNode =
       (resourceNode.values["meta"] as? MutableJsonObject)
         ?: MutableJsonObject(Meta.serializer().descriptor).also { resourceNode.values["meta"] = it }
-    val profileDescriptor =
-      metaNode.descriptor.getElementDescriptor(metaNode.descriptor.getElementIndex("profile"))
     val profiles =
       (metaNode.values["profile"] as? MutableJsonArray)
-        ?: MutableJsonArray(profileDescriptor).also { metaNode.values["profile"] = it }
+        ?: MutableJsonArray().also { metaNode.values["profile"] = it }
     profiles.values.add(MutableJsonLiteral(JsonPrimitive(definitionCanonical)))
   }
 
@@ -1386,77 +1380,4 @@ object DefinitionExtractionEngine {
     size >= prefix.size && take(prefix.size) == prefix
 
   private const val CORE_STRUCTURE_DEFINITION_BASE = "http://hl7.org/fhir/StructureDefinition/"
-
-  private data class DefinitionExtractConfig(
-    val definition: String,
-    val fullUrlExpression: String?,
-    val ifNoneMatchExpression: String?,
-    val ifModifiedSinceExpression: String?,
-    val ifMatchExpression: String?,
-    val ifNoneExistExpression: String?,
-  )
-
-  private data class DefinitionExtractValueConfig(
-    val definition: DefinitionPath,
-    val expression: Expression?,
-    val fixedValue: Extension.Value?,
-  )
-
-  private data class DefinitionPath(
-    val canonical: String,
-    val resourceType: String,
-    val pathSegments: List<String>,
-  )
-
-  private data class FieldInfo(
-    val jsonName: String,
-    val descriptor: SerialDescriptor,
-    val isList: Boolean,
-  )
-
-  private data class QuestionnaireItemResponsePair(
-    val questionnaireItem: Questionnaire.Item,
-    val responseItem: QuestionnaireResponse.Item,
-    val children: List<QuestionnaireItemResponsePair>,
-  )
-
-  private data class AnchorContext(
-    val path: List<String>,
-    val node: MutableJsonObject,
-    val descriptor: SerialDescriptor,
-  )
-
-  private sealed interface MutableJsonValue {
-    fun toJsonElement(): JsonElement
-  }
-
-  private class MutableJsonObject(
-    val descriptor: SerialDescriptor,
-    val values: MutableMap<String, MutableJsonValue> = mutableMapOf(),
-  ) : MutableJsonValue {
-    override fun toJsonElement(): JsonElement = toJsonObject()
-
-    fun toJsonObject(resourceType: String? = null): JsonObject = buildJsonObject {
-      resourceType?.let { put("resourceType", JsonPrimitive(it)) }
-      values.forEach { (key, value) ->
-        val jsonValue = value.toJsonElement()
-        if (jsonValue != JsonNull) {
-          put(key, jsonValue)
-        }
-      }
-    }
-  }
-
-  private class MutableJsonArray(
-    val descriptor: SerialDescriptor,
-    val values: MutableList<MutableJsonValue> = mutableListOf(),
-  ) : MutableJsonValue {
-    override fun toJsonElement(): JsonElement = buildJsonArray {
-      values.map { it.toJsonElement() }.forEach { add(it) }
-    }
-  }
-
-  private class MutableJsonLiteral(private val value: JsonElement) : MutableJsonValue {
-    override fun toJsonElement(): JsonElement = value
-  }
 }
