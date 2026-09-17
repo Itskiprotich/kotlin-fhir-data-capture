@@ -8,12 +8,51 @@
 [![Release](https://img.shields.io/maven-central/v/dev.ohs.fhir/fhir-data-capture-android?color=yellow&label=android)](https://central.sonatype.com/artifact/dev.ohs.fhir/fhir-data-capture-android)
 [![Release](https://img.shields.io/maven-central/v/dev.ohs.fhir/fhir-data-capture-iossimulatorarm64?color=yellow&label=iossimulatorarm64)](https://central.sonatype.com/artifact/dev.ohs.fhir/fhir-data-capture-iossimulatorarm64)
 [![Release](https://img.shields.io/maven-central/v/dev.ohs.fhir/fhir-data-capture-iosarm64?color=yellow&label=iosarm64)](https://central.sonatype.com/artifact/dev.ohs.fhir/fhir-data-capture-iosarm64)
-[![Release](https://img.shields.io/maven-central/v/dev.ohs.fhir/fhir-data-capture-iosx64?color=yellow&label=iosx64)](https://central.sonatype.com/artifact/dev.ohs.fhir/fhir-data-capture-iosx64)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A Kotlin Multiplatform library for collecting, validating, and processing structured healthcare data using [HL7 FHIR Questionnaires](https://www.hl7.org/fhir/questionnaire.html).
 
-This is the KMP port of the [OHS Foundation android-fhir](https://github.com/ohs-foundation/android-fhir) datacapture library, previously documented at [ohs-foundation.github.io/android-fhir](https://ohs-foundation.github.io/android-fhir/). The original library was Android-only; this version targets multiple platforms using [Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/).
+## Key features
+
+* Renders FHIR R4 [Questionnaires](https://www.hl7.org/fhir/questionnaire.html) as
+  [Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/) forms across Android,
+  iOS, Desktop (JVM), and Web (JS/Wasm)
+* Skip logic via `enableWhen` and SDC expression extensions (`enableWhenExpression`,
+  `calculatedExpression`, `variable`, `answerExpression`)
+* Answer validation against questionnaire constraints, with per-field error messages and a
+  standalone validation API
+* Pagination, review page, read-only mode, repeating groups, and entry-mode control
+* Template-based [data extraction](docs/conformance.md#data-extraction) of FHIR resources from
+  questionnaire responses
+* FHIRPath evaluation powered by
+  [Kotlin FHIRPath](https://github.com/ohs-foundation/kotlin-fhirpath)
+* Predictable and [well-documented](#conformance) behavior, including explicit documentation of
+  what is *not* supported
+
+## Conformance
+
+For the full conformance analysis, see the [conformance](docs/conformance.md) doc.
+
+### FHIR Questionnaire specification
+
+The library renders and processes
+[Questionnaire](https://hl7.org/fhir/R4/questionnaire.html) and
+[QuestionnaireResponse](https://hl7.org/fhir/R4/questionnaireresponse.html) resources from
+[FHIR R4 (v4.0.1)](https://hl7.org/fhir/R4/).
+
+See [FHIR Questionnaire specification conformance](docs/conformance.md#fhir-questionnaire-specification)
+for the implementation status of every item type, item control, form behavior element, and
+standard extension.
+
+### Structured Data Capture specification
+
+The library implements a subset of the
+[Structured Data Capture implementation guide STU4 (v4.0.0)](https://hl7.org/fhir/uv/sdc/STU4/).
+Advanced rendering, form behavior and calculation, and template-based extraction are implemented.
+The SDC population module and the other extraction mechanisms are not.
+
+See [SDC conformance](docs/conformance.md#structured-data-capture-specification) for
+feature-by-feature status, supported expression languages, and FHIRPath environment variables.
 
 ## Supported platforms
 
@@ -36,7 +75,6 @@ The library also supports the following
 |:-------------------|:---------------------|:-----|:--------|
 | iosSimulatorArm64  | `-iossimulatorarm64` | 1    | ✅       |
 | iosArm64           | `-iosarm64`          | 1    | ✅       |
-| iosX64             | `-iosx64`            | 3    | ✅       |
 
 ## Catalog app
 
@@ -88,15 +126,13 @@ For Android projects, add the dependency to the `dependency` block in the module
 ```
 // e.g., app/build.gradle.kts
 dependencies {
-    implementation("dev.ohs.fhir:fhir-data-capture:2.0.0-alpha02")
+    implementation("dev.ohs.fhir:fhir-data-capture:2.0.0-alpha03")
 }
 ```
 
 ### Working with Questionnaires
 
-The `Questionnaire` composable renders a FHIR `Questionnaire`. Display options are passed via
-`QuestionnaireConfig`; `onSubmit` receives a suspending `getResponse` function that must be called
-from a coroutine.
+Render a questionnaire using the `Questionnaire` composable.
 
 ```kotlin
 val coroutineScope = rememberCoroutineScope()
@@ -112,6 +148,8 @@ Questionnaire(
     ),
     onSubmit = { getResponse ->
         coroutineScope.launch {
+            // Validates the response first. On failure an error dialog
+            // is shown and the coroutine is cancelled.
             val response = getResponse()
             // handle QuestionnaireResponse
         }
@@ -189,6 +227,81 @@ See the [SDC Form Data Extraction](https://build.fhir.org/ig/HL7/sdc/extraction.
 for the full extraction model, including repeating groups, conditional extraction, and cross-resource
 references via `allocateId`.
 
+See [`QuestionnaireConfig`](datacapture/src/commonMain/kotlin/dev/ohs/fhir/datacapture/QuestionnaireComposable.kt)
+for all display options (review page, read-only mode, required and optional labels, long-scroll
+navigation, custom submit button text, and the "submit anyway" escape hatch).
+
+To make [launch context](docs/conformance.md#form-behavior-and-calculation) resources such as
+`%patient` available to the questionnaire's FHIRPath expressions, pass them as JSON via
+`questionnaireLaunchContextMap`, keyed by the launch context name declared in the questionnaire.
+
+```kotlin
+Questionnaire(
+    questionnaireJson = myQuestionnaireJson,
+    questionnaireLaunchContextMap = mapOf("patient" to patientJson),
+    ...
+)
+```
+
+### Configuring the library
+
+Optional integration hooks are supplied through
+[`DataCaptureConfig`](datacapture/src/commonMain/kotlin/dev/ohs/fhir/datacapture/DataCaptureConfig.kt)
+via a CompositionLocal.
+
+```kotlin
+CompositionLocalProvider(
+    LocalDataCaptureConfig provides
+        DataCaptureConfig(
+            // Resolve external (non-contained) answerValueSet URIs to answer options.
+            valueSetResolverExternal = myValueSetResolver,
+            // Resolve application/x-fhir-query expressions (answerExpression, variable).
+            xFhirQueryResolver = myXFhirQueryResolver,
+            // Fetch media content referenced by URL (itemMedia).
+            urlResolver = myUrlResolver,
+        ),
+) {
+    Questionnaire(...)
+}
+```
+
+Without these hooks, external value sets resolve to no options and x-fhir-query expressions fail.
+See the [conformance](docs/conformance.md) doc for which features depend on which resolver.
+
+### Validating a QuestionnaireResponse
+
+The `Questionnaire` composable validates answers as the user fills the form and on submit. To
+validate a response outside the UI, use
+[`QuestionnaireResponseValidator`](datacapture/src/commonMain/kotlin/dev/ohs/fhir/datacapture/validation/QuestionnaireResponseValidator.kt).
+
+```kotlin
+val results: Map<String, List<ValidationResult>> = // keyed by linkId
+    QuestionnaireResponseValidator.validateQuestionnaireResponse(
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+    )
+```
+
+See [validation conformance](docs/conformance.md#validation-extensions-and-elements) for the
+supported constraints and their caveats.
+
+### Extracting FHIR resources
+
+If the questionnaire is authored for
+[SDC template-based extraction](docs/conformance.md#data-extraction), extract a transaction
+`Bundle` of FHIR resources from the completed response with
+[`TemplateExtractionEngine`](datacapture/src/commonMain/kotlin/dev/ohs/fhir/datacapture/extraction/template/TemplateExtractionEngine.kt).
+
+```kotlin
+if (TemplateExtractionEngine.canExtract(questionnaire)) {
+    val bundle = TemplateExtractionEngine.extract(questionnaire, questionnaireResponse)
+    // post the transaction bundle to your FHIR server
+}
+```
+
+Extraction is not invoked automatically by the `Questionnaire` composable. Call it with the
+response returned from `onSubmit`. Definition, StructureMap, and observation based extraction are
+not supported (see [extraction conformance](docs/conformance.md#data-extraction)).
 
 ## Developer guide
 
@@ -216,6 +329,7 @@ CI task:
 | **JS (Browser)**      | `:datacapture:jsBrowserTest`         | `ubuntu-latest` | `commonTest`                | Runs in headless Chrome |
 | **Android**           | `:datacapture:testAndroidHostTest`   | `ubuntu-latest` | `commonTest`                | Runs host unit tests on JVM |
 | **iOS (Simulator)**   | `:datacapture:iosSimulatorArm64Test` | `macos-latest`  | `commonTest`                | Runs in simulator environment |
+| **iOS Release Framework** | `:datacapture:linkReleaseFrameworkIosArm64` | `macos-latest` | N/A | Build-only regression check (no test source sets) guarding against the Kotlin/Native LTO OOM in [#35](https://github.com/ohs-foundation/kotlin-fhir-data-capture/issues/35) |
 
 #### Running Tests Locally
 
@@ -232,6 +346,7 @@ To run a specific test suite locally, run the corresponding Gradle task:
 - **JS**: `./gradlew :datacapture:jsBrowserTest`
 - **Android Host**: `./datacapture:testAndroidHostTest`
 - **iOS Simulator**: `./gradlew :datacapture:iosSimulatorArm64Test`
+- **iOS Release Framework**: `./gradlew :datacapture:linkReleaseFrameworkIosArm64`
 
 ##### On-Device Android Tests
 
