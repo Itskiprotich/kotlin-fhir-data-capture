@@ -1,5 +1,5 @@
 /*
- * Copyright 2025-2026 Open Health Stack Foundation
+ * Copyright 2026 Open Health Stack Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,17 @@
  */
 package dev.ohs.fhir.datacapture
 
-actual object DataCapture {
-  actual fun getConfiguration(): DataCaptureConfig {
-    // TODO Replace default configuration with actual data capture configuration
-    return DataCaptureConfig()
-  }
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+
+@OptIn(ExperimentalCoroutinesApi::class)
+internal actual fun setTestMainDispatcher() {
+  Dispatchers.setMain(Dispatchers.Unconfined)
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+internal actual fun resetTestMainDispatcher() {
+  Dispatchers.resetMain()
 }

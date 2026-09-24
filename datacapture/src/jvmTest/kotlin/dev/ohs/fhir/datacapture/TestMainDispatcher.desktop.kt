@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2026 Open Health Stack Foundation
+ * Copyright 2026 Open Health Stack Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,6 @@
  */
 package dev.ohs.fhir.datacapture
 
-/** Stores config and global state of the Structured Data Capture Library. */
-expect object DataCapture {
+internal actual fun setTestMainDispatcher() = Unit
 
-  /**
-   * If client has set a configuration by implementing [DataCaptureConfig.Provider], then it returns
-   * that. Otherwise, it returns a default [DataCaptureConfig].
-   */
-  fun getConfiguration(): DataCaptureConfig
-}
+internal actual fun resetTestMainDispatcher() = Unit

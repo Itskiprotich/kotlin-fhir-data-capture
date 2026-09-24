@@ -105,17 +105,15 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.getString
 
 @OptIn(ExperimentalTime::class)
-internal class QuestionnaireViewModel(state: Map<String, Any>) : ViewModel() {
+internal class QuestionnaireViewModel(state: Map<String, Any>, config: DataCaptureConfig) :
+  ViewModel() {
   private val jsonR4 = Json {
     explicitNulls = false
     encodeDefaults = false
   }
-  private val xFhirQueryResolver: XFhirQueryResolver? by lazy {
-    DataCapture.getConfiguration().xFhirQueryResolver
-  }
-  private val externalValueSetResolver: ExternalAnswerValueSetResolver? by lazy {
-    DataCapture.getConfiguration().valueSetResolverExternal
-  }
+  private val xFhirQueryResolver: XFhirQueryResolver? = config.xFhirQueryResolver
+  private val externalValueSetResolver: ExternalAnswerValueSetResolver? =
+    config.valueSetResolverExternal
 
   /** The current questionnaire as questions are being answered. */
   internal val questionnaire: Questionnaire
@@ -1014,11 +1012,7 @@ internal class QuestionnaireViewModel(state: Map<String, Any>) : ViewModel() {
       questionnaireItem.text
         ?.cqfExpression
         ?.let {
-          expressionEvaluator.evaluateExpressionValue(
-            questionnaireItem,
-            questionnaireResponseItem,
-            it,
-          )
+          expressionEvaluator.evaluateExpression(questionnaireItem, questionnaireResponseItem, it)
         }
         ?.takeIf { it.isNotEmpty() }
         ?.let { FhirPathService.convertToString(it) }
@@ -1053,15 +1047,19 @@ internal class QuestionnaireViewModel(state: Map<String, Any>) : ViewModel() {
               enabledAnswerOptions = enabledQuestionnaireAnswerOptions,
               minAnswerValue =
                 questionnaireItem.minValue?.populateCqfCalculatedValue {
-                  expressionEvaluator
-                    .evaluateExpressionValue(questionnaireItem, questionnaireResponseItem, it)
-                    ?.singleOrNull()
+                  expressionEvaluator.evaluateExpressionValue(
+                    questionnaireItem,
+                    questionnaireResponseItem,
+                    it,
+                  )
                 },
               maxAnswerValue =
                 questionnaireItem.maxValue?.populateCqfCalculatedValue {
-                  expressionEvaluator
-                    .evaluateExpressionValue(questionnaireItem, questionnaireResponseItem, it)
-                    ?.singleOrNull()
+                  expressionEvaluator.evaluateExpressionValue(
+                    questionnaireItem,
+                    questionnaireResponseItem,
+                    it,
+                  )
                 },
               draftAnswer = draftAnswerMap[questionnaireItem],
               enabledDisplayItems =
@@ -1081,7 +1079,7 @@ internal class QuestionnaireViewModel(state: Map<String, Any>) : ViewModel() {
           )
           .apply {
             if (parentIdPrefix.isNotEmpty()) {
-              id = "${parentIdPrefix}${questionnaireItem.linkId}"
+              id = "${parentIdPrefix}${questionnaireItem.linkId.value}"
             }
           }
       add(question)
@@ -1122,20 +1120,20 @@ internal class QuestionnaireViewModel(state: Map<String, Any>) : ViewModel() {
             if (!questionnaireItem.isRepeatedGroup) {
               // Case 2: Questions nested under a question (not a repeated group)
               if (parentIdPrefix.isEmpty()) {
-                "${index}_${question.item.questionnaireItem.linkId}_"
+                "${index}_${question.item.questionnaireItem.linkId.value}_"
               } else {
-                "${parentIdPrefix}${index}_${question.item.questionnaireItem.linkId}_"
+                "${parentIdPrefix}${index}_${question.item.questionnaireItem.linkId.value}_"
               }
             } else {
               // Case 3: Build hierarchical ID prefix for nested repeated groups
-              "${parentIdPrefix}${index}_${question.item.questionnaireItem.linkId}_"
+              "${parentIdPrefix}${index}_${question.item.questionnaireItem.linkId.value}_"
             }
 
           if (questionnaireItem.isRepeatedGroup) {
             // Case 3
             add(
               QuestionnaireAdapterItem.RepeatedGroupHeader(
-                id = "${parentIdPrefix}${index}_${question.item.questionnaireItem.linkId}",
+                id = "${parentIdPrefix}${index}_${question.item.questionnaireItem.linkId.value}",
                 index = index,
                 onDeleteClicked = { viewModelScope.launch { question.item.removeAnswerAt(index) } },
                 responses = nestedResponseItemList,
@@ -1157,7 +1155,7 @@ internal class QuestionnaireViewModel(state: Map<String, Any>) : ViewModel() {
       if (questionnaireItem.isRepeatedGroup) {
         add(
           QuestionnaireAdapterItem.RepeatedGroupAddButton(
-            id = "${parentIdPrefix}${question.item.questionnaireItem.linkId}_add_btn",
+            id = "${parentIdPrefix}${question.item.questionnaireItem.linkId.value}_add_btn",
             item = question.item,
           )
         )

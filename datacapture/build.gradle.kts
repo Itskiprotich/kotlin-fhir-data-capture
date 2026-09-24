@@ -43,6 +43,10 @@ kotlin {
     minSdk = androidMinSdk.toInt()
     withJava()
     withHostTestBuilder {}
+      .configure {
+        isIncludeAndroidResources = true
+        isReturnDefaultValues = true
+      }
     withDeviceTestBuilder { sourceSetTreeName = "test" }
       .configure { instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }
 
@@ -59,7 +63,7 @@ kotlin {
     }
   }
 
-  listOf(iosSimulatorArm64(), iosArm64(), iosX64()).forEach {
+  listOf(iosSimulatorArm64(), iosArm64()).forEach {
     it.binaries.framework { baseName = "KotlinFhirDataCapture" }
   }
 
