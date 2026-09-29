@@ -150,7 +150,7 @@ internal class ExpressionEvaluator(
     val variables =
       extractItemDependentVariables(expression, questionnaireItem, questionnaireResponseItem)
     return FhirPathService.evaluate(
-      expression.expression?.value ?: "",
+      expression.fhirPathFor(variables),
       questionnaireResponse,
       variables,
     )
@@ -266,7 +266,7 @@ internal class ExpressionEvaluator(
         put(questionnaireFhirPathSupplement, questionnaire)
         put(questionnaireItemFhirPathSupplement, questionnaireItem)
         put("resource", questionnaireResponse)
-        put("context", questionnaireResponseItem)
+        put(CONTEXT_VARIABLE, questionnaireResponseItem)
         questionnaireLaunchContextMap?.let { putAll(it) }
         findDependentVariables(expression)
           .filterNot { variable -> reservedItemVariables.contains(variable) }
@@ -475,7 +475,7 @@ internal class ExpressionEvaluator(
           .build()
       } else if (expression.isFhirPath) {
         FhirPathService.evaluate(
-            expression.expression?.value ?: "",
+            expression.fhirPathFor(dependentVariables),
             questionnaireResponse,
             variables = dependentVariables,
           )
@@ -489,6 +489,34 @@ internal class ExpressionEvaluator(
       Logger.w("Could not evaluate expression with FHIRPathEngine", exception)
       null
     }
+}
+
+/**
+ * The variable the current `QuestionnaireResponse.item` is bound to. SDC defines `%context` as that
+ * item, but kotlin-fhirpath resolves `%context` to the evaluation base, which here is the
+ * QuestionnaireResponse. The underscore keeps it clear of author-declared variables, whose names
+ * are FHIR `id`s.
+ *
+ * TODO(https://github.com/ohs-foundation/kotlin-fhirpath/issues/145): Binding the item here and
+ *   rewriting `%context` in [fhirPathFor] is a workaround. Evaluating with the item as the base
+ *   would make it `%context` by definition, but kotlin-fhirpath also resolves `%resource` to the
+ *   base, which must stay the QuestionnaireResponse. Once `%resource` can be set separately,
+ *   evaluate item expressions with the item as the base and the QuestionnaireResponse as the
+ *   resource, then remove this variable and [fhirPathFor].
+ */
+private const val CONTEXT_VARIABLE = "_context"
+
+/** `%context` in its plain and delimited forms, and the string literals and comments to skip. */
+private val contextReferenceRegex =
+  Regex("""'(?:\\.|[^'\\])*'|//[^\n]*|/\*[\s\S]*?\*/|%(?:context\b|'context'|`context`)""")
+
+/** Returns this expression's FHIRPath, pointing `%context` at the bound item when there is one. */
+private fun Expression.fhirPathFor(variables: Map<String, Any?>): String {
+  val fhirPath = expression?.value ?: ""
+  if (CONTEXT_VARIABLE !in variables) return fhirPath
+  return contextReferenceRegex.replace(fhirPath) {
+    if (it.value.startsWith("%")) "%$CONTEXT_VARIABLE" else it.value
+  }
 }
 
 /** Pair of a [Questionnaire.Item] with its evaluated answers */

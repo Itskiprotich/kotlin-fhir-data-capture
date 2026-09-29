@@ -136,7 +136,9 @@ internal class EnabledAnswerOptionsEvaluator(
       if (uri.startsWith("#")) {
         questionnaire.contained
           .firstOrNull { resource ->
-            resource.id.equals(uri) &&
+            // uri is a fragment reference ("#IMMZ.C.DE5"); kotlin-fhir stores contained ids
+            // verbatim from JSON (no '#'), so strip the reference's '#' before comparing.
+            resource.id == uri.removePrefix("#") &&
               resource is ValueSet &&
               resource.expansion != null &&
               resource.expansion!!.contains.isNotEmpty()
