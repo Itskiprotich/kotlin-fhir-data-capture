@@ -20,6 +20,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.TextStyle
 import dev.ohs.fhir.datacapture.theme.QuestionnaireCustomStyle
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 
@@ -103,6 +104,19 @@ private fun customStyles(typography: Typography): Map<String, QuestionnaireCusto
     }
     .toMap()
 
+/**
+ * Text-color-only styles (no background) for status messages. Only the color is set, so the text
+ * keeps the default question typography.
+ */
+private fun statusTextStyles(darkTheme: Boolean): Map<String, QuestionnaireCustomStyle> =
+  mapOf(
+      "SuccessText" to if (darkTheme) StatusSuccessDark else StatusSuccessLight,
+      "WarningText" to if (darkTheme) StatusWarningDark else StatusWarningLight,
+      "ErrorText" to if (darkTheme) StatusErrorDark else StatusErrorLight,
+      "InfoText" to if (darkTheme) StatusInfoDark else StatusInfoLight,
+    )
+    .mapValues { (_, color) -> QuestionnaireCustomStyle(textStyle = TextStyle(color = color)) }
+
 @Composable
 fun AppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
   val colorScheme =
@@ -116,7 +130,7 @@ fun AppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable ()
   QuestionnaireTheme(
     colorScheme = colorScheme,
     typography = typography,
-    customStyles = customStyles(typography),
+    customStyles = customStyles(typography) + statusTextStyles(darkTheme),
     content = content,
   )
 }
