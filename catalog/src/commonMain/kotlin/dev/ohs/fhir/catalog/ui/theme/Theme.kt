@@ -16,9 +16,11 @@
 package dev.ohs.fhir.catalog.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import dev.ohs.fhir.datacapture.theme.QuestionnaireCustomStyle
 import dev.ohs.fhir.datacapture.theme.QuestionnaireTheme
 
 private val DarkColorScheme =
@@ -75,6 +77,32 @@ private val LightColorScheme =
     outline = OutlineNeutralVariant50,
   )
 
+/**
+ * Named styles referenced by `component_per_question_custom_style.json` through the android-style
+ * extension. Mirrors android-fhir's `CustomStyle_1` .. `CustomStyle_9` (text appearance from
+ * Display Large down to Label Small, on a progressively lighter blue background).
+ */
+private fun customStyles(typography: Typography): Map<String, QuestionnaireCustomStyle> =
+  listOf(
+      typography.displayLarge to CustomStylePrimary100,
+      typography.displayMedium to CustomStylePrimary200,
+      typography.displaySmall to CustomStylePrimary300,
+      typography.headlineLarge to CustomStylePrimary400,
+      typography.headlineMedium to CustomStylePrimary500,
+      typography.headlineSmall to CustomStylePrimary600,
+      typography.labelLarge to CustomStylePrimary700,
+      typography.labelMedium to CustomStylePrimary800,
+      typography.labelSmall to CustomStylePrimary900,
+    )
+    .mapIndexed { index, (textStyle, background) ->
+      "CustomStyle_${index + 1}" to
+        QuestionnaireCustomStyle(
+          textStyle = textStyle.copy(color = CustomStyleOnPrimary),
+          background = background,
+        )
+    }
+    .toMap()
+
 @Composable
 fun AppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
   val colorScheme =
@@ -84,5 +112,11 @@ fun AppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable ()
       LightColorScheme
     }
 
-  QuestionnaireTheme(colorScheme = colorScheme, content = content)
+  val typography = Typography()
+  QuestionnaireTheme(
+    colorScheme = colorScheme,
+    typography = typography,
+    customStyles = customStyles(typography),
+    content = content,
+  )
 }
