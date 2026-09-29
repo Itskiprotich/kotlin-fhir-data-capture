@@ -93,3 +93,14 @@ val CustomStylePrimary700 = Color(0xFF5581FF)
 val CustomStylePrimary800 = Color(0xFF668FFF)
 val CustomStylePrimary900 = Color(0xFF7A9FFF)
 val CustomStyleOnPrimary = Color(0xFFFFFFFF)
+
+// Status text colors for the "Per question custom style" component. Light variants are used in
+// dark mode so the text stays readable on a dark surface.
+val StatusSuccessLight = Color(0xFF1E7B34)
+val StatusSuccessDark = Color(0xFF81C995)
+val StatusWarningLight = Color(0xFF9A5B00)
+val StatusWarningDark = Color(0xFFFDD663)
+val StatusErrorLight = Color(0xFFB3261E)
+val StatusErrorDark = Color(0xFFF2B8B5)
+val StatusInfoLight = Color(0xFF0B57D0)
+val StatusInfoDark = Color(0xFFA8C7FA)
