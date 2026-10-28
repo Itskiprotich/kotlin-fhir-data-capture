@@ -17,8 +17,8 @@ package dev.ohs.fhir.datacapture.extraction.definition
 
 import dev.ohs.fhir.datacapture.extensions.referencesQuestionnaireResponseResource
 import dev.ohs.fhir.datacapture.fhirpath.FhirPathService
-import dev.ohs.fhir.model.r4.Enumeration
 import dev.ohs.fhir.model.r4.Expression
+import dev.ohs.fhir.model.r4.ExtensibleEnumeration
 import dev.ohs.fhir.model.r4.Extension
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
@@ -160,7 +160,7 @@ internal fun evaluateDefinitionExtractExpressionToString(
       evaluateDefinitionExtractExpression(
         expression =
           Expression(
-            language = Enumeration(value = Expression.ExpressionLanguage.Text_Fhirpath),
+            language = ExtensibleEnumeration.of(Expression.ExpressionLanguage.Text_Fhirpath),
             expression = FhirString(value = expression),
           ),
         base = base,
