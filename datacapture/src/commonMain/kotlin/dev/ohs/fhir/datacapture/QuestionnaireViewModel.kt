@@ -423,7 +423,7 @@ internal class QuestionnaireViewModel(state: Map<String, Any>, config: DataCaptu
       }
       modifiedQuestionnaireResponseItemSet.add(questionnaireResponseItem)
 
-      updateAnswerWithAffectedCalculatedExpression(questionnaireItem, questionnaireResponseItem)
+      updateAnswerWithAffectedCalculatedExpression(questionnaireItem)
 
       modificationCount.update { it + 1 }
     }
@@ -724,22 +724,20 @@ internal class QuestionnaireViewModel(state: Map<String, Any>, config: DataCaptu
    *   [dev.ohs.fhir.datacapture.extensions.calculatedExpression].
    */
   private suspend fun updateAnswerWithAffectedCalculatedExpression(
-    questionnaireItem: Questionnaire.Item,
-    questionnaireResponseItem: QuestionnaireResponse.Item,
+    questionnaireItem: Questionnaire.Item
   ) {
-    expressionEvaluator
-      .evaluateAllAffectedCalculatedExpressions(questionnaireItem, questionnaireResponseItem)
-      .forEach { (calculatedItem, calculatedAnswers) ->
-        // Walk the live response items (not builder copies) so the update is actually applied.
-        questionnaireResponse.value.item
-          .flatMap { it.descendant }
-          // Item answer should not be modified and touched by user;
-          // https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-calculatedExpression.html
-          .filter {
-            it.linkId == calculatedItem.linkId && !modifiedQuestionnaireResponseItemSet.contains(it)
-          }
-          .forEach { it.setCalculatedAnswers(calculatedAnswers) }
-      }
+    expressionEvaluator.evaluateAllAffectedCalculatedExpressions(questionnaireItem).forEach {
+      (calculatedItem, calculatedAnswers) ->
+      // Walk the live response items (not builder copies) so the update is actually applied.
+      questionnaireResponse.value.item
+        .flatMap { it.descendant }
+        // Item answer should not be modified and touched by user;
+        // https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-calculatedExpression.html
+        .filter {
+          it.linkId == calculatedItem.linkId && !modifiedQuestionnaireResponseItemSet.contains(it)
+        }
+        .forEach { it.setCalculatedAnswers(calculatedAnswers) }
+    }
   }
 
   /**

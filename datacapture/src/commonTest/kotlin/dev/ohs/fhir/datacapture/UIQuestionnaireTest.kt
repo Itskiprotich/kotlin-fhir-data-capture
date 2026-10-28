@@ -30,10 +30,12 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelStore
@@ -546,7 +548,7 @@ class UIQuestionnaireTest {
   fun calculatedExpression_shouldCalculateAge_fromBirthDate() = runComposeUiTest {
     setQuestionnaireContent(ageCalculationQuestionnaire(initialBirthDate = birthDateForAge30()))
 
-    waitForCalculatedAge("30")
+    waitForCalculatedValue("30")
   }
 
   @Test
@@ -572,8 +574,68 @@ class UIQuestionnaireTest {
       questionnaireResponse = questionnaireResponse,
     )
 
-    waitForCalculatedAge("30")
+    waitForCalculatedValue("30")
   }
+
+  @Test
+  fun calculatedExpression_shouldUpdate_onlyWhenReferencedVariableChanges() = runComposeUiTest {
+    setQuestionnaireContent(doubleWeightQuestionnaire())
+    waitForCalculatedValue("80")
+
+    // Edit fields are rendered in item order: weight, notes, double-weight.
+    onAllNodesWithTag(EDIT_TEXT_FIELD_TEST_TAG)[1].performTextReplacement("Unrelated note")
+    mainClock.advanceTimeBy(1_000)
+    waitForIdle()
+    onAllNodesWithTag(EDIT_TEXT_FIELD_TEST_TAG)[2].assertTextEquals("80")
+
+    onAllNodesWithTag(EDIT_TEXT_FIELD_TEST_TAG)[0].performTextReplacement("50")
+    waitForCalculatedValue("100")
+  }
+
+  private fun doubleWeightQuestionnaire(): Questionnaire =
+    fhirJson.decodeFromString<Questionnaire>(
+      """
+      {
+        "resourceType": "Questionnaire",
+        "status": "active",
+        "item": [
+          {
+            "linkId": "weight",
+            "text": "Weight",
+            "type": "integer",
+            "initial": [{ "valueInteger": 40 }]
+          },
+          {
+            "linkId": "notes",
+            "text": "Notes",
+            "type": "string"
+          },
+          {
+            "linkId": "double-weight",
+            "text": "Double weight",
+            "type": "integer",
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/variable",
+                "valueExpression": {
+                  "name": "weight",
+                  "language": "text/fhirpath",
+                  "expression": "%resource.repeat(item).where(linkId='weight').answer.value"
+                }
+              },
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "%weight * 2"
+                }
+              }
+            ]
+          }
+        ]
+      }
+      """
+    )
 
   private fun birthDateForAge30(): LocalDate =
     Clock.System.todayIn(TimeZone.currentSystemDefault())
@@ -614,9 +676,9 @@ class UIQuestionnaireTest {
     )
   }
 
-  private fun ComposeUiTest.waitForCalculatedAge(age: String) {
+  private fun ComposeUiTest.waitForCalculatedValue(value: String) {
     waitUntil(timeoutMillis = 5_000) {
-      onAllNodes(hasTestTag(EDIT_TEXT_FIELD_TEST_TAG) and hasText(age))
+      onAllNodes(hasTestTag(EDIT_TEXT_FIELD_TEST_TAG) and hasText(value))
         .fetchSemanticsNodes()
         .isNotEmpty()
     }
