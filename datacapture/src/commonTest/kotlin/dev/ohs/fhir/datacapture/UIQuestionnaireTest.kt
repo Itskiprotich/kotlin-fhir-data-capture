@@ -54,6 +54,7 @@ import dev.ohs.fhir.datacapture.views.factories.NO_CHOICE_RADIO_BUTTON_TAG
 import dev.ohs.fhir.datacapture.views.factories.YES_CHOICE_RADIO_BUTTON_TAG
 import dev.ohs.fhir.model.r4.Enumeration
 import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.terminologies.PublicationStatus
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -67,6 +68,7 @@ import kotlin_fhir_data_capture.datacapture.generated.resources.button_review
 import kotlin_fhir_data_capture.datacapture.generated.resources.edit_button_text
 import kotlin_fhir_data_capture.datacapture.generated.resources.submit_questionnaire
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
@@ -542,45 +544,79 @@ class UIQuestionnaireTest {
 
   @Test
   fun calculatedExpression_shouldCalculateAge_fromBirthDate() = runComposeUiTest {
-    val birthDate =
-      Clock.System.todayIn(TimeZone.currentSystemDefault())
-        .minus(30, DateTimeUnit.YEAR)
-        .minus(1, DateTimeUnit.DAY)
-    setQuestionnaireContent(
-      fhirJson.decodeFromString<Questionnaire>(
+    setQuestionnaireContent(ageCalculationQuestionnaire(initialBirthDate = birthDateForAge30()))
+
+    waitForCalculatedAge("30")
+  }
+
+  @Test
+  fun calculatedExpression_shouldCalculateAge_fromQuestionnaireResponse() = runComposeUiTest {
+    val questionnaireResponse =
+      fhirJson.decodeFromString<QuestionnaireResponse>(
         """
         {
-          "resourceType": "Questionnaire",
-          "status": "active",
+          "resourceType": "QuestionnaireResponse",
+          "status": "in-progress",
           "item": [
             {
               "linkId": "birthdate",
-              "text": "Date of birth",
-              "type": "date",
-              "initial": [{ "valueDate": "$birthDate" }]
-            },
-            {
-              "linkId": "age",
-              "text": "Age",
-              "type": "integer",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-                  "valueExpression": {
-                    "language": "text/fhirpath",
-                    "expression": "%resource.repeat(item).where(linkId='birthdate' and answer.empty().not()).select(today().toString().substring(0,4).toInteger() - answer.value.toString().substring(0,4).toInteger() + iif(today().toString().substring(5,2) & today().toString().substring(8,2) > answer.value.toString().substring(5,2) & answer.value.toString().substring(8,2), 1, 0) - 1)"
-                  }
-                }
-              ]
+              "answer": [{ "valueDate": "${birthDateForAge30()}" }]
             }
           ]
         }
         """
       )
+
+    setQuestionnaireContent(
+      ageCalculationQuestionnaire(),
+      questionnaireResponse = questionnaireResponse,
     )
 
+    waitForCalculatedAge("30")
+  }
+
+  private fun birthDateForAge30(): LocalDate =
+    Clock.System.todayIn(TimeZone.currentSystemDefault())
+      .minus(30, DateTimeUnit.YEAR)
+      .minus(1, DateTimeUnit.DAY)
+
+  private fun ageCalculationQuestionnaire(initialBirthDate: LocalDate? = null): Questionnaire {
+    val initial = initialBirthDate?.let { """"initial": [{ "valueDate": "$it" }],""" } ?: ""
+    return fhirJson.decodeFromString<Questionnaire>(
+      """
+      {
+        "resourceType": "Questionnaire",
+        "status": "active",
+        "item": [
+          {
+            "linkId": "birthdate",
+            "text": "Date of birth",
+            $initial
+            "type": "date"
+          },
+          {
+            "linkId": "age",
+            "text": "Age",
+            "type": "integer",
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "%resource.repeat(item).where(linkId='birthdate' and answer.empty().not()).select(today().toString().substring(0,4).toInteger() - answer.value.toString().substring(0,4).toInteger() + iif(today().toString().substring(5,2) & today().toString().substring(8,2) > answer.value.toString().substring(5,2) & answer.value.toString().substring(8,2), 1, 0) - 1)"
+                }
+              }
+            ]
+          }
+        ]
+      }
+      """
+    )
+  }
+
+  private fun ComposeUiTest.waitForCalculatedAge(age: String) {
     waitUntil(timeoutMillis = 5_000) {
-      onAllNodes(hasTestTag(EDIT_TEXT_FIELD_TEST_TAG) and hasText("30"))
+      onAllNodes(hasTestTag(EDIT_TEXT_FIELD_TEST_TAG) and hasText(age))
         .fetchSemanticsNodes()
         .isNotEmpty()
     }
@@ -620,6 +656,7 @@ class UIQuestionnaireTest {
 
   private suspend fun ComposeUiTest.setQuestionnaireContent(
     questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse? = null,
     isReviewMode: Boolean = false,
     showReviewPageFirst: Boolean = false,
     showNavigationLongScroll: Boolean = false,
@@ -641,6 +678,7 @@ class UIQuestionnaireTest {
       ) {
         Questionnaire(
           questionnaireJson = questionnaireJsonString,
+          questionnaireResponseJson = questionnaireResponse?.let { fhirJson.encodeToString(it) },
           config =
             QuestionnaireConfig(
               showReviewPage = isReviewMode,

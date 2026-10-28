@@ -164,22 +164,21 @@ internal class QuestionnaireViewModel(state: Map<String, Any>, config: DataCaptu
           )
         }
 
-        questionnaireResponseDraft =
+        val questionnaireResponseInput =
           jsonR4.decodeFromString(
             readFileContent(state[EXTRA_QUESTIONNAIRE_RESPONSE_JSON_URI]!! as String)
           ) as QuestionnaireResponse
-
-        addMissingResponseItems(questionnaire.item, questionnaireResponseDraft.item.toMutableList())
-        checkQuestionnaireResponse(questionnaire, questionnaireResponseDraft)
+        checkQuestionnaireResponse(questionnaire, questionnaireResponseInput)
+        questionnaireResponseDraft = questionnaireResponseInput.withMissingResponseItems()
       }
 
       state.contains(EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING) -> {
         val questionnaireResponseJson: String =
           state[EXTRA_QUESTIONNAIRE_RESPONSE_JSON_STRING] as String
-        questionnaireResponseDraft =
+        val questionnaireResponseInput =
           jsonR4.decodeFromString(questionnaireResponseJson) as QuestionnaireResponse
-        addMissingResponseItems(questionnaire.item, questionnaireResponseDraft.item.toMutableList())
-        checkQuestionnaireResponse(questionnaire, questionnaireResponseDraft)
+        checkQuestionnaireResponse(questionnaire, questionnaireResponseInput)
+        questionnaireResponseDraft = questionnaireResponseInput.withMissingResponseItems()
       }
 
       else -> {
@@ -460,50 +459,58 @@ internal class QuestionnaireViewModel(state: Map<String, Any>, config: DataCaptu
   private val questionnaireResponseItemValidator: QuestionnaireResponseItemValidator =
     QuestionnaireResponseItemValidator(expressionEvaluator)
 
+  /** Returns a copy of this response with [addMissingResponseItems] applied to its items. */
+  private fun QuestionnaireResponse.withMissingResponseItems(): QuestionnaireResponse =
+    toBuilder()
+      .apply {
+        item =
+          addMissingResponseItems(
+              this@QuestionnaireViewModel.questionnaire.item,
+              this@withMissingResponseItems.item,
+            )
+            .map { it.toBuilder() }
+            .toMutableList()
+      }
+      .build()
+
   /**
-   * Adds empty [QuestionnaireResponse.Item]s to `responseItems` so that each [Questionnaire.Item]
-   * in `questionnaireItems` has at least one corresponding [QuestionnaireResponse.Item]. This is
-   * because user-provided [QuestionnaireResponse] might not contain answers to unanswered or
-   * disabled questions. This function should only be used for unpacked questionnaire.
+   * Returns `responseItems` with empty [QuestionnaireResponse.Item]s added so that each
+   * [Questionnaire.Item] in `questionnaireItems` has at least one corresponding
+   * [QuestionnaireResponse.Item]. This is because user-provided [QuestionnaireResponse] might not
+   * contain answers to unanswered or disabled questions. The result follows the order of
+   * `questionnaireItems`. This function should only be used for unpacked questionnaire.
    */
   @VisibleForTesting
   internal fun addMissingResponseItems(
     questionnaireItems: List<Questionnaire.Item>,
-    responseItems: MutableList<QuestionnaireResponse.Item>,
-  ) {
+    responseItems: List<QuestionnaireResponse.Item>,
+  ): List<QuestionnaireResponse.Item> {
     // To associate the linkId to QuestionnaireResponse.Item, do not use associateBy().
     // Instead, use groupBy().
     // This is because a questionnaire response may have multiple
     // QuestionnaireResponseItemComponents with the same linkId.
     val responseItemMap = responseItems.groupBy { it.linkId }
 
-    // Clear the response item list, and then add the missing and existing response items back to
-    // the list
-    responseItems.clear()
+    return questionnaireItems.flatMap { questionnaireItem ->
+      val existingResponseItems = responseItemMap[questionnaireItem.linkId]
+      when {
+        existingResponseItems.isNullOrEmpty() ->
+          listOf(questionnaireItem.createQuestionnaireResponseItem().build())
 
-    questionnaireItems.forEach {
-      if (responseItemMap[it.linkId].isNullOrEmpty()) {
-        responseItems.add(it.createQuestionnaireResponseItem().build())
-      } else {
-        if (
-          it.type.value == Questionnaire.QuestionnaireItemType.Group && it.repeats?.value != true
-        ) {
-          addMissingResponseItems(
-            questionnaireItems = it.item,
-            responseItems = responseItemMap[it.linkId]!!.single().item.toMutableList(),
-          )
-        }
-        if (
-          it.type.value == Questionnaire.QuestionnaireItemType.Group && it.repeats?.value == true
-        ) {
-          responseItemMap[it.linkId]!!.forEach { rItem ->
-            addMissingResponseItems(
-              questionnaireItems = it.item,
-              responseItems = rItem.item.toMutableList(),
-            )
+        questionnaireItem.type.value == Questionnaire.QuestionnaireItemType.Group ->
+          existingResponseItems.map { responseItem ->
+            responseItem
+              .toBuilder()
+              .apply {
+                item =
+                  addMissingResponseItems(questionnaireItem.item, responseItem.item)
+                    .map { it.toBuilder() }
+                    .toMutableList()
+              }
+              .build()
           }
-        }
-        responseItems.addAll(responseItemMap[it.linkId]!!)
+
+        else -> existingResponseItems
       }
     }
   }
@@ -780,51 +787,48 @@ internal class QuestionnaireViewModel(state: Map<String, Any>, config: DataCaptu
    */
   private fun Any.toAnswerValue(): QuestionnaireResponse.Item.Answer.Value? =
     when (this) {
+      // FHIR model types
+      is Attachment -> QuestionnaireResponse.Item.Answer.Value.Attachment(this)
+
       is FhirR4Boolean -> QuestionnaireResponse.Item.Answer.Value.Boolean(this)
 
-      is Decimal -> QuestionnaireResponse.Item.Answer.Value.Decimal(this)
-
-      is Integer -> QuestionnaireResponse.Item.Answer.Value.Integer(this)
-
-      is FhirR4String -> QuestionnaireResponse.Item.Answer.Value.String(this)
-
       is Coding -> QuestionnaireResponse.Item.Answer.Value.Coding(this)
-
-      is Reference -> QuestionnaireResponse.Item.Answer.Value.Reference(this)
 
       is Date -> QuestionnaireResponse.Item.Answer.Value.Date(this)
 
       is DateTime -> QuestionnaireResponse.Item.Answer.Value.DateTime(this)
 
+      is Decimal -> QuestionnaireResponse.Item.Answer.Value.Decimal(this)
+
+      is Integer -> QuestionnaireResponse.Item.Answer.Value.Integer(this)
+
+      is Quantity -> QuestionnaireResponse.Item.Answer.Value.Quantity(this)
+
+      is Reference -> QuestionnaireResponse.Item.Answer.Value.Reference(this)
+
+      is FhirR4String -> QuestionnaireResponse.Item.Answer.Value.String(this)
+
       is Time -> QuestionnaireResponse.Item.Answer.Value.Time(this)
 
       is Uri -> QuestionnaireResponse.Item.Answer.Value.Uri(this)
 
-      is Attachment -> QuestionnaireResponse.Item.Answer.Value.Attachment(this)
-
-      is Quantity -> QuestionnaireResponse.Item.Answer.Value.Quantity(this)
-
       // FHIRPath System types
       is Boolean -> QuestionnaireResponse.Item.Answer.Value.Boolean(FhirR4Boolean(value = this))
 
-      is Int -> QuestionnaireResponse.Item.Answer.Value.Integer(Integer(value = this))
-
-      is Long ->
-        if (this in Int.MIN_VALUE..Int.MAX_VALUE) {
-          QuestionnaireResponse.Item.Answer.Value.Integer(Integer(value = this.toInt()))
-        } else {
-          null
-        }
-
-      is String -> QuestionnaireResponse.Item.Answer.Value.String(FhirR4String(value = this))
+      is FhirPathDate ->
+        QuestionnaireResponse.Item.Answer.Value.Date(Date(value = FhirDate.fromString(toString())))
 
       is FhirPathDecimal ->
         QuestionnaireResponse.Item.Answer.Value.Decimal(
           Decimal(value = FhirDecimal.fromBigDecimal(asBigDecimal()))
         )
 
-      is FhirPathDate ->
-        QuestionnaireResponse.Item.Answer.Value.Date(Date(value = FhirDate.fromString(toString())))
+      is Int -> QuestionnaireResponse.Item.Answer.Value.Integer(Integer(value = this))
+
+      is Long ->
+        QuestionnaireResponse.Item.Answer.Value.Decimal(Decimal(value = FhirDecimal.fromLong(this)))
+
+      is String -> QuestionnaireResponse.Item.Answer.Value.String(FhirR4String(value = this))
 
       else -> null
     }
