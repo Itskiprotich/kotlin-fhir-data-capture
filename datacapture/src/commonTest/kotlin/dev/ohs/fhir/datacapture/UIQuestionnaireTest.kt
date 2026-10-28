@@ -62,6 +62,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.time.Clock
+import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin_fhir_data_capture.datacapture.generated.resources.Res
 import kotlin_fhir_data_capture.datacapture.generated.resources.button_pagination_next
@@ -579,17 +580,25 @@ class UIQuestionnaireTest {
 
   @Test
   fun calculatedExpression_shouldUpdate_onlyWhenReferencedVariableChanges() = runComposeUiTest {
-    setQuestionnaireContent(doubleWeightQuestionnaire())
+    // No debounce, so typed answers are committed without depending on how each target
+    // advances the clock.
+    setQuestionnaireContent(
+      doubleWeightQuestionnaire(),
+      dataCaptureConfig = DataCaptureConfig(textInputDebounce = Duration.ZERO),
+    )
     waitForCalculatedValue("80")
 
     // Edit fields are rendered in item order: weight, notes, double-weight.
-    onAllNodesWithTag(EDIT_TEXT_FIELD_TEST_TAG)[1].performTextReplacement("Unrelated note")
-    mainClock.advanceTimeBy(1_000)
-    waitForIdle()
+    enterText(fieldIndex = 1, text = "Unrelated note")
     onAllNodesWithTag(EDIT_TEXT_FIELD_TEST_TAG)[2].assertTextEquals("80")
 
-    onAllNodesWithTag(EDIT_TEXT_FIELD_TEST_TAG)[0].performTextReplacement("50")
+    enterText(fieldIndex = 0, text = "50")
     waitForCalculatedValue("100")
+  }
+
+  private fun ComposeUiTest.enterText(fieldIndex: Int, text: String) {
+    onAllNodesWithTag(EDIT_TEXT_FIELD_TEST_TAG)[fieldIndex].performTextReplacement(text)
+    waitForIdle()
   }
 
   private fun doubleWeightQuestionnaire(): Questionnaire =
@@ -723,6 +732,7 @@ class UIQuestionnaireTest {
     showReviewPageFirst: Boolean = false,
     showNavigationLongScroll: Boolean = false,
     submitText: String? = null,
+    dataCaptureConfig: DataCaptureConfig = DataCaptureConfig(),
   ) {
     val questionnaireJsonString = fhirJson.encodeToString(questionnaire)
 
@@ -737,6 +747,7 @@ class UIQuestionnaireTest {
       CompositionLocalProvider(
         LocalLifecycleOwner provides testLifecycleOwner,
         LocalViewModelStoreOwner provides viewModelStoreOwner,
+        LocalDataCaptureConfig provides dataCaptureConfig,
       ) {
         Questionnaire(
           questionnaireJson = questionnaireJsonString,
