@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ohs.fhir.catalog.views.locationwidget
+package dev.ohs.fhir.datacapture.views.factories.locationwidget
 
 import androidx.compose.runtime.Composable
 import dev.jordond.compass.geolocation.Geolocator
 
-@Composable internal expect fun rememberGeolocator(): Geolocator
+@Composable expect fun rememberGeolocator(): Geolocator

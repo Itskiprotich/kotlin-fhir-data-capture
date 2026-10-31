@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dev.ohs.fhir.catalog.views.locationwidget
+package dev.ohs.fhir.datacapture.views.factories.locationwidget
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,10 +36,11 @@ import dev.ohs.fhir.datacapture.views.QuestionnaireViewItem
 import dev.ohs.fhir.datacapture.views.components.Header
 import dev.ohs.fhir.datacapture.views.factories.QuestionnaireItemViewFactory
 import dev.ohs.fhir.model.r4.Decimal
+import dev.ohs.fhir.model.r4.FhirDecimal
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import kotlin_fhir_data_capture.catalog.generated.resources.Res
-import kotlin_fhir_data_capture.catalog.generated.resources.required_text_and_new_line
+import kotlin_fhir_data_capture.datacapture.generated.resources.Res
+import kotlin_fhir_data_capture.datacapture.generated.resources.required_text_and_new_line
 import org.jetbrains.compose.resources.stringResource
 
 internal const val PRIMARY_GPS_COORDINATE_EXTENSION_URL =
@@ -68,6 +69,7 @@ object LocationCoordinateItemViewFactory : QuestionnaireItemViewFactory {
           ?.asDecimal()
           ?.value
           ?.value
+          ?.asBigDecimal()
           ?.toStringExpanded() ?: ""
       }
     val requiredTextAndNewLineText = stringResource(Res.string.required_text_and_new_line)
@@ -103,18 +105,25 @@ object LocationCoordinateItemViewFactory : QuestionnaireItemViewFactory {
           when (gpsCoordinateExtensionValue) {
             GPS_COORDINATE_EXTENSION_VALUE_LATITUDE ->
               QuestionnaireResponse.Item.Answer.Value.Decimal(
-                value = Decimal(value = BigDecimal.fromDouble(locationData.latitude))
+                value =
+                  Decimal(
+                    value = FhirDecimal.fromBigDecimal(BigDecimal.fromDouble(locationData.latitude))
+                  )
               )
 
             GPS_COORDINATE_EXTENSION_VALUE_LONGITUDE ->
               QuestionnaireResponse.Item.Answer.Value.Decimal(
-                value = Decimal(value = BigDecimal.fromDouble(locationData.longitude))
+                value =
+                  Decimal(
+                    value =
+                      FhirDecimal.fromBigDecimal(BigDecimal.fromDouble(locationData.longitude))
+                  )
               )
 
             GPS_COORDINATE_EXTENSION_VALUE_ALTITUDE ->
               locationData.altitude?.let { alt ->
                 QuestionnaireResponse.Item.Answer.Value.Decimal(
-                  value = Decimal(value = BigDecimal.fromDouble(alt))
+                  value = Decimal(value = FhirDecimal.fromBigDecimal(BigDecimal.fromDouble(alt)))
                 )
               }
 
