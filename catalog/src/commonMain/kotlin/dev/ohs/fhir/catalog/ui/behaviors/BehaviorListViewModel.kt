@@ -20,6 +20,8 @@ import kotlin_fhir_data_capture.catalog.generated.resources.Res
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_answer_expression
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_calculated_expression
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_context_variables
+import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_definition_extraction_complex
+import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_definition_extraction_demographics
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_dynamic_question_text
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_questionnaire_constraint
 import kotlin_fhir_data_capture.catalog.generated.resources.behavior_name_skip_logic
@@ -76,6 +78,16 @@ class BehaviorListViewModel : ViewModel() {
       "behavior_questionnaire_constraint.json",
       Res.drawable.ic_rule,
       Res.string.behavior_name_questionnaire_constraint,
+    ),
+    DEFINITION_EXTRACTION_DEMOGRAPHICS(
+      "behavior_definition_extraction_demographics.json",
+      Res.drawable.ic_context,
+      Res.string.behavior_name_definition_extraction_demographics,
+    ),
+    DEFINITION_EXTRACTION_COMPLEX(
+      "behavior_definition_extraction_complex.json",
+      Res.drawable.ic_context,
+      Res.string.behavior_name_definition_extraction_complex,
     ),
   }
 }

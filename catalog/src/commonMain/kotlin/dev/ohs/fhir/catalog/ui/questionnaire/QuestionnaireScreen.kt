@@ -149,7 +149,7 @@ fun QuestionnaireScreen(
               onSubmit = { getResponse ->
                 coroutineScope.launch {
                   val response = getResponse()
-                  val responseJson = viewModel.getQuestionnaireResponseJson(response)
+                  val responseJson = viewModel.getSubmissionJson(json, response)
                   navigateToResponse(responseJson)
                 }
               },

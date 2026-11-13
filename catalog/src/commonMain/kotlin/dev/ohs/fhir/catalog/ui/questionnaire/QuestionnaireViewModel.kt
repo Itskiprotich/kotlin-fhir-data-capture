@@ -16,19 +16,38 @@
 package dev.ohs.fhir.catalog.ui.questionnaire
 
 import androidx.lifecycle.ViewModel
+import dev.ohs.fhir.datacapture.extraction.definition.DefinitionExtractionEngine
+import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import kotlin_fhir_data_capture.catalog.generated.resources.Res
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
 class QuestionnaireViewModel : ViewModel() {
+  @OptIn(ExperimentalSerializationApi::class)
   private val json = Json {
     explicitNulls = false
     encodeDefaults = false
+    prettyPrint = true
+    prettyPrintIndent = "  "
   }
 
   fun getQuestionnaireResponseJson(response: QuestionnaireResponse): String =
     json.encodeToString(QuestionnaireResponse.serializer(), response)
+
+  /**
+   * Returns the extracted [Bundle] JSON when [questionnaireJson] supports definition-based
+   * extraction, otherwise the [QuestionnaireResponse] JSON.
+   */
+  fun getSubmissionJson(questionnaireJson: String, response: QuestionnaireResponse): String {
+    val questionnaire = json.decodeFromString(Questionnaire.serializer(), questionnaireJson)
+    if (!DefinitionExtractionEngine.canExtract(questionnaire)) {
+      return getQuestionnaireResponseJson(response)
+    }
+    val bundle = DefinitionExtractionEngine.extractByDefinition(questionnaire, response)
+    return json.encodeToString(Bundle.serializer(), bundle)
+  }
 
   suspend fun getQuestionnaire(fileName: String) = Res.readBytes("files/$fileName").decodeToString()
 
